@@ -158,8 +158,22 @@ for patch in "$PORT"/patches/*.patch; do
     fi
 done
 
+# NO LOCAL PATHS IN THE BINARY. __FILE__ - in assert messages, in libslirp's
+# warnings - would otherwise carry the absolute path of whoever built it, into
+# an executable that gets shared. Map the repo root (and the framework root) to
+# short relative names. A path with a space cannot ride in a CMake flag string,
+# so such a root is left unmapped, with a note.
+MAPFLAGS=""
+for pair in "$(cygpath -m "$REPO")=." "$(cygpath -m "$FRAMEWORK")=ndsrecomp"; do
+    case "${pair%=*}" in
+        *" "*) echo "   note: ${pair%=*} has a space; its paths stay in the binary" ;;
+        *) MAPFLAGS="$MAPFLAGS -ffile-prefix-map=$pair" ;;
+    esac
+done
+
 step "build the recompiler"
 run "$LOGS/rec-cfg.log" cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="$MAPFLAGS" -DCMAKE_CXX_FLAGS="$MAPFLAGS" \
     -B "$BUILD/recompiler" "$FRAMEWORK/recompiler"
 run "$LOGS/rec-build.log" cmake --build "$BUILD/recompiler" -j "$(nproc)"
 [ -x "$REC" ] || die "recompiler did not produce $REC"
@@ -284,6 +298,7 @@ step "build the runner"
 # build generally cannot satisfy: the banks were captured against one specific
 # firmware image, and a dump from any other console does not match it.
 run "$LOGS/runner-cfg.log" cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="$MAPFLAGS" -DCMAKE_CXX_FLAGS="$MAPFLAGS" \
     -DNDS_GENERATED_DIR="$BIOSB" \
     -DNDS_BOOTSTRAP_FIRMWARE=ON \
     -DNDS_TITLE_BANK_DIR="$BANKS" \
@@ -327,7 +342,7 @@ for src in "$IMGUI"/imgui.cpp "$IMGUI"/imgui_draw.cpp "$IMGUI"/imgui_tables.cpp 
            "$IMGUI"/backends/imgui_impl_opengl3.cpp; do
     obj="$BUILD/imgui/$(basename "${src%.cpp}").o"
     if [ ! -f "$obj" ] || [ "$src" -nt "$obj" ]; then
-        run "$LOGS/imgui-cc.log" g++ -O2 -std=c++20 -c "${SHELL_INC[@]}" \
+        run "$LOGS/imgui-cc.log" g++ -O2 -std=c++20 $MAPFLAGS -c "${SHELL_INC[@]}" \
             "$src" -o "$obj"
     fi
     IMGUI_OBJS="$IMGUI_OBJS $obj"
@@ -348,7 +363,7 @@ for src in "$PORT"/frontend/*.cpp; do
     # rule the net loop below uses. Added when strings.cpp gained a test.
     case "$(basename "$src")" in test_*) continue ;; esac
     obj="$BUILD/shell-$(basename "${src%.cpp}").o"
-    run "$LOGS/shell-cc.log" g++ -O2 -std=c++20 -c "${SHELL_INC[@]}" \
+    run "$LOGS/shell-cc.log" g++ -O2 -std=c++20 $MAPFLAGS -c "${SHELL_INC[@]}" \
         "$src" -o "$obj"
     SHELL_OBJS="$SHELL_OBJS $obj"
 done
@@ -362,7 +377,7 @@ done
 for src in "$PORT"/net/*.cpp; do
     case "$(basename "$src")" in test_*) continue ;; esac
     obj="$BUILD/net-$(basename "${src%.cpp}").o"
-    run "$LOGS/shell-cc.log" g++ -O2 -std=c++20 -c "${SHELL_INC[@]}" "$src" -o "$obj"
+    run "$LOGS/shell-cc.log" g++ -O2 -std=c++20 $MAPFLAGS -c "${SHELL_INC[@]}" "$src" -o "$obj"
     SHELL_OBJS="$SHELL_OBJS $obj"
 done
 echo "   shell sources:$(echo "$SHELL_OBJS" | tr ' ' '\n' | grep -c '\.o$') objects"
