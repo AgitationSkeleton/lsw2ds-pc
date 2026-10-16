@@ -1,0 +1,1253 @@
+{
+  "schema": 1,
+  "source": {
+    "image": "arm9_section_0_02000000.bin",
+    "index_table": "0x020FF54C",
+    "reader": "0x02093294",
+    "record_stride": 16,
+    "rig_stride": 52
+  },
+  "note": "Export the DS lighting rigs and the per-level index that selects them.\n\nWHERE THIS LIVES IN THE ROM\n---------------------------\nThe game does not compute lighting from a scene description. It carries a table\nof fixed rigs and picks one by LEVEL ID.\n\n    0x020FF54C   the index: one 32-bit rig pointer per level id\n    0x02093294   the reader:  ldr r1,[pc,#0x48]      -> 0x020FF54C\n                              ldr r1,[r1, r0, lsl #2] -> rig = index[levelId]\n                              str r1,[r4,#0x5c]\n                 then a loop that copies each light's colour halfword out:\n                              add  r0, r1, r2, lsl #4     rig + i*16\n                              ldrh r1, [r0, #4]           the colour\n                              strh r1, [r0(=r4+i*2), #0x60]\n                 which is what fixes the record stride at 16 and the colour at\n                 +4 inside it.\n\n    0x02093268   cmp r1,#0x33 / beq  and  0x02093288 cmp r1,#9 / bne\n    0x02093290   mov r0,#0x47                a level-id override before the\n                                             lookup - id 0x47 for two cases\n\nRIG LAYOUT (confirmed against the reader and against captured registers)\n\n    +0x00  u8    light count            0x020932A8  ldrb r0,[r1]\n    +0x02  u16   MAT_AMBIENT, rgb15\n    +0x04  }\n    +0x08  }     light 0: u32 colour rgb15, then s32 x, y, z in 20.12\n    +0x0C  }\n    +0x10  }\n    ... 16 bytes per light thereafter\n\nThe rig for a level is NOT a snapshot of one frame's registers - it is the\nauthored source those registers are loaded from, and it is exact.\n\nTHE SIGN OF THE DIRECTION\n-------------------------\nThe stored vector is the direction the light TRAVELS. The hardware negates it\nwhen the LIGHT_VECTOR command is issued - melonDS GPU3D.cpp:2045 is\n\n    LightDirection[l][k] = -((dir . VecMatrix column k) >> 12)\n\nand the vertex stage at :1492 then dots that stored value with the transformed\nnormal WITHOUT negating again. So the shading term is\n\n    lambert_i = max(0, dot(-dir_i, N))\n\nwith dir_i straight out of this table. Captured frames confirm it: in frames\nwhere the vector matrix is identity the register reads exactly -(dir >> 3),\ne.g. light 0 of the arena rig reads (308, 205, 359) against a table entry of\n(-2458, -1638, -2867) with -2458 >> 3 = -308.\n\nThe hardware only ever sees the 10-bit form, so the >> 3 column below is what\nis actually rendered and is what the port must use.\n\nTHE EXACT INTENSITY\n-------------------\nGPU3D.cpp:1500-1542, per channel and per enabled light:\n\n    diffuse   += (MatDiffuse * LightColor * diffdot) & 0xFFFFF     diffdot <= 512\n    ambient   += (MatAmbient << 9) * LightColor\n    result5    = min(31, (emission << 14 + sum) >> 14)\n\nso with everything at 31 a head-on light gives 31*31*512 >> 14 = 30, not 31.\nThe scale is exactly 31/32 = 0.96875 against a naive float product, and it\napplies to the ambient term too. Written out for a shader working in 0..1:\n\n    shade = clamp(emi5/31 + sum_i (dif5*col5_i*lambert_i + amb5*col5_i)/(32*31))\n\nUsage:  python tools/export_lighting_rigs.py",
+  "index_by_level": {
+    "0": "0x020F4FC8",
+    "1": "0x020F5098",
+    "2": "0x020F5098",
+    "3": "0x020F5098",
+    "4": "0x020F5064",
+    "5": "0x020F5064",
+    "6": "0x020F5030",
+    "7": "0x020F5030",
+    "8": "0x020F5030",
+    "9": "0x020F4FFC",
+    "10": "0x020F4FFC",
+    "11": "0x020F4FFC",
+    "12": "0x020F4FFC",
+    "13": "0x020F4FFC",
+    "14": "0x020F4FFC",
+    "15": "0x020F4FC8",
+    "16": "0x020F4F94",
+    "17": "0x020F4F94",
+    "18": "0x020F4F94",
+    "19": "0x020F4F94",
+    "20": "0x020F4F94",
+    "21": "0x020F4F94",
+    "22": "0x020F4F60",
+    "23": "0x020F4F60",
+    "24": "0x020F4F60",
+    "25": "0x020F4F60",
+    "26": "0x020F4F2C",
+    "27": "0x020F4F2C",
+    "28": "0x020F4F2C",
+    "29": "0x020F4F2C",
+    "30": "0x020F4F2C",
+    "31": "0x020F4F2C",
+    "32": "0x020F4F2C",
+    "33": "0x020F4F2C",
+    "34": "0x020F4F2C",
+    "35": "0x020F4EF8",
+    "36": "0x020F4EF8",
+    "37": "0x020F4EC4",
+    "38": "0x020F4EC4",
+    "39": "0x020F4EC4",
+    "40": "0x020F4EC4",
+    "41": "0x020F4EC4",
+    "42": "0x020F4FC8",
+    "43": "0x020F4E90",
+    "44": "0x020F4E90",
+    "45": "0x020F4E90",
+    "46": "0x020F4E5C",
+    "47": "0x020F4E5C",
+    "48": "0x020F4E5C",
+    "49": "0x020F4E5C",
+    "50": "0x020F4E28",
+    "51": "0x020F4E28",
+    "52": "0x020F4E28",
+    "53": "0x020F4DF4",
+    "54": "0x020F4DF4",
+    "55": "0x020F4DF4",
+    "56": "0x020F4FFC",
+    "57": "0x020F4FC8",
+    "58": "0x020F4DF4",
+    "59": "0x020F4DF4",
+    "60": "0x020F4DF4",
+    "61": "0x020F4DF4",
+    "62": "0x020F4DF4",
+    "63": "0x020F4FC8",
+    "64": "0x020F4EC4",
+    "65": "0x020F4EC4",
+    "66": "0x020F4EC4",
+    "67": "0x020F4EC4",
+    "68": "0x020F4EC4",
+    "69": "0x020F4DF4",
+    "70": "0x020F4DF4",
+    "71": "0x020F4DC0",
+    "72": "0x020F4DC0"
+  },
+  "rigs": {
+    "0x020F4DC0": {
+      "address": "0x020F4DC0",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        3,
+        3,
+        3
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            30,
+            26
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            13,
+            7,
+            16
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            21,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4DF4": {
+      "address": "0x020F4DF4",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        3,
+        3,
+        3
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4E28": {
+      "address": "0x020F4E28",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4E5C": {
+      "address": "0x020F4E5C",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            29,
+            29,
+            29
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            20,
+            22,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            27,
+            29,
+            31
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4E90": {
+      "address": "0x020F4E90",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            29,
+            29,
+            29
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            20,
+            22,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            27,
+            29,
+            31
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4EC4": {
+      "address": "0x020F4EC4",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4EF8": {
+      "address": "0x020F4EF8",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4F2C": {
+      "address": "0x020F4F2C",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        3,
+        3,
+        3
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            28,
+            28,
+            28
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            13,
+            16,
+            19
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            16,
+            17,
+            18
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4F60": {
+      "address": "0x020F4F60",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            29,
+            29,
+            29
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            20,
+            22,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            27,
+            29,
+            31
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4F94": {
+      "address": "0x020F4F94",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            29,
+            29,
+            29
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            20,
+            22,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            27,
+            29,
+            31
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4FC8": {
+      "address": "0x020F4FC8",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        3,
+        3,
+        3
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            16,
+            17,
+            18
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            31,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            13,
+            14,
+            19
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F4FFC": {
+      "address": "0x020F4FFC",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            26,
+            24,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            8,
+            12,
+            15
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            23,
+            22
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F5030": {
+      "address": "0x020F5030",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            29,
+            29,
+            29
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            20,
+            22,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            27,
+            29,
+            31
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F5064": {
+      "address": "0x020F5064",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    },
+    "0x020F5098": {
+      "address": "0x020F5098",
+      "light_count": 3,
+      "mat_ambient_rgb5": [
+        2,
+        2,
+        2
+      ],
+      "lights": [
+        {
+          "colour_rgb5": [
+            31,
+            28,
+            23
+          ],
+          "direction_fixed_20_12": [
+            -2458,
+            -1638,
+            -2867
+          ],
+          "direction_fixed_1_0_9": [
+            -308,
+            -205,
+            -359
+          ],
+          "direction": [
+            -0.6015625,
+            -0.400390625,
+            -0.701171875
+          ]
+        },
+        {
+          "colour_rgb5": [
+            18,
+            19,
+            31
+          ],
+          "direction_fixed_20_12": [
+            3686,
+            -1638,
+            -1229
+          ],
+          "direction_fixed_1_0_9": [
+            460,
+            -205,
+            -154
+          ],
+          "direction": [
+            0.8984375,
+            -0.400390625,
+            -0.30078125
+          ]
+        },
+        {
+          "colour_rgb5": [
+            31,
+            26,
+            20
+          ],
+          "direction_fixed_20_12": [
+            -819,
+            -1638,
+            3686
+          ],
+          "direction_fixed_1_0_9": [
+            -103,
+            -205,
+            460
+          ],
+          "direction": [
+            -0.201171875,
+            -0.400390625,
+            0.8984375
+          ]
+        }
+      ]
+    }
+  },
+  "arenas": {
+    "jabbas_tower": {
+      "level_id": 4,
+      "rig": "0x020F5064"
+    },
+    "mos_eisley_streets": {
+      "level_id": 5,
+      "rig": "0x020F5064"
+    }
+  }
+}

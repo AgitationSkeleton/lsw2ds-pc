@@ -1,0 +1,284 @@
+{
+  "note": "Player spawn points, from handler-0 records in the decoded level scripts. Handler 0 is the only handler with a field map recovered from its constructor (0x02050C44), and its payload is 12 bytes with the position in the first three s16 fields.",
+  "constructor": "0x02050C44",
+  "fields": {
+    "+0x00": "x s16",
+    "+0x02": "y s16",
+    "+0x04": "z s16",
+    "+0x08": "byte parameter",
+    "+0x09": "byte"
+  },
+  "counts": {
+    "mos_eisley_streets": 4,
+    "jabbas_tower": 4,
+    "cantina_arena_lobby": 2
+  },
+  "spawns": {
+    "mos_eisley_streets": [
+      {
+        "slot": 1,
+        "position": [
+          -155,
+          103,
+          -114
+        ],
+        "field_08": 36,
+        "field_09": 0,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 2,
+        "position": [
+          -153,
+          106,
+          -103
+        ],
+        "field_08": 71,
+        "field_09": 1,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 3,
+        "position": [
+          -26,
+          10,
+          0
+        ],
+        "field_08": 27,
+        "field_09": 2,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 4,
+        "position": [
+          2,
+          10,
+          0
+        ],
+        "field_08": 0,
+        "field_09": 3,
+        "group": 1,
+        "set": 1
+      }
+    ],
+    "jabbas_tower": [
+      {
+        "slot": 1,
+        "position": [
+          16,
+          1,
+          0
+        ],
+        "field_08": 7,
+        "field_09": 0,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 2,
+        "position": [
+          10,
+          0,
+          -11
+        ],
+        "field_08": 13,
+        "field_09": 1,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 4,
+        "position": [
+          18,
+          0,
+          -11
+        ],
+        "field_08": 29,
+        "field_09": 2,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 5,
+        "position": [
+          1,
+          0,
+          -11
+        ],
+        "field_08": 20,
+        "field_09": 3,
+        "group": 1,
+        "set": 1
+      }
+    ],
+    "cantina_arena_lobby": [
+      {
+        "slot": 1,
+        "position": [
+          16,
+          32,
+          0
+        ],
+        "field_08": 20,
+        "field_09": 0,
+        "group": 1,
+        "set": 1
+      },
+      {
+        "slot": 2,
+        "position": [
+          15,
+          32,
+          -11
+        ],
+        "field_08": 20,
+        "field_09": 1,
+        "group": 1,
+        "set": 1
+      }
+    ]
+  },
+  "respawn_candidates": {
+    "hypothesis": "Entity id 7 in the arena spawn tables is the respawn point set.",
+    "why": "Reported from play: players respawn all over Jabba, not only the top floor, and probably likewise on Mos. Id 7 fits that shape exactly - 12 records on Jabba spread across FIVE distinct heights (y = 53, 79, 80, 107, 190), including two symmetric groups of four at y=53 and y=107, which is what per-floor respawn points look like. Their 8-byte tails are all zero, so they carry no per-instance configuration, which also suits a plain position marker.",
+    "confidence": "REJECTED - zero landings across 400 teleports in the three-match session",
+    "how_to_confirm": "The RAM recordings already contain player deaths and respawns. Compare a player actor position immediately after a respawn against this list; a match on any of them settles it without a new capture.",
+    "counts": {
+      "mos_eisley_streets": 3,
+      "jabbas_tower": 12
+    },
+    "positions": {
+      "mos_eisley_streets": [
+        [
+          -30,
+          31,
+          170
+        ],
+        [
+          128,
+          46,
+          -78
+        ],
+        [
+          49,
+          52,
+          91
+        ]
+      ],
+      "jabbas_tower": [
+        [
+          -64,
+          53,
+          9
+        ],
+        [
+          -64,
+          53,
+          -9
+        ],
+        [
+          61,
+          53,
+          -9
+        ],
+        [
+          61,
+          53,
+          9
+        ],
+        [
+          82,
+          107,
+          37
+        ],
+        [
+          -82,
+          107,
+          -37
+        ],
+        [
+          -27,
+          190,
+          0
+        ],
+        [
+          27,
+          190,
+          0
+        ],
+        [
+          -18,
+          80,
+          0
+        ],
+        [
+          18,
+          79,
+          0
+        ],
+        [
+          0,
+          107,
+          9
+        ],
+        [
+          0,
+          107,
+          -9
+        ]
+      ]
+    },
+    "confirmation_attempted": {
+      "method": "Searched the frame-indexed trace for actors of the positional player class teleporting more than 25 units between samples, then compared the landing position against both the id-7 candidates and the handler-0 initial spawns.",
+      "result": "NOT CONFIRMED. Only three teleports occur in the whole recording, and none lands on a candidate or an initial spawn.",
+      "the_three": [
+        {
+          "frame": 11928,
+          "to": [
+            24.0,
+            47.0,
+            -166.0
+          ],
+          "jump": 81,
+          "note": "single actor - the only plausible respawn, and it matches nothing in either list"
+        },
+        {
+          "frame": 20745,
+          "to": [
+            145.0,
+            17.2,
+            -183.0
+          ],
+          "jump": 148,
+          "note": "simultaneous with the next one"
+        },
+        {
+          "frame": 20745,
+          "to": [
+            43.0,
+            5.2,
+            26.0
+          ],
+          "jump": 141,
+          "note": "both actors jump on the same frame, which is the savestate load the player reported, not a respawn"
+        }
+      ],
+      "what_this_means": "The evidence is thin rather than contrary - two of the three jumps are a savestate load and the session may simply contain no deaths. But the one candidate respawn does NOT match, so id 7 is weakened and must not be treated as settled.",
+      "better_test": "Use a recording that definitely contains deaths. The three-match session in out/work/_superseded was recorded with combat and would be the one to re-walk, or watch the HUD heart count in the RAM recording to locate death frames precisely and only then look at positions."
+    }
+  },
+  "initial_vs_respawn": "The handler-0 records are four per arena and read as the INITIAL spawns - the byte at +0x09 runs 0,1,2,3, which is a player index. Id 7 has no such index and is more numerous, which is consistent with a shared respawn pool rather than per-player starts.",
+  "CONFIRMED_FROM_RECORDINGS": {
+    "session": "out/work/archive/gpudump_3matches - three matches across Mos Eisley and Jabbas Tower, 6,868 RAM captures.",
+    "method": "Scanned the actor region for position triples that move like an actor - 65 found - then collected every teleport over 30 units and compared the landing position against both spawn lists. 400 teleports checked.",
+    "result": {
+      "handler_0_spawns_CONFIRMED": "Landings match them. Jabbas Tower spawn (1,0,-11) was landed on SEVEN times and the Cantina lobby spawn (15,32,-11) three times. Being landed on repeatedly means these points are used for RESPAWNS as well as the initial placement - they are not one-shot starts.",
+      "id_7_respawn_hypothesis_REJECTED": "Zero of the 400 teleports landed on any of the 15 id-7 candidates, across both maps. The distribution argument - 12 points over five floors with zero tails - was suggestive and wrong."
+    },
+    "so_what_is_id_7": "Unknown again. It is NOT the respawn set and NOT a grapple. Both readings are now recorded as failed.",
+    "open_question": "The player reports respawning in many places across Jabbas Tower, but the only confirmed landings are the four handler-0 points. Either respawn positions are computed at runtime rather than placed - picked from nav data or from a spawn nearest the death, which would leave no table to find - or a further set exists that this scan missed. The scan only inspected 400 of 1,163 teleports, so widening it is the cheap next step before concluding anything."
+  }
+}

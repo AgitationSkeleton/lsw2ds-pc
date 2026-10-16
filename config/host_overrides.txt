@@ -1,0 +1,15 @@
+# Functions the host layer replaces because the decompiled C is provably wrong.
+# Each is translated instruction-by-instruction in
+# recomp/decomp/src/host_overrides.c, which carries the disassembly.
+#
+# These were found by the leaf differential, not by inspection: each turned up
+# as a disagreement between the ARM interpreter and the compiled decomp.
+FUN_020ce7f0
+FUN_020ce804
+FUN_020ce818
+FUN_020ce85c
+FUN_020005d4
+FUN_0200071e
+FUN_02000950
+FUN_020cd828
+FUN_020cd874

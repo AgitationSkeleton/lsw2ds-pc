@@ -1,0 +1,238 @@
+Say which instruction wrote a watched address, and optionally only when it
+carries a chosen value.
+
+LSW2_WRITE_WATCH=<addr> reports the pc, lr and low registers for every guest
+store to that address. unmapped() already proved this seam can name an
+instruction; this asks it the same question about a chosen address.
+
+LSW2_WRITE_WATCH_VALUE=<word> narrows it to stores carrying that exact value.
+Without it the watch cannot be aimed at an I/O port: the geometry engine's
+GXFIFO takes several thousand stores per frame, so the report cap is spent
+inside the first frame. With it, a polygon's TEXIMAGE_PARAM is a distinctive
+enough word to name the routine that submits that one polygon - which is how
+the top-screen portrait's drawing code was found.
+
+The value filter lives HERE rather than in a patch of its own because it has
+to insert a line inside the function this patch adds; as a separate patch the
+two could no longer be applied or reversed independently.
+
+The call-chain print (LSW2_WRITE_WATCH_STACK=1) lives here for the same
+reason: it prints from inside this function. For a store inside a shared
+helper - the MT19937 draw at 0x02062D10 - lr only names the helper's caller;
+the runtime's own record of pushed guest return addresses names the chain.
+
+--- a/recompiler/armv4t/runtime_arm.h	2026-09-05 14:40:11.893327600 -0700
++++ b/recompiler/armv4t/runtime_arm.h	2026-09-05 14:40:12.126177400 -0700
+@@ -193,6 +193,27 @@
+ // inline fast paths and Tier 3 need it in scope here.
+ extern uint32_t g_runtime_deep_trace;
+ 
++// WHICH GUEST INSTRUCTION WROTE THIS ADDRESS?
++//
++// A companion to unmapped()'s pc/lr reporting. That answers "who made a bad
++// access"; this answers "who wrote a word I care about" - the same question
++// from the other end, needing the same seam. Zero = off, and off costs one
++// predictable compare against a global on each store path.
++//
++// The branch ring cannot answer this: a level load calls the allocator often
++// enough to fill a 4096-entry ring by itself, so the write's own call site is
++// long gone before anything can read it.
++//
++// ALL THREE WIDTHS. The first version watched only the 32-bit store, and the
++// very next thing worth watching turned out to be a BYTE - a player index -
++// which that version reported as complete silence. A watch that can miss the
++// write it was armed for is worse than none, so u8 and u16 carry the same
++// check. They match on the exact address written, so watching a byte field
++// means naming that byte's address, not its containing word.
++extern uint32_t g_runtime_write_watch;
++extern uint32_t g_runtime_write_watch_mask;
++void runtime_note_watched_write(uint32_t addr, uint32_t val, uint32_t width);
++
+ // One fast-map window: a directly addressable, mirrored, power-of-two
+ // backing with its parallel Tier-3 provenance arrays. data == NULL means
+ // the window is not fast-servable right now (e.g. ARM9 shared-WRAM view
+@@ -301,6 +322,9 @@
+ }
+ 
+ static inline void bus_write_u32(uint32_t addr, uint32_t val) {
++    if ((addr & g_runtime_write_watch_mask) == g_runtime_write_watch && addr) {
++        runtime_note_watched_write(addr, val, 4u);
++    }
+     if (!g_runtime_deep_trace) {
+         uint32_t off;
+         const NdsBusFastWin* w = nds_busf_classify(addr, &off);
+@@ -314,6 +338,9 @@
+ }
+ 
+ static inline void bus_write_u16(uint32_t addr, uint16_t val) {
++    if ((addr & g_runtime_write_watch_mask) == g_runtime_write_watch && addr) {
++        runtime_note_watched_write(addr, val, 2u);
++    }
+     if (!g_runtime_deep_trace) {
+         uint32_t off;
+         const NdsBusFastWin* w = nds_busf_classify(addr, &off);
+@@ -327,6 +354,9 @@
+ }
+ 
+ static inline void bus_write_u8(uint32_t addr, uint8_t val) {
++    if ((addr & g_runtime_write_watch_mask) == g_runtime_write_watch && addr) {
++        runtime_note_watched_write(addr, val, 1u);
++    }
+     if (!g_runtime_deep_trace) {
+         uint32_t off;
+         const NdsBusFastWin* w = nds_busf_classify(addr, &off);
+--- a/runner/src/bus.cpp	2026-09-05 14:40:11.847456500 -0700
++++ b/runner/src/bus.cpp	2026-09-05 14:40:34.063104500 -0700
+@@ -421,6 +421,152 @@
+     nds_io_write(addr, value, width);
+ }
+ 
++// SAY WHICH INSTRUCTION WROTE A WATCHED ADDRESS.
++//
++// Armed from LSW2_WRITE_WATCH (hex or decimal), read once at static-init time
++// before any guest code runs, so each store path only ever compares a global.
++// All three widths are watched - see runtime_arm.h for why the byte one is not
++// optional.
++//
++// WHY THIS EXISTS. A word in guest RAM is written on one console and not on
++// another, and the cheaper ways of finding the writer are exhausted: Ghidra
++// cannot resolve the literal pool that reaches it, and the branch ring is
++// filled by allocator churn during the very level load that does the writing.
++// unmapped() already proves this seam can name an instruction; this asks it the
++// same question about a chosen address.
++//
++// A NAMED FUNCTION, NOT A LAMBDA INITIALISER. `extern "C" uint32_t x = []{...}();`
++// makes GCC apply the extern storage class to the lambda's own locals. And the
++// reporter needs extern "C" because runtime_arm.h declares it inside an
++// extern "C" block; without it every C and C++ unit fails to link.
++static uint32_t lsw2_read_write_watch_env() {
++    const char* s = std::getenv("LSW2_WRITE_WATCH");
++    if (!s) return 0u;
++    char* end = nullptr;
++    const unsigned long v = std::strtoul(s, &end, 0);
++    return (end != s) ? uint32_t(v) : 0u;
++}
++
++extern "C" uint32_t g_runtime_write_watch = lsw2_read_write_watch_env();
++// LSW2_WRITE_WATCH_MASK: which address bits must match (default all). A
++// mirrored region is watched by masking the mirror bits away - ITCM repeats
++// every 32 KB below 0x02000000, so 0xFE007FFF with a watch of 0x400 catches
++// ITCM offset 0x400 through any mirror. Constant-initialised, so an unset
++// watch can never match before the environment is read.
++extern "C" uint32_t g_runtime_write_watch_mask = 0xFFFFFFFFu;
++static const bool lsw2_watch_mask_read = [] {
++    if (const char* s = std::getenv("LSW2_WRITE_WATCH_MASK")) {
++        char* end = nullptr;
++        const unsigned long v = std::strtoul(s, &end, 0);
++        if (end != s) g_runtime_write_watch_mask = uint32_t(v);
++    }
++    return true;
++}();
++
++// AND ONLY THE WRITES CARRYING A CHOSEN VALUE, when LSW2_WRITE_WATCH_VALUE is
++// also set. Unset means match every value, which is the original behaviour.
++//
++// WHY IT WAS NEEDED. The address filter is enough for a word in RAM that a
++// handful of instructions touch. It is useless against an I/O port: the
++// geometry engine's GXFIFO at 0x04000400 takes several thousand stores per
++// frame, so the report cap below is spent inside the first frame and none of
++// those reports is the one being looked for.
++//
++// The value is the discriminator that works there. A polygon's TEXIMAGE_PARAM
++// is a single distinctive word, so watching the FIFO for exactly that word
++// names the routine that submits that polygon and nothing else. That is how
++// the top-screen portrait's drawing code was found.
++//
++// THIS LIVES IN THE SAME PATCH AS THE WATCH ITSELF, deliberately. It was first
++// written as a separate patch 0011, and that could not work: it has to insert a
++// line INSIDE the function this patch adds, so the two patches could no longer
++// be applied or reversed independently and the build stopped with "0009 does
++// not apply and is not already applied". Two patches cannot each own part of
++// one function.
++static bool lsw2_watch_value_matches(uint32_t val) {
++    static bool have = false;
++    static uint32_t want = 0;
++    static bool read = false;
++    if (!read) {
++        read = true;
++        if (const char* s = std::getenv("LSW2_WRITE_WATCH_VALUE")) {
++            char* end = nullptr;
++            const unsigned long v = std::strtoul(s, &end, 0);
++            if (end != s) { want = uint32_t(v); have = true; }
++        }
++    }
++    return !have || val == want;
++}
++
++// TWO MORE KNOBS, for the same reason the value filter exists: a field that is
++// written every frame with a resting value drowns the cap before anything
++// interesting happens. NONZERO drops the resting writes; MAX raises the bound
++// when a burst is genuinely worth seeing. Both are read once.
++static bool lsw2_watch_drop_zero(uint32_t val) {
++    static bool read = false, skip = false;
++    if (!read) {
++        read = true;
++        if (const char* s = std::getenv("LSW2_WRITE_WATCH_NONZERO"))
++            skip = (s[0] != '\0' && s[0] != '0');
++    }
++    return skip && val == 0;
++}
++
++static int lsw2_watch_cap() {
++    static int cap = 0;
++    if (cap == 0) {
++        cap = 32;
++        if (const char* s = std::getenv("LSW2_WRITE_WATCH_MAX")) {
++            const long v = std::strtol(s, nullptr, 0);
++            if (v > 0 && v <= 4096) cap = int(v);
++        }
++    }
++    return cap;
++}
++
++extern "C" void runtime_note_watched_write(uint32_t addr, uint32_t val,
++                                              uint32_t width) {
++    if (!lsw2_watch_value_matches(val)) return;
++    if (lsw2_watch_drop_zero(val)) return;
++    // BOUNDED, AND IT SAYS SO WHEN THE BOUND BITES - the discipline the
++    // unmapped cap needed after its 64 was once read as a measurement.
++    static int seen = 0;
++    const int cap = lsw2_watch_cap();
++    if (seen >= cap) return;
++    ++seen;
++    std::fprintf(stderr,
++                 "[watch] ARM%c wrote %08X = %08X w=%u  pc=%08X lr=%08X "
++                 "r0=%08X r1=%08X r2=%08X r3=%08X r4=%08X r5=%08X\n",
++                 g_nds_active == NDS_ARM9 ? '9' : '7', addr, val, width,
++                 g_cpu.R[15], g_cpu.R[14], g_cpu.R[0], g_cpu.R[1], g_cpu.R[2],
++                 g_cpu.R[3], g_cpu.R[4], g_cpu.R[5]);
++    // AND WHO CALLED THE WRITER. lr names only the immediate caller, and a
++    // store inside a shared helper (an RNG draw, a memcpy) is written by the
++    // helper for every one of its callers. The runtime already keeps the guest
++    // return addresses it pushed for each BL; the innermost few of those are
++    // the chain that led here. LSW2_WRITE_WATCH_STACK=1 prints them.
++    static int stack_on = -1;
++    if (stack_on < 0) {
++        const char* s = std::getenv("LSW2_WRITE_WATCH_STACK");
++        stack_on = (s && s[0] != '\0' && s[0] != '0') ? 1 : 0;
++    }
++    if (stack_on == 1) {
++        const uint32_t depth = runtime_call_stack_depth();
++        const uint32_t* ret = runtime_call_stack_data();
++        std::fprintf(stderr, "[watch]   call stack (innermost first, depth %u):",
++                     unsigned(depth));
++        for (uint32_t i = 0; i < depth && i < 8u; ++i)
++            std::fprintf(stderr, " %08X", unsigned(ret[depth - 1u - i]));
++        std::fprintf(stderr, "\n");
++    }
++    if (seen == cap) {
++        std::fprintf(stderr,
++                     "[watch] ... %d watched writes reported; further ones "
++                     "are NOT shown. That is this log's limit, not the "
++                     "guest's.\n", cap);
++    }
++}
++
+ void unmapped(uint32_t addr, bool write, uint32_t width, uint32_t value) {
+     // THE LIMIT IS A LIMIT, NOT A MEASUREMENT. It was a hard 64, and a burst
+     // that reached it got read downstream as "exactly 64 accesses" - turning a

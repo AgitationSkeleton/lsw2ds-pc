@@ -1,0 +1,4488 @@
+{
+  "note": "Every entity slot in the three focused levels, decoded through the handler constructor table at 0x020ed5cc. Fields are named only where a constructor reads them; nothing here is invented.",
+  "level_record_table": "0x020f55c4",
+  "handler_table": "0x020ed5cc",
+  "levels": {
+    "cantina_arena_lobby": {
+      "assets": {
+        "record": 1,
+        "address": "0x020f55e0",
+        "bsp": 952,
+        "script": 953,
+        "texture_bank": 957,
+        "model": 955,
+        "category": 80,
+        "script_name": "C2C2",
+        "texture_bank_name": "Arena_Flr01_cmp4Arena_Stone_cmp4Arena_Wl1_cmp4",
+        "model_name": "CantinaArenaLobb"
+      },
+      "slot_count": 39,
+      "slots_by_handler": {
+        "0": 2,
+        "1": 2,
+        "4": 10,
+        "6": 1,
+        "9": 1,
+        "17": 11,
+        "22": 1,
+        "23": 11
+      },
+      "slots_by_kind": {
+        "constructor_fields": 28,
+        "model_backed_map_object": 10,
+        "arena_type5_timed_actor_volume": 1
+      },
+      "global_locators": [
+        {
+          "index": 0,
+          "offset": 4,
+          "position_s16": [
+            25,
+            8,
+            -3
+          ],
+          "field_06_u16": 19301,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 0,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "19000800fdff654bfdfffdff00000000"
+        },
+        {
+          "index": 1,
+          "offset": 20,
+          "position_s16": [
+            24,
+            8,
+            4
+          ],
+          "field_06_u16": 19301,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 1,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "180008000400654bfdfffdff01000000"
+        },
+        {
+          "index": 2,
+          "offset": 36,
+          "position_s16": [
+            28,
+            6,
+            -8
+          ],
+          "field_06_u16": 19301,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 2,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "1c000600f8ff654bfdfffdff02000000"
+        },
+        {
+          "index": 3,
+          "offset": 52,
+          "position_s16": [
+            27,
+            5,
+            10
+          ],
+          "field_06_u16": 19301,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 3,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "1b0005000a00654bfdfffdff03000000"
+        }
+      ],
+      "slots": [
+        {
+          "slot": 1,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 16,
+            "+0x02": 32,
+            "+0x04": 0,
+            "+0x08": 20,
+            "+0x09": 0
+          },
+          "position_s16": [
+            16,
+            32,
+            0
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 2,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 15,
+            "+0x02": 32,
+            "+0x04": -11,
+            "+0x08": 20,
+            "+0x09": 1
+          },
+          "position_s16": [
+            15,
+            32,
+            -11
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 3,
+          "handler": 1,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050cf0",
+          "fields": {
+            "+0x08": 2,
+            "+0x09": 13
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 4,
+          "handler": 1,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050cf0",
+          "fields": {
+            "+0x08": 3,
+            "+0x09": 29
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 5,
+          "handler": 9,
+          "payload_bytes": 24,
+          "kind": "arena_type5_timed_actor_volume",
+          "decoded": {
+            "kind": "arena_type5_timed_actor_volume",
+            "position_s16": [
+              12,
+              4,
+              0
+            ],
+            "extent_or_configuration_u16_08_0e": [
+              10,
+              20,
+              10,
+              5
+            ],
+            "configuration_bytes_10_14": [
+              1,
+              1,
+              17,
+              1,
+              1
+            ],
+            "evidence": "constructor 0x020511d4 allocates arena object type 5 through 0x02096828; 0x020976e0 gates actors by subtype, input/state, and global update time before invoking vtable +0x10"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 6,
+          "handler": 6,
+          "payload_bytes": 24,
+          "kind": "constructor_fields",
+          "constructor": "0x02050fbc",
+          "fields": {
+            "+0x00": 43,
+            "+0x02": 10,
+            "+0x04": 0,
+            "+0x08": 3,
+            "+0x0a": 10,
+            "+0x0c": 40,
+            "+0x0e": 20,
+            "+0x12": 14,
+            "+0x13": 0,
+            "+0x14": 0
+          },
+          "position_s16": [
+            43,
+            10,
+            0
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 7,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -51,
+              6,
+              -30
+            ],
+            "position_fixed_20_12": [
+              -208896,
+              24576,
+              -122880
+            ],
+            "model_registry_selector": 50,
+            "rotation_y_degrees_s16": 55,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb948",
+              "handler": "0x020e630c",
+              "archive_model_asset": 3431,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 8,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -29,
+              6,
+              -51
+            ],
+            "position_fixed_20_12": [
+              -118784,
+              24576,
+              -208896
+            ],
+            "model_registry_selector": 51,
+            "rotation_y_degrees_s16": 30,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb950",
+              "handler": "0x020e6cd0",
+              "archive_model_asset": 3436,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 9,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              6,
+              -59
+            ],
+            "position_fixed_20_12": [
+              0,
+              24576,
+              -241664
+            ],
+            "model_registry_selector": 52,
+            "rotation_y_degrees_s16": 5,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb958",
+              "handler": "0x020e6cee",
+              "archive_model_asset": 3459,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 10,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              29,
+              6,
+              -51
+            ],
+            "position_fixed_20_12": [
+              118784,
+              24576,
+              -208896
+            ],
+            "model_registry_selector": 53,
+            "rotation_y_degrees_s16": 330,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb960",
+              "handler": "0x020e5ea2",
+              "archive_model_asset": 3468,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 11,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              52,
+              6,
+              -29
+            ],
+            "position_fixed_20_12": [
+              212992,
+              24576,
+              -118784
+            ],
+            "model_registry_selector": 54,
+            "rotation_y_degrees_s16": 294,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb968",
+              "handler": "0x020e63f2",
+              "archive_model_asset": 3470,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 12,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              51,
+              6,
+              29
+            ],
+            "position_fixed_20_12": [
+              208896,
+              24576,
+              118784
+            ],
+            "model_registry_selector": 55,
+            "rotation_y_degrees_s16": 245,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb970",
+              "handler": "0x020e6d2a",
+              "archive_model_asset": 3852,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 13,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              30,
+              6,
+              52
+            ],
+            "position_fixed_20_12": [
+              122880,
+              24576,
+              212992
+            ],
+            "model_registry_selector": 56,
+            "rotation_y_degrees_s16": 205,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb978",
+              "handler": "0x020e8224",
+              "archive_model_asset": 3987,
+              "flags": 5
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 14,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              6,
+              58
+            ],
+            "position_fixed_20_12": [
+              0,
+              24576,
+              237568
+            ],
+            "model_registry_selector": 57,
+            "rotation_y_degrees_s16": 175,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb980",
+              "handler": "0x020e7afe",
+              "archive_model_asset": 4198,
+              "flags": 4
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 15,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -29,
+              6,
+              51
+            ],
+            "position_fixed_20_12": [
+              -118784,
+              24576,
+              208896
+            ],
+            "model_registry_selector": 58,
+            "rotation_y_degrees_s16": 150,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb988",
+              "handler": "0x020e7b26",
+              "archive_model_asset": 5188,
+              "flags": 4
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 16,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -52,
+              6,
+              30
+            ],
+            "position_fixed_20_12": [
+              -212992,
+              24576,
+              122880
+            ],
+            "model_registry_selector": 59,
+            "rotation_y_degrees_s16": 120,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb990",
+              "handler": "0x020e6d48",
+              "archive_model_asset": 4300,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 1,
+          "handler": 22,
+          "payload_bytes": 24,
+          "kind": "constructor_fields",
+          "constructor": "0x02051a6c",
+          "fields": {
+            "+0x00": -10,
+            "+0x02": 10,
+            "+0x04": 0,
+            "+0x08": 220,
+            "+0x0a": 10,
+            "+0x0c": 220,
+            "+0x0e": -1,
+            "+0x10": 3,
+            "+0x11": 1,
+            "+0x12": 0,
+            "+0x13": 0,
+            "+0x14": 3
+          },
+          "position_s16": [
+            -10,
+            10,
+            0
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 2,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": -49,
+            "+0x02": 10,
+            "+0x04": -23,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 5,
+            "+0x0d": 1,
+            "+0x0e": 1,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            -49,
+            10,
+            -23
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 3,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": -29,
+            "+0x02": 10,
+            "+0x04": -47,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 6,
+            "+0x0d": 1,
+            "+0x0e": 2,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            -29,
+            10,
+            -47
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 4,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 10,
+            "+0x04": -55,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 7,
+            "+0x0d": 1,
+            "+0x0e": 3,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            0,
+            10,
+            -55
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 5,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 28,
+            "+0x02": 10,
+            "+0x04": -48,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 8,
+            "+0x0d": 1,
+            "+0x0e": 4,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            28,
+            10,
+            -48
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 6,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 50,
+            "+0x02": 10,
+            "+0x04": -27,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 9,
+            "+0x0d": 1,
+            "+0x0e": 5,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            50,
+            10,
+            -27
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 7,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 50,
+            "+0x02": 10,
+            "+0x04": 29,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 10,
+            "+0x0d": 1,
+            "+0x0e": 6,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            50,
+            10,
+            29
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 8,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 28,
+            "+0x02": 10,
+            "+0x04": 50,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 11,
+            "+0x0d": 1,
+            "+0x0e": 7,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            28,
+            10,
+            50
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 9,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 10,
+            "+0x04": 57,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 12,
+            "+0x0d": 1,
+            "+0x0e": 8,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            0,
+            10,
+            57
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 10,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": -30,
+            "+0x02": 10,
+            "+0x04": 48,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 13,
+            "+0x0d": 1,
+            "+0x0e": 9,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            -30,
+            10,
+            48
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 11,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": -49,
+            "+0x02": 10,
+            "+0x04": 26,
+            "+0x08": 16,
+            "+0x0a": -1,
+            "+0x0c": 14,
+            "+0x0d": 1,
+            "+0x0e": 10,
+            "+0x0f": 0,
+            "+0x10": 1
+          },
+          "position_s16": [
+            -49,
+            10,
+            26
+          ],
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": -52,
+            "+0x02": 10,
+            "+0x04": -30,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            -52,
+            10,
+            -30
+          ],
+          "group": 1,
+          "set": 3
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": -29,
+            "+0x02": 10,
+            "+0x04": -53,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            -29,
+            10,
+            -53
+          ],
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 10,
+            "+0x04": -60,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            0,
+            10,
+            -60
+          ],
+          "group": 1,
+          "set": 5
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 29,
+            "+0x02": 10,
+            "+0x04": -51,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            29,
+            10,
+            -51
+          ],
+          "group": 1,
+          "set": 6
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 51,
+            "+0x02": 10,
+            "+0x04": -29,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            51,
+            10,
+            -29
+          ],
+          "group": 1,
+          "set": 7
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 52,
+            "+0x02": 10,
+            "+0x04": 29,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            52,
+            10,
+            29
+          ],
+          "group": 1,
+          "set": 8
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 30,
+            "+0x02": 10,
+            "+0x04": 52,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            30,
+            10,
+            52
+          ],
+          "group": 1,
+          "set": 9
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 10,
+            "+0x04": 60,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            0,
+            10,
+            60
+          ],
+          "group": 1,
+          "set": 10
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": -29,
+            "+0x02": 10,
+            "+0x04": 52,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            -29,
+            10,
+            52
+          ],
+          "group": 1,
+          "set": 11
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": -51,
+            "+0x02": 10,
+            "+0x04": 29,
+            "+0x08": 0,
+            "+0x09": 0
+          },
+          "position_s16": [
+            -51,
+            10,
+            29
+          ],
+          "group": 1,
+          "set": 12
+        },
+        {
+          "slot": 1,
+          "handler": 17,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x020516f0",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 8,
+            "+0x04": 0,
+            "+0x08": 1,
+            "+0x09": 0
+          },
+          "position_s16": [
+            0,
+            8,
+            0
+          ],
+          "group": 1,
+          "set": 13
+        },
+        {
+          "slot": 1,
+          "handler": 23,
+          "payload_bytes": 20,
+          "kind": "constructor_fields",
+          "constructor": "0x02051b48",
+          "fields": {
+            "+0x00": 0,
+            "+0x02": 6,
+            "+0x04": 0,
+            "+0x08": 20,
+            "+0x0a": -1,
+            "+0x0c": 15,
+            "+0x0d": 1,
+            "+0x0e": 10,
+            "+0x0f": 0,
+            "+0x10": 2
+          },
+          "position_s16": [
+            0,
+            6,
+            0
+          ],
+          "group": 1,
+          "set": 14
+        }
+      ]
+    },
+    "jabbas_tower": {
+      "assets": {
+        "record": 53,
+        "address": "0x020f5b90",
+        "bsp": 319,
+        "bsp_alt": 319,
+        "script": 321,
+        "texture_bank": 324,
+        "extra": 320,
+        "category": 20,
+        "texture_bank_name": "ArenaFont1_cmp4"
+      },
+      "slot_count": 46,
+      "slots_by_handler": {
+        "0": 4,
+        "2": 1,
+        "4": 36,
+        "9": 1,
+        "18": 4
+      },
+      "slots_by_kind": {
+        "model_backed_map_object": 36,
+        "constructor_fields": 4,
+        "team_capture_corner": 4,
+        "normal_actor_spawn": 1,
+        "arena_type5_timed_actor_volume": 1
+      },
+      "global_locators": [
+        {
+          "index": 0,
+          "offset": 4,
+          "position_s16": [
+            -94,
+            199,
+            -93
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 0,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "a2ffc700a3ff0000fdfffdff00000000"
+        },
+        {
+          "index": 1,
+          "offset": 20,
+          "position_s16": [
+            96,
+            195,
+            -98
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 1,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "6000c3009eff4332fdfffdff01000000"
+        },
+        {
+          "index": 2,
+          "offset": 36,
+          "position_s16": [
+            97,
+            200,
+            96
+          ],
+          "field_06_u16": 19301,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 2,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "6100c8006000654bfdfffdff02000000"
+        },
+        {
+          "index": 3,
+          "offset": 52,
+          "position_s16": [
+            -98,
+            197,
+            97
+          ],
+          "field_06_u16": 6433,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 3,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "9effc50061002119fdfffdff03000000"
+        },
+        {
+          "index": 4,
+          "offset": 68,
+          "position_s16": [
+            0,
+            136,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 12,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "0000880000000000fdfffdff040c0000"
+        },
+        {
+          "index": 5,
+          "offset": 84,
+          "position_s16": [
+            126,
+            72,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 11,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "7e00480000000000fdfffdff040b0000"
+        },
+        {
+          "index": 6,
+          "offset": 100,
+          "position_s16": [
+            -126,
+            72,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 10,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "82ff480000000000fdfffdff040a0000"
+        },
+        {
+          "index": 7,
+          "offset": 116,
+          "position_s16": [
+            0,
+            72,
+            -126
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 9,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "0000480082ff0000fdfffdff04090000"
+        },
+        {
+          "index": 8,
+          "offset": 132,
+          "position_s16": [
+            0,
+            72,
+            126
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 8,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "000048007e000000fdfffdff04080000"
+        },
+        {
+          "index": 9,
+          "offset": 148,
+          "position_s16": [
+            -80,
+            110,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "b0ff6e0000000000fdfffdff04000000"
+        },
+        {
+          "index": 10,
+          "offset": 164,
+          "position_s16": [
+            83,
+            109,
+            2
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "53006d0002000000fdfffdff04000000"
+        },
+        {
+          "index": 11,
+          "offset": 180,
+          "position_s16": [
+            62,
+            135,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "3e00870000000000fdfffdff04000000"
+        },
+        {
+          "index": 12,
+          "offset": 196,
+          "position_s16": [
+            -63,
+            135,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "c1ff870000000000fdfffdff04000000"
+        },
+        {
+          "index": 13,
+          "offset": 212,
+          "position_s16": [
+            38,
+            193,
+            0
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "2600c10000000000fdfffdff04000000"
+        },
+        {
+          "index": 14,
+          "offset": 228,
+          "position_s16": [
+            -36,
+            193,
+            -1
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "dcffc100ffff0000fdfffdff04000000"
+        }
+      ],
+      "slots": [
+        {
+          "slot": 1,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 16,
+            "+0x02": 1,
+            "+0x04": 0,
+            "+0x08": 7,
+            "+0x09": 0
+          },
+          "position_s16": [
+            16,
+            1,
+            0
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 2,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 10,
+            "+0x02": 0,
+            "+0x04": -11,
+            "+0x08": 13,
+            "+0x09": 1
+          },
+          "position_s16": [
+            10,
+            0,
+            -11
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 3,
+          "handler": 2,
+          "payload_bytes": 16,
+          "kind": "normal_actor_spawn",
+          "decoded": {
+            "kind": "normal_actor_spawn",
+            "position_s16": [
+              0,
+              44,
+              0
+            ],
+            "position_fixed_20_12": [
+              0,
+              180224,
+              0
+            ],
+            "orientation_u16": 0,
+            "runtime_character_id": 23,
+            "death_command_batch_selector": 0,
+            "death_entity_creation_selector": 1,
+            "initial_action_or_mode": 12
+          },
+          "group": 1,
+          "set": 1,
+          "character_name": ""
+        },
+        {
+          "slot": 4,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 18,
+            "+0x02": 0,
+            "+0x04": -11,
+            "+0x08": 29,
+            "+0x09": 2
+          },
+          "position_s16": [
+            18,
+            0,
+            -11
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 5,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 1,
+            "+0x02": 0,
+            "+0x04": -11,
+            "+0x08": 20,
+            "+0x09": 3
+          },
+          "position_s16": [
+            1,
+            0,
+            -11
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 6,
+          "handler": 9,
+          "payload_bytes": 24,
+          "kind": "arena_type5_timed_actor_volume",
+          "decoded": {
+            "kind": "arena_type5_timed_actor_volume",
+            "position_s16": [
+              0,
+              -55,
+              0
+            ],
+            "extent_or_configuration_u16_08_0e": [
+              9000,
+              15,
+              9000,
+              0
+            ],
+            "configuration_bytes_10_14": [
+              2,
+              1,
+              0,
+              0,
+              2
+            ],
+            "evidence": "constructor 0x020511d4 allocates arena object type 5 through 0x02096828; 0x020976e0 gates actors by subtype, input/state, and global update time before invoking vtable +0x10"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 7,
+          "handler": 18,
+          "payload_bytes": 16,
+          "kind": "team_capture_corner",
+          "decoded": {
+            "kind": "team_capture_corner",
+            "position_s16": [
+              -116,
+              196,
+              -116
+            ],
+            "extent_or_configuration_u16_08_0c": [
+              20,
+              25,
+              20
+            ],
+            "team_index": 0,
+            "evidence": "constructor 0x0205178c allocates arena object type 8 and stores byte +0x0e at live object +0x3b"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 8,
+          "handler": 18,
+          "payload_bytes": 16,
+          "kind": "team_capture_corner",
+          "decoded": {
+            "kind": "team_capture_corner",
+            "position_s16": [
+              117,
+              197,
+              -115
+            ],
+            "extent_or_configuration_u16_08_0c": [
+              20,
+              25,
+              20
+            ],
+            "team_index": 1,
+            "evidence": "constructor 0x0205178c allocates arena object type 8 and stores byte +0x0e at live object +0x3b"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 9,
+          "handler": 18,
+          "payload_bytes": 16,
+          "kind": "team_capture_corner",
+          "decoded": {
+            "kind": "team_capture_corner",
+            "position_s16": [
+              115,
+              197,
+              118
+            ],
+            "extent_or_configuration_u16_08_0c": [
+              20,
+              25,
+              20
+            ],
+            "team_index": 2,
+            "evidence": "constructor 0x0205178c allocates arena object type 8 and stores byte +0x0e at live object +0x3b"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 10,
+          "handler": 18,
+          "payload_bytes": 16,
+          "kind": "team_capture_corner",
+          "decoded": {
+            "kind": "team_capture_corner",
+            "position_s16": [
+              -119,
+              197,
+              117
+            ],
+            "extent_or_configuration_u16_08_0c": [
+              20,
+              25,
+              20
+            ],
+            "team_index": 3,
+            "evidence": "constructor 0x0205178c allocates arena object type 8 and stores byte +0x0e at live object +0x3b"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 1,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -64,
+              53,
+              9
+            ],
+            "position_fixed_20_12": [
+              -262144,
+              217088,
+              36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 2,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -63,
+              27,
+              16
+            ],
+            "position_fixed_20_12": [
+              -258048,
+              110592,
+              65536
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              1,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 3,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -64,
+              53,
+              -9
+            ],
+            "position_fixed_20_12": [
+              -262144,
+              217088,
+              -36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 4,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -63,
+              27,
+              -17
+            ],
+            "position_fixed_20_12": [
+              -258048,
+              110592,
+              -69632
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              3,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 5,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              62,
+              27,
+              -18
+            ],
+            "position_fixed_20_12": [
+              253952,
+              110592,
+              -73728
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              7,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 6,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              62,
+              27,
+              15
+            ],
+            "position_fixed_20_12": [
+              253952,
+              110592,
+              61440
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              8,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 7,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              61,
+              53,
+              -9
+            ],
+            "position_fixed_20_12": [
+              249856,
+              217088,
+              -36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 8,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              61,
+              53,
+              9
+            ],
+            "position_fixed_20_12": [
+              249856,
+              217088,
+              36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 9,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              98,
+              81,
+              48
+            ],
+            "position_fixed_20_12": [
+              401408,
+              331776,
+              196608
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              11,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 10,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -99,
+              81,
+              -51
+            ],
+            "position_fixed_20_12": [
+              -405504,
+              331776,
+              -208896
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              12,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 11,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              82,
+              107,
+              37
+            ],
+            "position_fixed_20_12": [
+              335872,
+              438272,
+              151552
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 12,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -82,
+              107,
+              -37
+            ],
+            "position_fixed_20_12": [
+              -335872,
+              438272,
+              -151552
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 13,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              63,
+              135,
+              -1
+            ],
+            "position_fixed_20_12": [
+              258048,
+              552960,
+              -4096
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              15,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 14,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -63,
+              135,
+              -1
+            ],
+            "position_fixed_20_12": [
+              -258048,
+              552960,
+              -4096
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              1,
+              16,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 15,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -27,
+              190,
+              0
+            ],
+            "position_fixed_20_12": [
+              -110592,
+              778240,
+              0
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 16,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              27,
+              190,
+              0
+            ],
+            "position_fixed_20_12": [
+              110592,
+              778240,
+              0
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 17,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              16,
+              54,
+              0
+            ],
+            "position_fixed_20_12": [
+              65536,
+              221184,
+              0
+            ],
+            "model_registry_selector": 75,
+            "rotation_y_degrees_s16": 270,
+            "object_configuration_bytes_0c_10": [
+              1,
+              19,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba10",
+              "handler": "0x020e6276",
+              "archive_model_asset": 2276,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 18,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -16,
+              54,
+              0
+            ],
+            "position_fixed_20_12": [
+              -65536,
+              221184,
+              0
+            ],
+            "model_registry_selector": 75,
+            "rotation_y_degrees_s16": 90,
+            "object_configuration_bytes_0c_10": [
+              1,
+              20,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba10",
+              "handler": "0x020e6276",
+              "archive_model_asset": 2276,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 19,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -18,
+              80,
+              0
+            ],
+            "position_fixed_20_12": [
+              -73728,
+              327680,
+              0
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 20,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              18,
+              79,
+              0
+            ],
+            "position_fixed_20_12": [
+              73728,
+              323584,
+              0
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 21,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              81,
+              27
+            ],
+            "position_fixed_20_12": [
+              0,
+              331776,
+              110592
+            ],
+            "model_registry_selector": 75,
+            "rotation_y_degrees_s16": 270,
+            "object_configuration_bytes_0c_10": [
+              1,
+              23,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba10",
+              "handler": "0x020e6276",
+              "archive_model_asset": 2276,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 22,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              81,
+              -26
+            ],
+            "position_fixed_20_12": [
+              0,
+              331776,
+              -106496
+            ],
+            "model_registry_selector": 75,
+            "rotation_y_degrees_s16": 90,
+            "object_configuration_bytes_0c_10": [
+              1,
+              24,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba10",
+              "handler": "0x020e6276",
+              "archive_model_asset": 2276,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 23,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              107,
+              9
+            ],
+            "position_fixed_20_12": [
+              0,
+              438272,
+              36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 24,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              107,
+              -9
+            ],
+            "position_fixed_20_12": [
+              0,
+              438272,
+              -36864
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 25,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              135,
+              62
+            ],
+            "position_fixed_20_12": [
+              0,
+              552960,
+              253952
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 180,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 26,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              135,
+              -62
+            ],
+            "position_fixed_20_12": [
+              0,
+              552960,
+              -253952
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 27,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              53,
+              -82
+            ],
+            "position_fixed_20_12": [
+              0,
+              217088,
+              -335872
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 180,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 28,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              53,
+              82
+            ],
+            "position_fixed_20_12": [
+              0,
+              217088,
+              335872
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 29,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -125,
+              54,
+              73
+            ],
+            "position_fixed_20_12": [
+              -512000,
+              221184,
+              299008
+            ],
+            "model_registry_selector": 92,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba98",
+              "handler": "0x020e6eb0",
+              "archive_model_asset": 4835,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 30,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              126,
+              54,
+              -73
+            ],
+            "position_fixed_20_12": [
+              516096,
+              221184,
+              -299008
+            ],
+            "model_registry_selector": 92,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba98",
+              "handler": "0x020e6eb0",
+              "archive_model_asset": 4835,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 31,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -99,
+              81,
+              18
+            ],
+            "position_fixed_20_12": [
+              -405504,
+              331776,
+              73728
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 32,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              98,
+              81,
+              -17
+            ],
+            "position_fixed_20_12": [
+              401408,
+              331776,
+              -69632
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 33,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -44,
+              135,
+              -44
+            ],
+            "position_fixed_20_12": [
+              -180224,
+              552960,
+              -180224
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 34,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              1,
+              191,
+              -37
+            ],
+            "position_fixed_20_12": [
+              4096,
+              782336,
+              -151552
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 35,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              44,
+              135,
+              43
+            ],
+            "position_fixed_20_12": [
+              180224,
+              552960,
+              176128
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 36,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              0,
+              191,
+              37
+            ],
+            "position_fixed_20_12": [
+              0,
+              782336,
+              151552
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 2
+        }
+      ]
+    },
+    "mos_eisley_streets": {
+      "assets": {
+        "record": 56,
+        "address": "0x020f5be4",
+        "bsp": 325,
+        "bsp_alt": 325,
+        "script": 326,
+        "texture_bank": 329,
+        "category": 20,
+        "script_name": "C2C2",
+        "texture_bank_name": "ArenaSky"
+      },
+      "slot_count": 42,
+      "slots_by_handler": {
+        "0": 4,
+        "4": 24,
+        "9": 1,
+        "16": 13
+      },
+      "slots_by_kind": {
+        "model_backed_map_object": 24,
+        "indirect_model_backed_map_object": 13,
+        "constructor_fields": 4,
+        "arena_type5_timed_actor_volume": 1
+      },
+      "global_locators": [
+        {
+          "index": 0,
+          "offset": 4,
+          "position_s16": [
+            2,
+            0,
+            0
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 2,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "0200000000004332fdfffdff02000000"
+        },
+        {
+          "index": 1,
+          "offset": 20,
+          "position_s16": [
+            157,
+            5,
+            -28
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": 25731,
+          "field_0a_s16": 12863,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "9d000500e4ff433283643f3204000000"
+        },
+        {
+          "index": 2,
+          "offset": 36,
+          "position_s16": [
+            43,
+            5,
+            26
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 1,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "2b0005001a000000fdfffdff01000000"
+        },
+        {
+          "index": 3,
+          "offset": 52,
+          "position_s16": [
+            144,
+            0,
+            183
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 3,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "90000000b7000000fdfffdff03000000"
+        },
+        {
+          "index": 4,
+          "offset": 68,
+          "position_s16": [
+            145,
+            17,
+            -183
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": 25731,
+          "field_0a_s16": 12863,
+          "object_selector_0c": 0,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "9100110049ff433283643f3200000000"
+        },
+        {
+          "index": 5,
+          "offset": 84,
+          "position_s16": [
+            46,
+            37,
+            -167
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": 25731,
+          "field_0a_s16": 12863,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "2e00250059ff433283643f3204000000"
+        },
+        {
+          "index": 6,
+          "offset": 100,
+          "position_s16": [
+            61,
+            33,
+            149
+          ],
+          "field_06_u16": 0,
+          "field_08_s16": -3,
+          "field_0a_s16": -3,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "3d00210095000000fdfffdff04000000"
+        },
+        {
+          "index": 7,
+          "offset": 116,
+          "position_s16": [
+            24,
+            47,
+            -166
+          ],
+          "field_06_u16": 12867,
+          "field_08_s16": 25731,
+          "field_0a_s16": 12863,
+          "object_selector_0c": 4,
+          "group_selector_0d": 0,
+          "field_0e": 0,
+          "field_0f": 0,
+          "raw_hex": "18002f005aff433283643f3204000000"
+        }
+      ],
+      "slots": [
+        {
+          "slot": 1,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": -155,
+            "+0x02": 103,
+            "+0x04": -114,
+            "+0x08": 36,
+            "+0x09": 0
+          },
+          "position_s16": [
+            -155,
+            103,
+            -114
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 2,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": -153,
+            "+0x02": 106,
+            "+0x04": -103,
+            "+0x08": 71,
+            "+0x09": 1
+          },
+          "position_s16": [
+            -153,
+            106,
+            -103
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 3,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": -26,
+            "+0x02": 10,
+            "+0x04": 0,
+            "+0x08": 27,
+            "+0x09": 2
+          },
+          "position_s16": [
+            -26,
+            10,
+            0
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 4,
+          "handler": 0,
+          "payload_bytes": 12,
+          "kind": "constructor_fields",
+          "constructor": "0x02050c44",
+          "fields": {
+            "+0x00": 2,
+            "+0x02": 10,
+            "+0x04": 0,
+            "+0x08": 0,
+            "+0x09": 3
+          },
+          "position_s16": [
+            2,
+            10,
+            0
+          ],
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 5,
+          "handler": 9,
+          "payload_bytes": 24,
+          "kind": "arena_type5_timed_actor_volume",
+          "decoded": {
+            "kind": "arena_type5_timed_actor_volume",
+            "position_s16": [
+              -12,
+              -20,
+              66
+            ],
+            "extent_or_configuration_u16_08_0e": [
+              80,
+              10,
+              100,
+              0
+            ],
+            "configuration_bytes_10_14": [
+              2,
+              1,
+              0,
+              0,
+              2
+            ],
+            "evidence": "constructor 0x020511d4 allocates arena object type 5 through 0x02096828; 0x020976e0 gates actors by subtype, input/state, and global update time before invoking vtable +0x10"
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 6,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -30,
+              31,
+              170
+            ],
+            "position_fixed_20_12": [
+              -122880,
+              126976,
+              696320
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 7,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -13,
+              -4,
+              107
+            ],
+            "position_fixed_20_12": [
+              -53248,
+              -16384,
+              438272
+            ],
+            "model_registry_selector": 227,
+            "rotation_y_degrees_s16": 180,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebed0",
+              "handler": "0x020e694c",
+              "archive_model_asset": 270,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 8,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -13,
+              -4,
+              28
+            ],
+            "position_fixed_20_12": [
+              -53248,
+              -16384,
+              114688
+            ],
+            "model_registry_selector": 227,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebed0",
+              "handler": "0x020e694c",
+              "archive_model_asset": 270,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 9,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              98,
+              47,
+              -78
+            ],
+            "position_fixed_20_12": [
+              401408,
+              192512,
+              -319488
+            ],
+            "model_registry_selector": 227,
+            "rotation_y_degrees_s16": 270,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebed0",
+              "handler": "0x020e694c",
+              "archive_model_asset": 270,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 10,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              112,
+              49,
+              -142
+            ],
+            "position_fixed_20_12": [
+              458752,
+              200704,
+              -581632
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 11,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              113,
+              33,
+              149
+            ],
+            "position_fixed_20_12": [
+              462848,
+              135168,
+              610304
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 12,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              103,
+              52,
+              55
+            ],
+            "position_fixed_20_12": [
+              421888,
+              212992,
+              225280
+            ],
+            "model_registry_selector": 94,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebaa8",
+              "handler": "0x020e6ece",
+              "archive_model_asset": 1000,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 13,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              106,
+              0,
+              91
+            ],
+            "position_fixed_20_12": [
+              434176,
+              0,
+              372736
+            ],
+            "model_registry_selector": 92,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba98",
+              "handler": "0x020e6eb0",
+              "archive_model_asset": 4835,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 14,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -12,
+              17,
+              -159
+            ],
+            "position_fixed_20_12": [
+              -49152,
+              69632,
+              -651264
+            ],
+            "model_registry_selector": 92,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba98",
+              "handler": "0x020e6eb0",
+              "archive_model_asset": 4835,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 15,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              133,
+              17,
+              -78
+            ],
+            "position_fixed_20_12": [
+              544768,
+              69632,
+              -319488
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              16,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 16,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              128,
+              46,
+              -78
+            ],
+            "position_fixed_20_12": [
+              524288,
+              188416,
+              -319488
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 17,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              36,
+              0,
+              102
+            ],
+            "position_fixed_20_12": [
+              147456,
+              0,
+              417792
+            ],
+            "model_registry_selector": 386,
+            "rotation_y_degrees_s16": 270,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ec3c8",
+              "handler": "0x020e73ba",
+              "archive_model_asset": 3400,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 18,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              50,
+              30,
+              95
+            ],
+            "position_fixed_20_12": [
+              204800,
+              122880,
+              389120
+            ],
+            "model_registry_selector": 8,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              19,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f8",
+              "handler": "0x020eb234",
+              "archive_model_asset": 2835,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 19,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              49,
+              52,
+              91
+            ],
+            "position_fixed_20_12": [
+              200704,
+              212992,
+              372736
+            ],
+            "model_registry_selector": 7,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eb7f0",
+              "handler": "0x020e8634",
+              "archive_model_asset": 3923,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 20,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              99,
+              49,
+              -69
+            ],
+            "position_fixed_20_12": [
+              405504,
+              200704,
+              -282624
+            ],
+            "model_registry_selector": 220,
+            "rotation_y_degrees_s16": 90,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              7,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebe98",
+              "handler": "0x020e6be0",
+              "archive_model_asset": 5310,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 21,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              159,
+              2,
+              100
+            ],
+            "position_fixed_20_12": [
+              651264,
+              8192,
+              409600
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 225,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 22,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              87,
+              5,
+              -30
+            ],
+            "position_fixed_20_12": [
+              356352,
+              20480,
+              -122880
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 225,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 23,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              70,
+              17,
+              -111
+            ],
+            "position_fixed_20_12": [
+              286720,
+              69632,
+              -454656
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 90,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 24,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              6,
+              0,
+              -26
+            ],
+            "position_fixed_20_12": [
+              24576,
+              0,
+              -106496
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 135,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 25,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              22,
+              52,
+              83
+            ],
+            "position_fixed_20_12": [
+              90112,
+              212992,
+              339968
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 315,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 26,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              1,
+              30,
+              181
+            ],
+            "position_fixed_20_12": [
+              4096,
+              122880,
+              741376
+            ],
+            "model_registry_selector": 91,
+            "rotation_y_degrees_s16": 270,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba90",
+              "handler": "0x020e8940",
+              "archive_model_asset": 1855,
+              "flags": 6
+            }
+          },
+          "group": 1,
+          "set": 1
+        },
+        {
+          "slot": 1,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -31,
+              0,
+              163
+            ],
+            "position_fixed_20_12": [
+              -126976,
+              0,
+              667648
+            ],
+            "model_registry_selector": 75,
+            "rotation_y_degrees_s16": 180,
+            "object_configuration_bytes_0c_10": [
+              0,
+              6,
+              2,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020eba10",
+              "handler": "0x020e6276",
+              "archive_model_asset": 2276,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 2
+        },
+        {
+          "slot": 1,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              -39,
+              -1,
+              21
+            ],
+            "position_fixed_20_12": [
+              -159744,
+              -4096,
+              86016
+            ],
+            "model_registry_selector": 220,
+            "rotation_y_degrees_s16": 90,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              9,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebe98",
+              "handler": "0x020e6be0",
+              "archive_model_asset": 5310,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 3
+        },
+        {
+          "slot": 2,
+          "handler": 4,
+          "payload_bytes": 20,
+          "kind": "model_backed_map_object",
+          "decoded": {
+            "kind": "model_backed_map_object",
+            "position_s16": [
+              21,
+              -1,
+              92
+            ],
+            "position_fixed_20_12": [
+              86016,
+              -4096,
+              376832
+            ],
+            "model_registry_selector": 220,
+            "rotation_y_degrees_s16": 0,
+            "object_configuration_bytes_0c_10": [
+              0,
+              0,
+              9,
+              0,
+              0
+            ],
+            "model_registry_row": {
+              "address": "0x020ebe98",
+              "handler": "0x020e6be0",
+              "archive_model_asset": 5310,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 3
+        },
+        {
+          "slot": 1,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -144,
+              63,
+              -380
+            ],
+            "model_lookup_index": 64,
+            "rotation_y_degrees_s16": 0,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 76,
+            "model_registry_row": {
+              "address": "0x020eba18",
+              "handler": "0x020e5f4c",
+              "archive_model_asset": 2277,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 2,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -224,
+              68,
+              -463
+            ],
+            "model_lookup_index": 65,
+            "rotation_y_degrees_s16": 180,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 77,
+            "model_registry_row": {
+              "address": "0x020eba20",
+              "handler": "0x020e7c16",
+              "archive_model_asset": 2336,
+              "flags": 4
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 3,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -256,
+              71,
+              -394
+            ],
+            "model_lookup_index": 66,
+            "rotation_y_degrees_s16": 180,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 78,
+            "model_registry_row": {
+              "address": "0x020eba28",
+              "handler": "0x020e6136",
+              "archive_model_asset": 4046,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 4,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -66,
+              70,
+              -464
+            ],
+            "model_lookup_index": 66,
+            "rotation_y_degrees_s16": 90,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 78,
+            "model_registry_row": {
+              "address": "0x020eba28",
+              "handler": "0x020e6136",
+              "archive_model_asset": 4046,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 5,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              20,
+              26,
+              -416
+            ],
+            "model_lookup_index": 61,
+            "rotation_y_degrees_s16": 90,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 73,
+            "model_registry_row": {
+              "address": "0x020eba00",
+              "handler": "0x020e82ec",
+              "archive_model_asset": 1586,
+              "flags": 5
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 6,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              20,
+              26,
+              -312
+            ],
+            "model_lookup_index": 61,
+            "rotation_y_degrees_s16": 90,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 73,
+            "model_registry_row": {
+              "address": "0x020eba00",
+              "handler": "0x020e82ec",
+              "archive_model_asset": 1586,
+              "flags": 5
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 7,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -143,
+              26,
+              -260
+            ],
+            "model_lookup_index": 69,
+            "rotation_y_degrees_s16": 0,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 81,
+            "model_registry_row": {
+              "address": "0x020eba40",
+              "handler": "0x020e5dbc",
+              "archive_model_asset": 5064,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 8,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -208,
+              25,
+              -239
+            ],
+            "model_lookup_index": 70,
+            "rotation_y_degrees_s16": 0,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 82,
+            "model_registry_row": {
+              "address": "0x020eba48",
+              "handler": "0x020e5dc6",
+              "archive_model_asset": 5094,
+              "flags": 1
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 9,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -255,
+              68,
+              -407
+            ],
+            "model_lookup_index": 68,
+            "rotation_y_degrees_s16": 180,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 80,
+            "model_registry_row": {
+              "address": "0x020eba38",
+              "handler": "0x020e6e38",
+              "archive_model_asset": 5028,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 10,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -15,
+              26,
+              -463
+            ],
+            "model_lookup_index": 68,
+            "rotation_y_degrees_s16": 90,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 80,
+            "model_registry_row": {
+              "address": "0x020eba38",
+              "handler": "0x020e6e38",
+              "archive_model_asset": 5028,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 11,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -57,
+              68,
+              -281
+            ],
+            "model_lookup_index": 68,
+            "rotation_y_degrees_s16": 270,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 80,
+            "model_registry_row": {
+              "address": "0x020eba38",
+              "handler": "0x020e6e38",
+              "archive_model_asset": 5028,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 12,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -72,
+              68,
+              -281
+            ],
+            "model_lookup_index": 68,
+            "rotation_y_degrees_s16": 270,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 80,
+            "model_registry_row": {
+              "address": "0x020eba38",
+              "handler": "0x020e6e38",
+              "archive_model_asset": 5028,
+              "flags": 3
+            }
+          },
+          "group": 1,
+          "set": 4
+        },
+        {
+          "slot": 13,
+          "handler": 16,
+          "payload_bytes": 24,
+          "kind": "indirect_model_backed_map_object",
+          "decoded": {
+            "kind": "indirect_model_backed_map_object",
+            "position_s16": [
+              -244,
+              26,
+              -372
+            ],
+            "model_lookup_index": 12,
+            "rotation_y_degrees_s16": 45,
+            "secondary_position_s16_10_14": [
+              1,
+              1,
+              1
+            ],
+            "model_registry_selector": 14,
+            "model_registry_row": {
+              "address": "0x020eb828",
+              "handler": "0x020eb234",
+              "archive_model_asset": 3631,
+              "flags": 141
+            }
+          },
+          "group": 1,
+          "set": 4
+        }
+      ]
+    }
+  }
+}

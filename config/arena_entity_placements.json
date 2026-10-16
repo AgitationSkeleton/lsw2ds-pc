@@ -1,0 +1,456 @@
+{
+  "note": "Entity world placements read from the 4x3 matrix the game stores in each actor struct (usually +0x08C). Rotation and translation are the games own, not derived.",
+  "entities": [
+    {
+      "actor": "0x211f058",
+      "vtable": "0x20fcf78",
+      "matrix_at": "0xfc",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        327
+      ],
+      "entity": null
+    },
+    {
+      "actor": "0x2124c74",
+      "vtable": "0x20fd220",
+      "matrix_at": "0x190",
+      "position": [
+        113.0,
+        33.0,
+        149.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x2124e90",
+      "vtable": "0x20fcf78",
+      "matrix_at": "0x1f0",
+      "position": [
+        103.0,
+        52.0,
+        55.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x21220a4",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x210",
+      "position": [
+        2.0,
+        -0.8,
+        0.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x21228c0",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0xe8",
+      "position": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "yaw_deg": 66.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x21230dc",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0xe8",
+      "position": [
+        144.0,
+        -0.8,
+        183.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x2123e68",
+      "vtable": "0x20fcf28",
+      "matrix_at": "0x248",
+      "position": [
+        -30.0,
+        31.0,
+        170.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x212291c",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "yaw_deg": 66.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x2123138",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        144.0,
+        -0.8,
+        183.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2836,
+        3517,
+        5168
+      ],
+      "entity": null
+    },
+    {
+      "actor": "0x2128070",
+      "vtable": "0x20fcf28",
+      "matrix_at": "0x8c",
+      "position": [
+        145.0,
+        17.2,
+        -183.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2465,
+        2836,
+        3517,
+        5168
+      ],
+      "entity": null
+    },
+    {
+      "actor": "0x2128f5c",
+      "vtable": "0x20fcf28",
+      "matrix_at": "0x8c",
+      "position": [
+        43.0,
+        5.2,
+        26.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2465,
+        2836,
+        3517,
+        5168
+      ],
+      "entity": null
+    },
+    {
+      "actor": "0x2124024",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        -30.0,
+        31.0,
+        170.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2522
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x21242d8",
+      "vtable": "0x20fd6d8",
+      "matrix_at": "0x8c",
+      "position": [
+        -13.0,
+        -4.0,
+        107.0
+      ],
+      "yaw_deg": 180.0,
+      "models": [
+        2522,
+        4636
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x21245c4",
+      "vtable": "0x20fd6d8",
+      "matrix_at": "0x8c",
+      "position": [
+        -13.0,
+        -4.0,
+        28.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2522,
+        4636
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x212482c",
+      "vtable": "0x20fd6d8",
+      "matrix_at": "0x8c",
+      "position": [
+        98.0,
+        47.0,
+        -78.0
+      ],
+      "yaw_deg": 90.0,
+      "models": [
+        2522,
+        4636
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x2124a94",
+      "vtable": "0x20fdb50",
+      "matrix_at": "0x8c",
+      "position": [
+        112.0,
+        49.0,
+        -142.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        332
+      ],
+      "entity": "BATurret flag turret"
+    },
+    {
+      "actor": "0x2124d78",
+      "vtable": "0x20fdb50",
+      "matrix_at": "0x8c",
+      "position": [
+        113.0,
+        33.0,
+        149.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        332
+      ],
+      "entity": "BATurret flag turret"
+    },
+    {
+      "actor": "0x2124ff4",
+      "vtable": "0x20fdb50",
+      "matrix_at": "0x8c",
+      "position": [
+        103.0,
+        52.0,
+        55.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        332
+      ],
+      "entity": "BATurret flag turret"
+    },
+    {
+      "actor": "0x2125270",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        106.0,
+        0.0,
+        91.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        237,
+        1922,
+        2808
+      ],
+      "entity": "BAMG42 mountable turret"
+    },
+    {
+      "actor": "0x212555c",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        -12.0,
+        17.0,
+        -159.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        237,
+        1922,
+        2808
+      ],
+      "entity": "BAMG42 mountable turret"
+    },
+    {
+      "actor": "0x2125a94",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        128.0,
+        46.0,
+        -78.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2522
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x2126260",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        49.0,
+        52.0,
+        91.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2522
+      ],
+      "entity": "GrappleHook"
+    },
+    {
+      "actor": "0x21264c8",
+      "vtable": "0x20fd468",
+      "matrix_at": "0x8c",
+      "position": [
+        99.0,
+        49.0,
+        -69.0
+      ],
+      "yaw_deg": -90.0,
+      "models": [
+        4504
+      ],
+      "entity": "SPBargeLever"
+    },
+    {
+      "actor": "0x21276a8",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        -31.0,
+        0.0,
+        163.0
+      ],
+      "yaw_deg": 180.0,
+      "models": [],
+      "entity": null
+    },
+    {
+      "actor": "0x2127994",
+      "vtable": "0x20fd468",
+      "matrix_at": "0x8c",
+      "position": [
+        -39.0,
+        -1.0,
+        21.0
+      ],
+      "yaw_deg": -90.0,
+      "models": [
+        4504
+      ],
+      "entity": "SPBargeLever"
+    },
+    {
+      "actor": "0x2127bfc",
+      "vtable": "0x20fd468",
+      "matrix_at": "0x8c",
+      "position": [
+        21.0,
+        -1.0,
+        92.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        4504
+      ],
+      "entity": "SPBargeLever"
+    },
+    {
+      "actor": "0x2120158",
+      "vtable": "0x20fcfb8",
+      "matrix_at": "0x8c",
+      "position": [
+        145.0,
+        17.2,
+        -183.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2836,
+        3517,
+        5168
+      ],
+      "entity": null
+    },
+    {
+      "actor": "0x21211b4",
+      "vtable": "0x20fcd30",
+      "matrix_at": "0x8c",
+      "position": [
+        43.0,
+        5.2,
+        26.0
+      ],
+      "yaw_deg": 0.0,
+      "models": [
+        2836,
+        3517,
+        5168
+      ],
+      "entity": null
+    }
+  ],
+  "rom_confirmation": {
+    "routine": "0x020104D0 - the actor render path, reached with the actor in r0/r4.",
+    "what_it_proves": "The world matrix really is at actor +0x8C. The routine does add r0, r4, #0x8c at 0x02010530 and again at 0x02010540, passing it to 0x020CADC0 which applies it to the GPU. This was found first from live RAM by scanning for orthonormal 4x3 blocks; the ROM now confirms it independently, which is the BOTH tier: runtime and ROM evidence agree.",
+    "sequence": [
+      "0x02010508  MTX_PUSH (0x04000444) - push the current matrix",
+      "0x0201053C  bl 0x01FFA6F8 with r0 = actor+0x8C, r1 = actor+0xC8, gated by the byte at +0xD0 - rebuilds the matrix from +0xC8 when that dirty flag is set",
+      "0x02010544  bl 0x020CADC0 with r0 = actor+0x8C - applies the world matrix",
+      "0x02010588  MTX_SCALE (0x0400046C) from +0xBC/+0xC0/+0xC4, each multiplied by +0x1A4 in 20.12 fixed point with rounding"
+    ],
+    "new_actor_fields": {
+      "+0x8C": "world 4x3 matrix, applied to the GPU every frame",
+      "+0xBC/+0xC0/+0xC4": "per-actor scale vector",
+      "+0xC8": "rotation source that 0x01FFA6F8 converts into the +0x8C matrix",
+      "+0xD0": "dirty flag - when set, the matrix is rebuilt from +0xC8",
+      "+0xD1": "set to 1 when the rebuild happens",
+      "+0x1A4": "global scale multiplier applied to the scale vector",
+      "+0x0C": "halfword tested against 0x7E as a visibility/render gate at 0x020104F8"
+    },
+    "next": "Disassemble 0x01FFA6F8. It converts +0xC8 into a rotation matrix, so it is the games own rotation decode and is the most direct route to fixing the node-record rotation parse.",
+    "gx_wrappers": {
+      "note": "The routines the render path calls are thin GX wrappers: each writes a command code to GXFIFO (0x04000400) then tail-jumps to a data-copy routine.",
+      "0x020CADA4": "writes 0x17 = MTX_LOAD_4x3",
+      "0x020CADC0": "writes 0x19 = MTX_MULT_4x3 - this is what the actor render path calls with actor+0x8C",
+      "0x020CADDC": "writes 0x1A = MTX_MULT_3x3",
+      "0x020CADF8": "writes 0x34 = SHININESS",
+      "what_it_settles": "The actor matrix at +0x8C is fed to MTX_MULT_4x3, so it is a standard DS 4x3: three basis vectors of three components each, then the translation last. That matches how it is being read - elements 9, 10 and 11 as translation - so the placement extraction is correct in format as well as location."
+    }
+  }
+}

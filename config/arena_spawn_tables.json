@@ -1,0 +1,1351 @@
+{
+ "note": "Arena entity spawn tables from the level scripts. Records are 20 bytes: x, y, z as s16, a type word that is 4 for every entity, the entity type id, then an 8-byte tail.",
+ "SCANNING_CAVEAT": "Records do NOT lie on one global 20-byte grid. An earlier pass assumed they did and silently dropped entities - it reported 1 lever on Mos when there are 3, because two of them sit at offsets 0x2DC and 0x2F0 which are off the grid anchored at 16. The scan now walks every 2-byte offset and only suppresses detections within 20 bytes of the previous one.",
+ "record_layout": {
+  "+0x00": "x s16",
+  "+0x02": "y s16",
+  "+0x04": "z s16",
+  "+0x06": "type u16, always 4",
+  "+0x08": "entity type id u16",
+  "+0x0A": "8-byte tail"
+ },
+ "entity_ids": {
+  "94": "flag turret",
+  "227": "bridge plank (type 0xE3, asset 4636)",
+  "220": "lever",
+  "91": "heart dispenser",
+  "92": "mountable turret",
+  "386": "elevator",
+  "75": "BUILDABLE GRAPPLE (asset 818) - NOT capture points, see retraction",
+  "7": "grapple hook (base class, asset 2522)",
+  "8": "grapple pad (base class, asset 2524)",
+  "4": "unidentified"
+ },
+ "id_notes": {
+  "220": "Three on Mos - two driving one bridge and one driving another, as reported from play.",
+  "7 and 8": "IDENTIFIED. Both fall to the factory default 0x02015D90 (base class) and are live as asset 2522 (the hook, 3 on Mos and 12 on Jabba) and asset 2524 (the pad, 2 on Mos and 9 on Jabba). The earlier note calling them unidentified, and the retraction of their grapple reading, are both superseded.",
+  "227": "The grapple. Three on Mos Eisley - one buildable and two static, matching play - and confirmed by the actor pointer chain to vtable 0x020FD6D8.",
+  "75": "CAPTURE POINTS - CONFIRMED BY RUNTIME BEHAVIOUR, not just by count. In a Capture match on Jabbas Tower, player 1 (IG-88) carried the Carbonite to (16,54,0) and player 2 (Dengar) to (-16,54,0), the two ground-level id-75 records. Dengar was within 12 units of a capture point on 117 samples, IG-88 on 9. The four points are symmetric - (16,54,0), (-16,54,0), (0,81,27), (0,81,-26) - one per player, matching the reported behaviour that each is gated to its owner."
+ },
+ "levels": {
+  "mos_eisley_streets": {
+   "script_asset": 326,
+   "records": [
+    {
+     "offset": "0x86",
+     "position": [
+      257,
+      0,
+      0
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      8,
+      0,
+      4,
+      0,
+      4,
+      0,
+      4,
+      0
+     ]
+    },
+    {
+     "offset": "0x114",
+     "position": [
+      -30,
+      31,
+      170
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x128",
+     "position": [
+      -13,
+      -4,
+      107
+     ],
+     "entity_id": 227,
+     "entity": "grapple (Mos variant, vtable-confirmed)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x13c",
+     "position": [
+      -13,
+      -4,
+      28
+     ],
+     "entity_id": 227,
+     "entity": "grapple (Mos variant, vtable-confirmed)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x150",
+     "position": [
+      98,
+      47,
+      -78
+     ],
+     "entity_id": 227,
+     "entity": "grapple (Mos variant, vtable-confirmed)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x164",
+     "position": [
+      112,
+      49,
+      -142
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x178",
+     "position": [
+      113,
+      33,
+      149
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x18c",
+     "position": [
+      103,
+      52,
+      55
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x1a0",
+     "position": [
+      106,
+      0,
+      91
+     ],
+     "entity_id": 92,
+     "entity": "mountable turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x1b4",
+     "position": [
+      -12,
+      17,
+      -159
+     ],
+     "entity_id": 92,
+     "entity": "mountable turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x1c8",
+     "position": [
+      133,
+      17,
+      -78
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      0,
+      16,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x1dc",
+     "position": [
+      128,
+      46,
+      -78
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x1f0",
+     "position": [
+      36,
+      0,
+      102
+     ],
+     "entity_id": 386,
+     "entity": "elevator",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x204",
+     "position": [
+      50,
+      30,
+      95
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      0,
+      19,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x218",
+     "position": [
+      49,
+      52,
+      91
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x22c",
+     "position": [
+      99,
+      49,
+      -69
+     ],
+     "entity_id": 220,
+     "entity": "lever",
+     "tail": [
+      0,
+      0,
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x240",
+     "position": [
+      159,
+      2,
+      100
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x254",
+     "position": [
+      87,
+      5,
+      -30
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x268",
+     "position": [
+      70,
+      17,
+      -111
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x27c",
+     "position": [
+      6,
+      0,
+      -26
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x290",
+     "position": [
+      22,
+      52,
+      83
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2a4",
+     "position": [
+      1,
+      30,
+      181
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2c0",
+     "position": [
+      -31,
+      0,
+      163
+     ],
+     "entity_id": 75,
+     "entity": "capture point",
+     "tail": [
+      0,
+      6,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2dc",
+     "position": [
+      -39,
+      -1,
+      21
+     ],
+     "entity_id": 220,
+     "entity": "lever",
+     "tail": [
+      0,
+      0,
+      9,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2f0",
+     "position": [
+      21,
+      -1,
+      92
+     ],
+     "entity_id": 220,
+     "entity": "lever",
+     "tail": [
+      0,
+      0,
+      9,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x4f2",
+     "position": [
+      0,
+      0,
+      0
+     ],
+     "entity_id": 4,
+     "entity": "unidentified",
+     "tail": [
+      36,
+      1,
+      116,
+      1,
+      212,
+      1,
+      84,
+      2
+     ]
+    }
+   ],
+   "counts": {
+    "4": 1,
+    "7": 3,
+    "8": 3,
+    "75": 1,
+    "91": 6,
+    "92": 2,
+    "94": 3,
+    "220": 3,
+    "227": 3,
+    "386": 1
+   }
+  },
+  "jabbas_tower": {
+   "script_asset": 321,
+   "records": [
+    {
+     "offset": "0xf6",
+     "position": [
+      257,
+      0,
+      0
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      8,
+      0,
+      4,
+      0,
+      4,
+      0,
+      4,
+      0
+     ]
+    },
+    {
+     "offset": "0x1ec",
+     "position": [
+      -64,
+      53,
+      9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x200",
+     "position": [
+      -63,
+      27,
+      16
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x214",
+     "position": [
+      -64,
+      53,
+      -9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x228",
+     "position": [
+      -63,
+      27,
+      -17
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x23c",
+     "position": [
+      62,
+      27,
+      -18
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x250",
+     "position": [
+      62,
+      27,
+      15
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x264",
+     "position": [
+      61,
+      53,
+      -9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x278",
+     "position": [
+      61,
+      53,
+      9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x28c",
+     "position": [
+      98,
+      81,
+      48
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      11,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2a0",
+     "position": [
+      -99,
+      81,
+      -51
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      12,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2b4",
+     "position": [
+      82,
+      107,
+      37
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2c8",
+     "position": [
+      -82,
+      107,
+      -37
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2dc",
+     "position": [
+      63,
+      135,
+      -1
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      15,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x2f0",
+     "position": [
+      -63,
+      135,
+      -1
+     ],
+     "entity_id": 8,
+     "entity": "grapple variant B (probable)",
+     "tail": [
+      1,
+      16,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x304",
+     "position": [
+      -27,
+      190,
+      0
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x318",
+     "position": [
+      27,
+      190,
+      0
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x32c",
+     "position": [
+      16,
+      54,
+      0
+     ],
+     "entity_id": 75,
+     "entity": "capture point",
+     "tail": [
+      1,
+      19,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x340",
+     "position": [
+      -16,
+      54,
+      0
+     ],
+     "entity_id": 75,
+     "entity": "capture point",
+     "tail": [
+      1,
+      20,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x354",
+     "position": [
+      -18,
+      80,
+      0
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x368",
+     "position": [
+      18,
+      79,
+      0
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x37c",
+     "position": [
+      0,
+      81,
+      27
+     ],
+     "entity_id": 75,
+     "entity": "capture point",
+     "tail": [
+      1,
+      23,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x390",
+     "position": [
+      0,
+      81,
+      -26
+     ],
+     "entity_id": 75,
+     "entity": "capture point",
+     "tail": [
+      1,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x3a4",
+     "position": [
+      0,
+      107,
+      9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x3b8",
+     "position": [
+      0,
+      107,
+      -9
+     ],
+     "entity_id": 7,
+     "entity": "grapple variant A (probable)",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x3cc",
+     "position": [
+      0,
+      135,
+      62
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x3e0",
+     "position": [
+      0,
+      135,
+      -62
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x3f4",
+     "position": [
+      0,
+      53,
+      -82
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x408",
+     "position": [
+      0,
+      53,
+      82
+     ],
+     "entity_id": 94,
+     "entity": "flag turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x41c",
+     "position": [
+      -125,
+      54,
+      73
+     ],
+     "entity_id": 92,
+     "entity": "mountable turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x430",
+     "position": [
+      126,
+      54,
+      -73
+     ],
+     "entity_id": 92,
+     "entity": "mountable turret",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x444",
+     "position": [
+      -99,
+      81,
+      18
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x458",
+     "position": [
+      98,
+      81,
+      -17
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x46c",
+     "position": [
+      -44,
+      135,
+      -44
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x480",
+     "position": [
+      1,
+      191,
+      -37
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x494",
+     "position": [
+      44,
+      135,
+      43
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "offset": "0x4a8",
+     "position": [
+      0,
+      191,
+      37
+     ],
+     "entity_id": 91,
+     "entity": "heart dispenser",
+     "tail": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ],
+   "counts": {
+    "7": 12,
+    "8": 9,
+    "75": 4,
+    "91": 6,
+    "92": 2,
+    "94": 4
+   }
+  }
+ },
+ "OPEN_PROBLEM_jabba_grapples": "Jabba is described from play as dense with grapples, both buildable and static, but its script contains NO id-227 records. Its grapples are therefore unaccounted for in this table. Either they use ids not yet identified - 7 and 8 are the numerous candidates but were wrongly assigned once already - or Jabba grapples are placed by a mechanism other than these type-4 records. Do not close this by assuming.",
+ "player_capture_point_assignment": {
+  "P1": [
+   16,
+   54,
+   0
+  ],
+  "P2": [
+   -16,
+   54,
+   0
+  ],
+  "unassigned": [
+   [
+    0,
+    81,
+    27
+   ],
+   [
+    0,
+    81,
+    -26
+   ]
+  ],
+  "evidence": "Observed in a two-player Capture match; the other two presumably belong to players 3 and 4.",
+  "note": "Both observed points are at y=54; the other two are higher at y=81, so the four are not all on one floor."
+ },
+ "RETRACTION_id_75": "id 75 was recorded as CAPTURE POINTS 'CONFIRMED BY RUNTIME BEHAVIOUR', because players carried the Carbonite to (16,54,0) and (-16,54,0) on Jabba. Those are genuinely type-0x4B objects, but a player moving to a place does not establish what is there. Every live 0x4B object carries asset 818 = BuildableGrapple. RAM at gpudump_walk_jabba/gpudump_walk_mos f12000: Jabba has FOUR - (16,54,0), (-16,54,0), (0,81,27), (0,81,-26) - and Mos has ONE at (-31,0,163). The 'four on Jabba, one per player' symmetry that made the capture-point reading plausible is a coincidence and does not survive Mos having a single one. 0x020170F4 `cmp r1,#0x4b` initialises it as a buildable (+0x194=0x20, +0x1AD=0, +0x1AC=7, +0x214=0). This is a known failure mode: matching instance counts against an expected inventory and calling it identification.",
+ "RETRACTION_id_227": "id 227 (0xE3) was recorded as the grapple. It is the BRIDGE PLANK: the lever refuses to actuate a link whose type is not 0xE3 (0x0201FABC `cmp r0,#0xe3`), and the three live 0xE3 objects carry asset 4636 at the Mos bridge coordinates. vtable 0x020FD6D8 is shared by 34 spawn types, so it identifies nothing on its own - only +0x212 does."
+}

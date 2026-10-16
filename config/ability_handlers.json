@@ -1,0 +1,138 @@
+{
+  "note": "Ability handler identification from a controlled 25-second Mos Eisley test: Greedo and Jango stationary, performing a fixed sequence with pauses.",
+  "actor_to_character": {
+    "0x02128070": "runtime id 20 = Greedo",
+    "0x02128F5C": "runtime id 29 = Jango Fett"
+  },
+  "character_id_field": {
+    "offset": "+0x6BB",
+    "evidence": "strb r8, [sb, #0x6BB] at 0x02001D9C in the playable-character constructor 0x02001D20, where r8 is the constructor character-index argument. Values 20 and 29 map onto the ROM-decoded roster as Greedo and Jango Fett, matching who was played.",
+    "status": "CONFIRMED"
+  },
+  "instance_is_console_not_player": "Event counts are exactly symmetric between instances - 457/457, 16483/16483 - because in DS local wireless both consoles simulate both players. Player identity must come from the actor pointer in r0, never from the instance.",
+  "handlers": {
+    "ABILITY_B": {
+      "address": "0x02046E80",
+      "controller_mode": 11,
+      "action_id": 104,
+      "identification": "JETPACK",
+      "confidence": "high",
+      "evidence": "Fired only for Jango, sustained 2.6 seconds across one burst, with a 28-unit altitude gain. Sustained hold plus large climb is the jetpack signature; nothing else in the tested sequence is held."
+    },
+    "ABILITY_F": {
+      "address": "0x020473A8",
+      "controller_modes": [
+        16,
+        17,
+        18,
+        22,
+        23
+      ],
+      "action_ids": [
+        75,
+        73,
+        77,
+        79
+      ],
+      "identification": "DIVE / DODGE - shared, NOT Greedo-specific",
+      "confidence": "medium-high",
+      "evidence": [
+        "Fired twice at 2003.1s and 2005.6s in a Jabba match whose only players were IG-88 and Dengar. IG-88 was at speed exactly 0.000 for that entire window, so the move was Dengar s.",
+        "Dengar s motion during each burst: a jump to +9.2 and +9.8 above his running plane - the ordinary single-jump height of +9.75 - with horizontal speed rising from a steady 42.0 to 51.3 on the descent. A jump with a forward boost.",
+        "He jumped three times in that window but only two produced ABILITY_F, so it is a distinct move rather than a jump side effect."
+      ],
+      "supersedes": "The earlier reading of this handler as Greedo s dive specifically. Greedo was the only character it had been seen on; Dengar has it too. The handler covers five controller modes and four action ids, consistent with a family of related moves."
+    },
+    "ABILITY_A": {
+      "address": "0x02046D84",
+      "controller_modes": [
+        19,
+        20
+      ],
+      "action_id": 5,
+      "identification": "JUMP / airborne",
+      "confidence": "high",
+      "evidence": "Confirmed by a controlled test where Jango stood completely still: ABILITY_A still fired 84 times for Greedos three jumps. An earlier reading tying it to Jango was wrong."
+    },
+    "ABILITY_C": {
+      "address": "0x02047008",
+      "controller_modes": [
+        8,
+        13,
+        14
+      ],
+      "action_ids": [
+        41,
+        39
+      ],
+      "identification": "DOUBLE JUMP",
+      "confidence": "high",
+      "evidence": "Fired only on Lando arcs reaching +19.2 units, exactly twice the +9.75 of every single jump measured across Greedo, Jango and Lando. Never fired for any character without a double jump. This also explains an earlier trace recording this address as never executing despite many jumps - no character tested until Lando had one."
+    },
+    "ABILITY_D": {
+      "address": "0x020470D0",
+      "identification": "never fired"
+    },
+    "ABILITY_E": {
+      "address": "0x020470E4",
+      "controller_mode": 15,
+      "action_id": 40,
+      "identification": "JEDI SLAM",
+      "confidence": "high",
+      "evidence": "Lando arc 3 reached the same +19.15 peak as his double jump but fell in 0.73s against 1.50s - a forced fast descent. ABILITY_E is the only difference between the two arcs."
+    }
+  },
+  "not_captured": "Unholster, fire and holster produced no ability-handler events, so those actions run through routines not in the traced set. Blaster fire is therefore still unlogged.",
+  "caveat": "Four bursts is a small sample. ABILITY_B is solid; ABILITY_F is plausible; ABILITY_A is not settled.",
+  "characters_confirmed": {
+    "8": "Bossk",
+    "13": "Dengar",
+    "20": "Greedo",
+    "27": "IG-88",
+    "29": "Jango Fett",
+    "34": "Lando (Jabbas Palace)",
+    "36": "Princess Leia (Boushh)",
+    "71": "Zuckuss"
+  },
+  "still_unfired": {
+    "ABILITY_D": "0x020470D0 - still never fired. Now tested across ten characters AND, in a driven in-match sweep, every one of the twelve buttons plus eighteen combinations including X and Y, which no earlier capture could even record. It is not a button nobody pressed. Next: a write-watchpoint or a call-site search, not more play."
+  },
+  "weapons_are_elsewhere": "Unholster, fire, holster, Bossks grenade and Boushhs bomb produced no handler events across five characters. Thrown and fired weapons run through routines outside the controller-mode set.",
+  "character_run_speed": {
+    "IG-88": 45.0,
+    "Dengar": 42.0,
+    "units": "world units per second",
+    "method": "median of per-sample speed over all moving steps in the Jabba match",
+    "spread": "Tight - 95th percentile 47.6 for IG-88 and 42.3 for Dengar, so run speed is a per-character constant, not a ramp."
+  },
+  "WARNING_r0_is_not_the_actor": {
+    "finding": "On all six ABILITY_* routines r0 points into a pool at 0x0214Exxx-0x0214F1xx, not at the player actor (players were at 0x0212A808, 0x0212B764, 0x02121374).",
+    "consequence": "The field list b0x6bb,0xb0,0xb4,0xb8 is meaningless on these routines - the character index read 0 on every ability row. Abilities must be attributed by motion, or by re-tracing with the actor recovered from another register.",
+    "also": "Addresses in that pool are recycled, so the same r0 value denotes different things at different times."
+  },
+  "instances_are_lockstep": {
+    "finding": "Instance 0 and instance 1 produced identical EVENT streams - same actor pointers, same frames, same values, for every ability burst and every player tick.",
+    "consequence": "The instance column cannot attribute an ability to a player.",
+    "do_not_delete_inst1": "Main RAM is NOT redundant. 63 of the 64 ram.key keyframes differ between the two instances; only the frame-0 keyframe matches. Each DS holds its own local state, so the second RAM capture is real data, not a duplicate. An earlier note here said instance 1 added nothing but volume - that was true of the event stream only and wrong about RAM."
+  },
+  "button_mapping_in_arena": {
+    "jump": "B",
+    "confidence": "high",
+    "evidence": "A driven in-match experiment on Boba Fett swept all twelve buttons and eighteen combinations, 45 frames each with 75 idle between, with the other DS held at rest. ABILITY_A fired in every window whose combination contained B - b, r+b, l+b, up+b, a+b - and in no window without it. A, X, Y, R and L alone produced nothing at all.",
+    "down_plus_B_suppresses_jump": "RETRACTED. In the Boba Fett sweep down+b produced no ABILITY_A, but in the Greedo run down+b produced a full jump - peak +9.68. The Boba windows that showed nothing are more likely to be windows where he was airborne or dead than evidence of a suppression rule. Not a decoded behaviour; do not port it.",
+    "replay_fidelity": "100.00% of 4080 experiment frames replayed exactly.",
+    "caveat": "B = jump is well supported: ABILITY_A fired in every Boba Fett window containing B and none without it, and Greedo jumped on B combinations too. But per-window ability results from Jabba runs must be read against the subject being alive and grounded, which neither driven run guaranteed."
+  },
+  "arena_uses_tank_controls": {
+    "finding": "Left and right produce no translation at all - 360-frame holds moved the character zero units - while up and down do. The arena scheme 0x020075EC turns on left/right and translates on up/down.",
+    "consequence": "The port must not treat left/right as strafing in the arena."
+  },
+  "boba_fett_speed_UNRESOLVED": {
+    "status": "RESOLVED - the driven measurement was contaminated, the session figures stand.",
+    "what_looked_wrong": "A driven experiment measured Boba Fett at 1.18-1.20 u/frame and Greedo at 1.200, about twice every character measured from the recorded sessions.",
+    "ruled_out_double_rate": "Greedo jumped in the same driven run: peak +9.68 units, airborne 48 frames = 0.80s. Simulating the ROM constants gives +9.69 over 26 ticks, which is 0.87s at 30Hz and 0.43s at 60Hz. The driven run therefore has identical physics at 30Hz - it is not running at double rate, and the earlier 30Hz tick-rate finding is independently confirmed a second time.",
+    "actual_cause": "The subject was falling, not running. Jabba's Tower is a multi-level tower and a driven character holding a direction walks straight off it. Greedo's movement bursts were y 74.7 -> -61.7 and y 191.4 -> 135.2 - descents, with horizontal motion carried through them. His actor was replaced twice during the experiment, so he died and respawned mid-run, and the four top-speed windows caught him dead: they recorded no motion at all.",
+    "conclusion": "The session-derived speeds stand and match the motion table at 0x020EE04C exactly. Nothing in the port changes.",
+    "lesson_for_experiment_design": "Do not measure top speed on Jabba's Tower. A driven character holding a direction reaches an edge in a few seconds and dies. Speed runs need flat, bounded ground - Mos Eisley - or short holds with a verified-constant y and a check that the actor pointer never changes during the window."
+  }
+}

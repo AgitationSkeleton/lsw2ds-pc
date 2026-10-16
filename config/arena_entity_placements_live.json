@@ -1,0 +1,367 @@
+{
+ "schema_version": 1,
+ "purpose": "Arena entity placements read from live captures - actor world matrices at +0x8C - rather than from name searches. Positions are world units; yaw is degrees derived from the rotation basis.",
+ "how_obtained": "Five-minute walkthrough recordings (out/work/gpudump_walk_jabba, gpudump_walk_mos) with the entity ticks traced, replayed as needed with different instrumentation. An annotated pass over the Jabba route is what mapped entity types onto objects.",
+ "entity_types": {
+  "0x5B": {
+   "name": "health_dispenser",
+   "model_asset": 230,
+   "model": "out/exported/godot_ui/bounty_dispenser/BALightPost.glb",
+   "animations": [
+    "BALightPostBrkId",
+    "BALightPostBrkId",
+    "BALightPostBrkRp"
+   ],
+   "states": "BrkId = unbuilt, BrkRp = building; no separate built clip in this model",
+   "colour_variants": "The SAME model carries both colours as separate node groups - Blue01, Blue02, Bllue03 (sic), Blue04 and Green01..Green04. So blue and green are one asset with two part sets, not two models, which is why the four placed dispensers split two-and-two on a field rather than differing by model.",
+   "correction": "Earlier exports named asset 1830 Dispenser and asset 2763 Dispenser1 as the candidates. BOTH were wrong - 2763 exports as HothEscape4_Room, and 1830 is a different dispenser entirely. The arena one is 230 BALightPost, whose name gives no hint of its function. Identified from a render in out/work/_superseded."
+  },
+  "0x5E": {
+   "name": "BATurret flag turret (buildable)",
+   "model_asset": 332,
+   "model": "bounty_arena_turret/BATurret.glb",
+   "note": "Buildable wreck. The working gun is a separate asset, 237 BAMG42. Flag colour is a TEXTURE animation, BATurretFlagBlueM asset 340."
+  },
+  "0x5C": {
+   "name": "BAMG42 barge turret (mounted)",
+   "model": "bounty_barge_turret/BAMG42.glb",
+   "buildable": false,
+   "evidence": "halfword at actor+0x212. Static mounted gun: apicula reports 0 animations, and the actor carries sub-actor pointers at +0x250/+0x254 plus extra state at +0x218/+0x21C/+0x244..+0x25C that the buildable 0x5E turrets leave zero."
+  }
+ },
+ "jabbas_tower": {
+  "health_dispensers": [
+   {
+    "actor": "0x02129C24",
+    "position": [
+     -44.0,
+     135.0,
+     -44.0
+    ],
+    "variant": "A",
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ]
+   },
+   {
+    "actor": "0x0212A0F4",
+    "position": [
+     44.0,
+     135.0,
+     43.0
+    ],
+    "variant": "B",
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ]
+   },
+   {
+    "actor": "0x02129E8C",
+    "position": [
+     1.0,
+     191.0,
+     -37.0
+    ],
+    "variant": "A",
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ]
+   },
+   {
+    "actor": "0x0212A35C",
+    "position": [
+     0.0,
+     191.0,
+     37.0
+    ],
+    "variant": "B",
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ]
+   }
+  ],
+  "turrets": [
+   {
+    "actor": "0x021246A8",
+    "position": [
+     0.0,
+     135.0,
+     -62.0
+    ],
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "type": "0x5E"
+   },
+   {
+    "actor": "0x02128A08",
+    "position": [
+     0.0,
+     135.0,
+     62.0
+    ],
+    "yaw_deg": 180.0,
+    "basis": [
+     [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0
+     ]
+    ],
+    "type": "0x5E"
+   },
+   {
+    "actor": "0x02128C84",
+    "position": [
+     0.0,
+     53.0,
+     -82.0
+    ],
+    "yaw_deg": 180.0,
+    "basis": [
+     [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0
+     ]
+    ],
+    "type": "0x5E"
+   },
+   {
+    "actor": "0x02128F00",
+    "position": [
+     0.0,
+     53.0,
+     82.0
+    ],
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "type": "0x5E"
+   }
+  ],
+  "type_census": {
+   "0x07": 12,
+   "0x08": 8,
+   "0x5B": 6,
+   "0x5E": 5,
+   "0x4B": 4,
+   "0x32": 2,
+   "0x33": 2,
+   "0x34": 2,
+   "0x35": 2,
+   "0x36": 2
+  },
+  "note": "Six 0x5B exist; four were interacted with. Four turret entities tick, two showed activity - one lower-level flag turret was not built in the recording. Actor addresses are per-run and must be matched by POSITION, not address.",
+  "rotation_note": "yaw_deg and basis are read from the same +0x8C world matrix as the position - the arenas only rotate about Y, so yaw alone reproduces the orientation, and the full basis is kept so that can be checked rather than assumed.",
+  "barge_turrets": [
+   {
+    "actor": "0x02128724",
+    "position": [
+     126.0,
+     54.0,
+     -73.0
+    ],
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "type": "0x5C"
+   },
+   {
+    "actor": "0x0212917C",
+    "position": [
+     -125.0,
+     54.0,
+     73.0
+    ],
+    "yaw_deg": 0.0,
+    "basis": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "type": "0x5C"
+   }
+  ],
+  "barge_turret_note": "A third 0x5C actor 0x02129468 sits at z=8447.7, far off-map, and is EXCLUDED as an unspawned/parked instance. The two placed ones are a mirrored pair.",
+  "turret_correction": "Earlier passes gave all five turret-type actors the buildable BATurret model. That was wrong: (126,54,-73) was identified in play as a mounted barge turret. Re-reading the type as a HALFWORD at +0x212 - the earlier census read it as a WORD, so its high half was really +0x214 - splits them into 0x5C barge (2, mirrored, off-axis) and 0x5E flag (4, all at x=0 in symmetric pairs). Same mis-slicing error as the BSP word2 reading."
+ },
+ "mos_eisley_streets": {
+  "levers": [
+   {
+    "position": [
+     99.0,
+     49.0,
+     -69.0
+    ]
+   },
+   {
+    "position": [
+     -39.0,
+     -1.0,
+     21.0
+    ]
+   },
+   {
+    "position": [
+     21.0,
+     -1.0,
+     92.0
+    ]
+   }
+  ],
+  "lever_model": "out/exported/godot_ui/bounty_lever/SPBargeLever.glb",
+  "lever_animations": [
+   "SPBargeLeverIdle",
+   "SPBargeLeverIdle2",
+   "SPBargeLeverUse",
+   "SPBargeLeverUseI"
+  ],
+  "note": "Three levers, confirmed live by the lever tick 0x0201F6F0 reporting exactly three entities ticked identically. Both levers tested in play drive the SAME pair of extending bridge halves. The bridge halves themselves are still unidentified - they deform via skeletal animation without moving their actor."
+ },
+ "unresolved": [
+  "The blue/green dispenser counterpart model (2763 is mislabelled).",
+  "The two bridge halves on Mos.",
+  "The Mos elevator - buildable, prompts on proximity, magnetises the player on action.",
+  "Animation clip index per actor: no field located, so which clip is playing cannot be read.",
+  "Per-actor model id: the type is known, the model is not.",
+  "Build/destroy frame counts: the event field spec read words where these are halfwords."
+ ]
+}

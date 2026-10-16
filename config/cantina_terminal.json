@@ -1,0 +1,517 @@
+{
+ "schema": 1,
+ "note": "The Cantina terminal - Hints, Characters, Extras, Codes - decoded.\n\nWHAT THIS IS, AND WHAT IT IS NOT. This is the four-tab shop and bonus screen\nreached from the Cantina, whose titles are strings 0x15B..0x15E. It is NOT the\nlobby's Character Customize tab, and it is written down here partly so the two\nstop being confused: the search for \"the customisation touchscreen behaviour\"\nlands on FUN_0207A230 and FUN_0207A3E0 first, and those belong to this screen.\n\nThe lobby's own bottom screen is a different thing again - its Party Members\ntab is FUN_020682C4's widget with +0x35 set, decoded in\nconfig/free_play_pages.json and implemented in godot/runtime/party_screen.gd.\n\nTHE FUNCTIONS\n\n  FUN_02077088  the tick, in order: bail while a scroll is running\n                (FUN_0207A8C4), then B to leave, then the tab bar, then the\n                carousel for modes 0..2, then the keypad for mode 3.\n  FUN_020780A4  the tab bar - five rects at 0x020EE334, four tabs and a back\n                button, plus L and R to cycle the tab.\n  FUN_020782A8  the carousel - three rects at 0x020EE2DA, plus the d-pad.\n  FUN_020784B8  mode 3's keypad - eighteen rects at 0x020EE4E8.\n  FUN_0207A230  advance the cursor.  FUN_0207A3E0  retreat it.\n  FUN_0207759C  rebuild after a tab change; picks the title and the layout.\n\nWHY THE CURSOR FUNCTIONS ADVANCE SEVEN THINGS AT ONCE. They do not move a\ncursor over a list; they move the LIST past a fixed row of cells. Modes 0..2\neach own seven bytes on the screen object - +0x130, +0x137 and +0x13E - and\nincrement all seven together, each wrapping at that mode's limit. Seven is the\ncell count of the strip at 0x020EE5C8, whose x runs -34, 17, 65, 113, 161, 209,\n257: five on screen and one off each edge for the slide. Mode 3 is the\nexception and moves only the cell named by +0xD2, because it is a code entry\nand each character is edited separately.\n\nTHE LIMITS ARE THE TELL. 6, 99, 21 and 35 - and 35 with six cells is 36 symbols\nin a six-character code, which is 0-9 plus A-Z. Mode 1's 99 is the same 0..99\ncharacter space the Free Play page table indexes, and its cursor skips any id\nwhose availability byte at 0x020EEDAC + id*0x14 reads 6.\n\nUsage:  python tools/export_cantina_terminal.py",
+ "source": {
+  "rom": "arm9_section_0_02000000.bin",
+  "tab_rects": "0x020EE334",
+  "carousel_rects": "0x020EE2DA",
+  "keypad_rects": "0x020EE4E8",
+  "limits": "0x020EE2AE",
+  "cell_counts": "0x020EE2A6",
+  "title_strings": "0x020EE2B6",
+  "availability": "0x020EEDAC",
+  "functions": {
+   "tick": "0x02077088",
+   "tab_bar": "0x020780A4",
+   "carousel": "0x020782A8",
+   "keypad": "0x020784B8",
+   "cursor_next": "0x0207A230",
+   "cursor_previous": "0x0207A3E0",
+   "rebuild": "0x0207759C",
+   "accept": "0x020771BC",
+   "scroll_busy": "0x0207A8C4"
+  },
+  "not_this_screen": {
+   "lobby_party_tab": "FUN_020682C4 with +0x35 set; see config/free_play_pages.json and godot/runtime/party_screen.gd",
+   "free_play_grid": "FUN_02068FBC over the page table at 0x020EDDB2"
+  }
+ },
+ "behaviour": {
+  "title_y": 61,
+  "title_centre_x": 128,
+  "title_align": "1 - FUN_02065BE8 subtracts half the string width",
+  "scroll_frames": 13,
+  "scroll_direction_field": "+0xD4, 1 = previous, 0 = next",
+  "mode_field": "+0xD0",
+  "selected_cell_field": "+0xD2",
+  "default_cell": 3,
+  "default_cell_mode_3": 0,
+  "touch": {
+   "block": "0x021044A4",
+   "down_bit": "bit 4 of +0x00",
+   "x": "+0x2A",
+   "y": "+0x2C",
+   "first_match_wins": true
+  },
+  "buttons": {
+   "tab_previous": "L (0x200), wraps to 3",
+   "tab_next": "R (0x100), wraps to 0",
+   "carousel_previous": "Left (0x20)",
+   "carousel_next": "Right (0x10)",
+   "accept": "A (0x01)",
+   "back": "B (0x02)"
+  },
+  "sounds": {
+   "accept_or_tab": 180,
+   "back": 181,
+   "move": 182
+  },
+  "mode_1_skips": "any id whose byte at 0x020EEDAC + id*0x14 is 6"
+ },
+ "tabs": [
+  {
+   "index": 0,
+   "address": "0x020EE334",
+   "role": "tab_0",
+   "x": 37,
+   "y": 13,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 1,
+   "address": "0x020EE33C",
+   "role": "tab_1",
+   "x": 85,
+   "y": 13,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 2,
+   "address": "0x020EE344",
+   "role": "tab_2",
+   "x": 133,
+   "y": 13,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 3,
+   "address": "0x020EE34C",
+   "role": "tab_3",
+   "x": 181,
+   "y": 13,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 4,
+   "address": "0x020EE354",
+   "role": "back",
+   "x": 215,
+   "y": 151,
+   "w": 32,
+   "h": 32
+  }
+ ],
+ "carousel": [
+  {
+   "index": 0,
+   "address": "0x020EE2DA",
+   "role": "previous",
+   "x": 0,
+   "y": 95,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 1,
+   "address": "0x020EE2E2",
+   "role": "next",
+   "x": 224,
+   "y": 95,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 2,
+   "address": "0x020EE2EA",
+   "role": "accept",
+   "x": 112,
+   "y": 95,
+   "w": 32,
+   "h": 32
+  }
+ ],
+ "keypad": [
+  {
+   "index": 0,
+   "address": "0x020EE4E8",
+   "role": "key_0",
+   "x": 24,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 1,
+   "address": "0x020EE4F0",
+   "role": "key_1",
+   "x": 24,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 2,
+   "address": "0x020EE4F8",
+   "role": "key_2",
+   "x": 59,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 3,
+   "address": "0x020EE500",
+   "role": "key_3",
+   "x": 59,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 4,
+   "address": "0x020EE508",
+   "role": "key_4",
+   "x": 94,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 5,
+   "address": "0x020EE510",
+   "role": "key_5",
+   "x": 94,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 6,
+   "address": "0x020EE518",
+   "role": "key_6",
+   "x": 129,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 7,
+   "address": "0x020EE520",
+   "role": "key_7",
+   "x": 129,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 8,
+   "address": "0x020EE528",
+   "role": "key_8",
+   "x": 164,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 9,
+   "address": "0x020EE530",
+   "role": "key_9",
+   "x": 164,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 10,
+   "address": "0x020EE538",
+   "role": "key_10",
+   "x": 199,
+   "y": 81,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 11,
+   "address": "0x020EE540",
+   "role": "key_11",
+   "x": 199,
+   "y": 120,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "index": 12,
+   "address": "0x020EE548",
+   "role": "key_12",
+   "x": 24,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  },
+  {
+   "index": 13,
+   "address": "0x020EE550",
+   "role": "key_13",
+   "x": 59,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  },
+  {
+   "index": 14,
+   "address": "0x020EE558",
+   "role": "key_14",
+   "x": 94,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  },
+  {
+   "index": 15,
+   "address": "0x020EE560",
+   "role": "key_15",
+   "x": 129,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  },
+  {
+   "index": 16,
+   "address": "0x020EE568",
+   "role": "key_16",
+   "x": 164,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  },
+  {
+   "index": 17,
+   "address": "0x020EE570",
+   "role": "key_17",
+   "x": 199,
+   "y": 89,
+   "w": 32,
+   "h": 48
+  }
+ ],
+ "modes": [
+  {
+   "mode": 0,
+   "title_string": "0x15B",
+   "title": "Hints",
+   "limit": 6,
+   "options": 7,
+   "cells_drawn": 7,
+   "cursor_field": "+0x130",
+   "moves_all_cells": true
+  },
+  {
+   "mode": 1,
+   "title_string": "0x15C",
+   "title": "Characters",
+   "limit": 99,
+   "options": 100,
+   "cells_drawn": 0,
+   "cursor_field": "+0x137",
+   "moves_all_cells": true
+  },
+  {
+   "mode": 2,
+   "title_string": "0x15D",
+   "title": "Extras",
+   "limit": 21,
+   "options": 22,
+   "cells_drawn": 7,
+   "cursor_field": "+0x13E",
+   "moves_all_cells": true
+  },
+  {
+   "mode": 3,
+   "title_string": "0x15E",
+   "title": "Codes",
+   "limit": 35,
+   "options": 36,
+   "cells_drawn": 6,
+   "cursor_field": "+0x145",
+   "moves_all_cells": false
+  }
+ ],
+ "strips": {
+  "0x020EE5C8": [
+   {
+    "index": 0,
+    "address": "0x020EE5C8",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": -34,
+    "y": 96,
+    "on_screen": false
+   },
+   {
+    "index": 1,
+    "address": "0x020EE5D4",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 17,
+    "y": 96,
+    "on_screen": true
+   },
+   {
+    "index": 2,
+    "address": "0x020EE5E0",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 65,
+    "y": 96,
+    "on_screen": true
+   },
+   {
+    "index": 3,
+    "address": "0x020EE5EC",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 113,
+    "y": 96,
+    "on_screen": true
+   },
+   {
+    "index": 4,
+    "address": "0x020EE5F8",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 161,
+    "y": 96,
+    "on_screen": true
+   },
+   {
+    "index": 5,
+    "address": "0x020EE604",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 209,
+    "y": 96,
+    "on_screen": true
+   },
+   {
+    "index": 6,
+    "address": "0x020EE610",
+    "sprite": {
+     "pixels": 3804,
+     "header": 3805,
+     "palette": null
+    },
+    "x": 257,
+    "y": 96,
+    "on_screen": false
+   }
+  ],
+  "0x020EE61C": [
+   {
+    "index": 0,
+    "address": "0x020EE61C",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": 3921
+    },
+    "x": -34,
+    "y": 93,
+    "on_screen": false
+   },
+   {
+    "index": 1,
+    "address": "0x020EE628",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 14,
+    "y": 93,
+    "on_screen": true
+   },
+   {
+    "index": 2,
+    "address": "0x020EE634",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 62,
+    "y": 93,
+    "on_screen": true
+   },
+   {
+    "index": 3,
+    "address": "0x020EE640",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 110,
+    "y": 93,
+    "on_screen": true
+   },
+   {
+    "index": 4,
+    "address": "0x020EE64C",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 158,
+    "y": 93,
+    "on_screen": true
+   },
+   {
+    "index": 5,
+    "address": "0x020EE658",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 206,
+    "y": 93,
+    "on_screen": true
+   },
+   {
+    "index": 6,
+    "address": "0x020EE664",
+    "sprite": {
+     "pixels": 3919,
+     "header": 3920,
+     "palette": null
+    },
+    "x": 254,
+    "y": 93,
+    "on_screen": true
+   }
+  ]
+ }
+}

@@ -1,0 +1,192 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "action_rows": "0x020F6BA8",
+  "weapon_id_field": "+0x00 (u16)",
+  "descriptor_sets": "0x020EB7B8",
+  "stride": 8,
+  "record": {
+   "+0x00": "u32 array of 10-byte (state, anim, ...) records",
+   "+0x04": "u16 TAG - the model asset the set animates",
+   "+0x06": "u16 count"
+  },
+  "note_on_framing": "the game loads 0x020EB7BC = table + 4, the tag field; an earlier pass described that offset as a separate weapon table, which it is not",
+  "no_weapon_sentinel": 630,
+  "readers": {
+   "row +0x00": "0x02007E18 .. 0x02007E34",
+   "attachment slot": "0x0200C724 (actor+0x1D0, slot 5)",
+   "weapon table": "0x0209F53C",
+   "sentinel compare": "0x020025F8"
+  },
+  "literal_checks": {
+   "0x02007E3C": "0x020F6BA8",
+   "0x0209F554": "0x020EB7BC"
+  }
+ },
+ "note": "Read each hunter's WEAPON MODEL out of the ROM instead of guessing it.\n\nWHY THIS EXISTS. config/bounty_hunter_weapons.json carried a weapon model per\nhunter, and every one of its `evidence` lines was a NAME MATCH: \"LOMMiniKit\nasset 2 names BobaRifle\", \"IG88MiniKit 2887 and IG88Statue 2928 name\nStTrprBlstr\". That is inference from a collectable statue, not the ROM saying\nwhat the character carries. It got nine of ten right and 4-LOM wrong - his\nMiniKit does name BobaRifle, and the game gives him a StTrprBlstr.\n\nTHE CHAIN, all of it read here rather than assumed:\n\n    0x020EF57C + 24*characterId + 5      the ROW INDEX (u8), cached on the\n                                         actor at +0x6C3\n    0x020F6BA8 + 0x24*row + 0x00         the WEAPON ID (u16)\n    0x020EB7B8 + 8*weaponId              a DESCRIPTOR SET, and its TAG is the\n                                         model asset - see the correction below\n\nCORRECTED FRAMING. This file first described a \"weapon table at 0x020EB7BC,\nstride 8, {u16 model, u16 flags, u32 anims}\". That was the right BYTES read at\nthe wrong OFFSET. The real structure is the descriptor-set table the port\nalready knew about at 0x020EB7B8:\n\n    +0x00  u32  array of 10-byte (state, anim, ...) records\n    +0x04  u16  TAG\n    +0x06  u16  COUNT\n\n0x0209F53C loads `ldrh [0x020EB7BC + 8*id]`, which is the TAG field, and the tag\nis the model asset the set animates. So the model lookup below is correct, but\nwhat the earlier text called \"flags\" is the COUNT, and what it called the\n\"anims pointer\" was the NEXT set's array - an off-by-one that made Lando appear\nto own thermal-detonator animation records when 0x020E78CE is in fact set 499's\nown array, the detonator's.\n\nA \"630 of 630 tags match the model\" check was also claimed and is RETRACTED: it\ncompared the same halfword to itself.\n\nHOW THE WEAPON TABLE WAS FOUND. Scanning the ARM9 for literal-pool words\npointing into row 0 of the action table gives every field's readers. Row +0x00\nis read at two sites:\n\n    02007e18  ldrb  r3,[r0,#0x6c3]        the row index\n    02007e24  smulbb ip,r3,r1             stride 0x24\n    02007e30  ldrh  r1,[r1,ip]            -> 0x020F6BA8 + 0x24*row, +0x00\n    02007e34  bl    0x200c724\n\n    0200c724  ...   slot 5 of the actor's attachment array at +0x1D0,\n                    allocated 0xBC bytes, constructed at 0x0209F404\n    0209f53c  ldr   r1,[pc,#0xc]          -> 0x020EB7BC\n    0209f544  lsl   r3,r2,#3              STRIDE 8\n    0209f54c  ldrh  r1,[r1,r3]            the model asset\n\nThe constructor at 0x0209F404 stores a default weapon id of 0x276 (630), and\n0x020025F8 compares row +0x00 against that same 630 before loading - so 630 is\nthe \"no weapon\" sentinel, and none of the ten hunters uses it.\n\nWHAT THE ROM SAYS, and it is only six distinct weapons for ten hunters:\n\n    487 -> 4706 StTrprBlstr    4-LOM, IG-88, Leia\n    489 -> 3865 (pistol)       Greedo, Jango\n    493 ->  618 BobaRifle      Boba Fett, Dengar\n    494 ->  672 BosskRifle     Bossk\n    496 -> 5538 ZuckussRifle   Zuckuss\n    498 -> 3377 LandosAxe      Lando\n\nUsage:  python tools/export_weapon_models.py",
+ "weapons": [
+  {
+   "weapon_id": 487,
+   "entry": "0x020EC6F0",
+   "model_asset": 4706,
+   "model_name": "StTrprBlstr",
+   "record_count": 2,
+   "records": "0x020E6708",
+   "carried_by": [
+    "4-LOM",
+    "IG-88",
+    "Princess Leia (Boushh)"
+   ]
+  },
+  {
+   "weapon_id": 489,
+   "entry": "0x020EC700",
+   "model_asset": 3865,
+   "model_name": "MDL0d",
+   "record_count": 2,
+   "records": "0x020E6708",
+   "carried_by": [
+    "Greedo",
+    "Jango Fett"
+   ]
+  },
+  {
+   "weapon_id": 493,
+   "entry": "0x020EC720",
+   "model_asset": 618,
+   "model_name": "BobaRifle",
+   "record_count": 2,
+   "records": "0x020E6708",
+   "carried_by": [
+    "Boba Fett",
+    "Dengar"
+   ]
+  },
+  {
+   "weapon_id": 494,
+   "entry": "0x020EC728",
+   "model_asset": 672,
+   "model_name": "BosskRifle",
+   "record_count": 2,
+   "records": "0x020E6708",
+   "carried_by": [
+    "Bossk"
+   ]
+  },
+  {
+   "weapon_id": 496,
+   "entry": "0x020EC738",
+   "model_asset": 5538,
+   "model_name": "ZuckussRifle",
+   "record_count": 2,
+   "records": "0x020E6708",
+   "carried_by": [
+    "Zuckuss"
+   ]
+  },
+  {
+   "weapon_id": 498,
+   "entry": "0x020EC748",
+   "model_asset": 3377,
+   "model_name": "LandosAxe",
+   "record_count": 2,
+   "records": "0x020E6410",
+   "carried_by": [
+    "Lando Calrissian"
+   ]
+  }
+ ],
+ "characters": [
+  {
+   "runtime_id": 0,
+   "label": "4-LOM",
+   "row": 31,
+   "row_address": "0x020F7004",
+   "weapon_id": 487,
+   "model_asset": 4706,
+   "model_name": "StTrprBlstr"
+  },
+  {
+   "runtime_id": 7,
+   "label": "Boba Fett",
+   "row": 4,
+   "row_address": "0x020F6C38",
+   "weapon_id": 493,
+   "model_asset": 618,
+   "model_name": "BobaRifle"
+  },
+  {
+   "runtime_id": 8,
+   "label": "Bossk",
+   "row": 5,
+   "row_address": "0x020F6C5C",
+   "weapon_id": 494,
+   "model_asset": 672,
+   "model_name": "BosskRifle"
+  },
+  {
+   "runtime_id": 13,
+   "label": "Dengar",
+   "row": 4,
+   "row_address": "0x020F6C38",
+   "weapon_id": 493,
+   "model_asset": 618,
+   "model_name": "BobaRifle"
+  },
+  {
+   "runtime_id": 20,
+   "label": "Greedo",
+   "row": 26,
+   "row_address": "0x020F6F50",
+   "weapon_id": 489,
+   "model_asset": 3865,
+   "model_name": "MDL0d"
+  },
+  {
+   "runtime_id": 27,
+   "label": "IG-88",
+   "row": 31,
+   "row_address": "0x020F7004",
+   "weapon_id": 487,
+   "model_asset": 4706,
+   "model_name": "StTrprBlstr"
+  },
+  {
+   "runtime_id": 29,
+   "label": "Jango Fett",
+   "row": 27,
+   "row_address": "0x020F6F74",
+   "weapon_id": 489,
+   "model_asset": 3865,
+   "model_name": "MDL0d"
+  },
+  {
+   "runtime_id": 34,
+   "label": "Lando Calrissian",
+   "row": 16,
+   "row_address": "0x020F6DE8",
+   "weapon_id": 498,
+   "model_asset": 3377,
+   "model_name": "LandosAxe"
+  },
+  {
+   "runtime_id": 36,
+   "label": "Princess Leia (Boushh)",
+   "row": 31,
+   "row_address": "0x020F7004",
+   "weapon_id": 487,
+   "model_asset": 4706,
+   "model_name": "StTrprBlstr"
+  },
+  {
+   "runtime_id": 71,
+   "label": "Zuckuss",
+   "row": 34,
+   "row_address": "0x020F7070",
+   "weapon_id": 496,
+   "model_asset": 5538,
+   "model_name": "ZuckussRifle"
+  }
+ ]
+}

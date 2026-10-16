@@ -1,0 +1,177 @@
+{
+  "note": "Medieval / Old West / Old Timey are Extras flags tested via 0x020867ec(flags, n); each assigns a gear-slot actor part through 0x020063d4(actor, part, 0). Recovered by tools/export_customization_modes.py.",
+  "flag_test": "0x020867ec",
+  "gear_applier": "0x020063d4",
+  "flag_count": 20,
+  "modes": {
+    "old_timey": {
+      "flag": 7,
+      "headwear": "TopHat",
+      "conditional": false,
+      "sites": [
+        "0x02002828",
+        "0x020034cc"
+      ]
+    },
+    "old_west": {
+      "flag": 8,
+      "headwear": "CowboyHat",
+      "conditional": false,
+      "sites": [
+        "0x02002740",
+        "0x020033e4"
+      ]
+    },
+    "medieval": {
+      "flag": 9,
+      "headwear_if_predicate": "Crown",
+      "headwear_otherwise": "KnightHelmet",
+      "predicate": "0x0207b68c",
+      "predicate_input": "actor byte +0x6bb, now established to BE the runtime character id",
+      "predicate_true_for": [
+        1,
+        11,
+        14,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        48,
+        69,
+        70
+      ],
+      "conditional": true,
+      "sites": [
+        "0x020026bc",
+        "0x02003360"
+      ],
+      "crown_runtime_ids": [
+        1,
+        11,
+        14,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        48,
+        69,
+        70
+      ],
+      "crown_labels": [
+        "Anakin Skywalker (Force Ghost)",
+        "Darth Vader",
+        "Emperor Palpatine",
+        "Imperial Officer",
+        "Princess Leia",
+        "Princess Leia (Boushh)",
+        "Princess Leia (Cloud City)",
+        "Princess Leia (Endor)",
+        "Princess Leia (Hoth)",
+        "Princess Leia (Jabba's Prisoner)",
+        "Mace Windu",
+        "Yoda",
+        "Yoda (Force Ghost)"
+      ],
+      "evidence_for_index": "0x0200f508 indexes the 24-byte descriptor table at 0x020ef57c with actor byte +0x6bb scaled by 0x18, the same table the portrait join indexes by runtime id - so the two are the same number"
+    }
+  },
+  "headwear": {
+    "BaseballCap": {
+      "model_selector": 452,
+      "archive_asset": 316,
+      "actor_part": 178,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": false
+    },
+    "CowboyHat": {
+      "model_selector": 453,
+      "archive_asset": 1555,
+      "actor_part": 187,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": true
+    },
+    "Crown": {
+      "model_selector": 454,
+      "archive_asset": 1572,
+      "actor_part": 188,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": true
+    },
+    "KnightHelmet": {
+      "model_selector": 455,
+      "archive_asset": 3361,
+      "actor_part": 202,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": true
+    },
+    "Moustache": {
+      "model_selector": 456,
+      "archive_asset": 3781,
+      "actor_part": 212,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": false
+    },
+    "PirateHat": {
+      "model_selector": 457,
+      "archive_asset": 3859,
+      "actor_part": 214,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": false
+    },
+    "TopHat": {
+      "model_selector": 458,
+      "archive_asset": 5020,
+      "actor_part": 228,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": true
+    },
+    "WizardHat": {
+      "model_selector": 459,
+      "archive_asset": 5315,
+      "actor_part": 229,
+      "slot_index": 3,
+      "group": 2,
+      "applied_by_code": false
+    }
+  },
+  "unused_headwear": [
+    "BaseballCap",
+    "Moustache",
+    "PirateHat",
+    "WizardHat"
+  ],
+  "gear_slot_index": 3,
+  "enhanced_modifier_clarifications": {
+    "scope": "These concern the silly setting modifiers - Old West, Medieval, Old Timey - which are ENHANCEMENTS planned after parity, not part of the Bounty Hunter baseline. Recorded now so they are not lost or half-remembered later.",
+    "source": "Clarifications made while reviewing out/work/modifier_check.png, from first-hand knowledge of the original game.",
+    "evidence_tier": "PLAY - first-hand knowledge of the original game's behaviour, not yet cross-referenced against the ROM.",
+    "old_west_weapon": {
+      "WRONG": "Classic Blaster is NOT the weapon Old West mode gives.",
+      "CORRECT": "Old West gives REVOLVER PISTOLS - the kind Jango Fett and Han carry.",
+      "why_it_matters": "A modifier that swaps in the wrong weapon model changes silhouette and animation, and Classic Blaster is a visibly different prop from a revolver."
+    },
+    "hats_and_hair": {
+      "behaviour": "A hat applied to Leia does NOT remove her hairpiece - both render together.",
+      "contrast": "Customize and Extra modes DO remove the hairpiece when a hat is applied.",
+      "why_it_matters": "So hat-on-head is not one rule. The modifier path keeps the hair; the customize and extra paths strip it. Implementing a single shared rule would be wrong for one of the two."
+    },
+    "still_to_verify": [
+      "Which weapon id the revolver corresponds to in the ROM.",
+      "The mechanism by which Customize and Extra suppress the hairpiece, versus the modifier path leaving it.",
+      "Whether Medieval and Old Timey have their own weapon and headgear rules."
+    ]
+  }
+}

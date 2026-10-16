@@ -1,0 +1,658 @@
+{
+  "note": "HUD/UI layout records: [pixel_asset, header_asset, palette_asset, x, y, param], six u16 each. palette 0xFFFF reuses the previous one. Coordinates are DS screen pixels. Confirmed by the table at 0x020eff10, which places the minikit counter at (83,4), the True Jedi meter at (82,16) and eight copies of sprite 621 on a 4x2 grid.",
+  "record_words": 6,
+  "record_count": 161,
+  "table_count": 4,
+  "tables": [
+    {
+      "address": "0x020ede3a",
+      "entries": [
+        {
+          "address": "0x020ede3a",
+          "pixels": 621,
+          "header": 622,
+          "palette": 623,
+          "reuses_palette": false,
+          "x": 40,
+          "y": 56,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede46",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 56,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede52",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 56,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede5e",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 56,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede6a",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 40,
+          "y": 104,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede76",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 104,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede82",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 104,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ede8e",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 104,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        }
+      ]
+    },
+    {
+      "address": "0x020ee580",
+      "entries": [
+        {
+          "address": "0x020ee580",
+          "pixels": 2204,
+          "header": 2205,
+          "palette": 2206,
+          "reuses_palette": false,
+          "x": 215,
+          "y": 151,
+          "param": 1024,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 2
+        },
+        {
+          "address": "0x020ee58c",
+          "pixels": 4292,
+          "header": 4293,
+          "palette": 4294,
+          "reuses_palette": false,
+          "x": 109,
+          "y": 93,
+          "param": 1280,
+          "display_size": [
+            56,
+            56
+          ],
+          "cells": 1
+        }
+      ]
+    },
+    {
+      "address": "0x020ee5b0",
+      "entries": [
+        {
+          "address": "0x020ee5b0",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 107,
+          "y": 164,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        },
+        {
+          "address": "0x020ee5bc",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 137,
+          "y": 164,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        },
+        {
+          "address": "0x020ee5c8",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": -34,
+          "y": 96,
+          "param": 1536,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee5d4",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 17,
+          "y": 96,
+          "param": 1792,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee5e0",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 65,
+          "y": 96,
+          "param": 2048,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee5ec",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 113,
+          "y": 96,
+          "param": 2304,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee5f8",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 161,
+          "y": 96,
+          "param": 2560,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee604",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 209,
+          "y": 96,
+          "param": 2816,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020ee610",
+          "pixels": 3804,
+          "header": 3805,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 257,
+          "y": 96,
+          "param": 3072,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 1
+        }
+      ]
+    },
+    {
+      "address": "0x020eff10",
+      "entries": [
+        {
+          "address": "0x020eff10",
+          "pixels": 621,
+          "header": 622,
+          "palette": 623,
+          "reuses_palette": false,
+          "x": 40,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff1c",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff28",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff34",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff40",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 40,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff4c",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff58",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff64",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020eff70",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 107,
+          "y": 88,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        },
+        {
+          "address": "0x020eff7c",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 137,
+          "y": 88,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        },
+        {
+          "address": "0x020eff88",
+          "pixels": 4722,
+          "header": 4724,
+          "palette": 4725,
+          "reuses_palette": false,
+          "x": 82,
+          "y": 16,
+          "param": 256,
+          "display_size": [
+            88,
+            16
+          ],
+          "cells": 10
+        },
+        {
+          "address": "0x020eff94",
+          "pixels": 3725,
+          "header": 3726,
+          "palette": 3727,
+          "reuses_palette": false,
+          "x": 83,
+          "y": 4,
+          "param": 512,
+          "display_size": [
+            34,
+            34
+          ],
+          "cells": 20
+        },
+        {
+          "address": "0x020effa0",
+          "pixels": 621,
+          "header": 622,
+          "palette": 623,
+          "reuses_palette": false,
+          "x": 40,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effac",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effb8",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effc4",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 80,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effd0",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 40,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effdc",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 88,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020effe8",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 136,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020efff4",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 184,
+          "y": 128,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020f0000",
+          "pixels": 621,
+          "header": 622,
+          "palette": null,
+          "reuses_palette": true,
+          "x": 16,
+          "y": 16,
+          "param": 3840,
+          "display_size": [
+            40,
+            40
+          ],
+          "cells": 1
+        },
+        {
+          "address": "0x020f000c",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 107,
+          "y": 8,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        },
+        {
+          "address": "0x020f0018",
+          "pixels": 3447,
+          "header": 3449,
+          "palette": 3450,
+          "reuses_palette": false,
+          "x": 137,
+          "y": 8,
+          "param": 768,
+          "display_size": [
+            16,
+            16
+          ],
+          "cells": 16
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+ARM9 DMA bypasses the TCMs, as on hardware.
+
+The ARM9's DMA controller sits on the system bus; ITCM and DTCM are private to
+the ARM946E-S core and invisible to it (melonDS: DMA::Run9 goes through
+NDS::ARM9Read/Write, which never consult the TCMs). nds_dma_run moved units
+through bus_read_u32/bus_write_u32 - the CPU's own path, which maps both - so a
+transfer aimed at a TCM window wrote the TCM.
+
+LSW2 hits it in four-player Game Settings: a VBlank VRAM upload with a
+null-based destination (0x00010400, an ITCM mirror) zeroed 2.5 KB of ITCM code
+(0x01FF8400-0x01FF8DFF) and the next call into it ran garbage. On hardware the
+same DMA writes nothing. Now: an ARM9 DMA address in the ITCM window reads 0 and
+drops writes; one under the DTCM window reaches main RAM through the adjacent
+4 MB mirror. ARM7 DMA is unchanged.
+
+--- a/runner/src/io.cpp	2026-09-23 13:01:15.965071000 -0700
++++ b/runner/src/io.cpp	2026-09-23 13:01:16.025328200 -0700
+@@ -2464,6 +2464,59 @@
+     }
+ }
+ 
++// ARM9 DMA SITS ON THE BUS, NOT BEHIND THE CORE. The TCMs are private to the
++// ARM946E-S and invisible to its DMA controller - melonDS's ARM9 DMA goes
++// through NDS::ARM9Read/Write, which never consult ITCM or DTCM. The CPU's own
++// bus path here does map them, so a transfer aimed at a TCM window must be
++// steered to what the bus really has there: nothing below 0x02000000 (writes
++// dropped, reads 0), and main RAM under the DTCM window (reached through the
++// 4 MB mirror beside it). Measured in LSW2's four-player Game Settings: a
++// VBlank VRAM upload with a null-based destination (0x00010400) zeroed 2.5 KB
++// of ITCM code, harmless on hardware and a crash here.
++static bool dma9_hits_tcm(uint32_t addr, bool* itcm) {
++    if (g_cp15.itcm_enable && g_cp15.itcm_size && addr < 0x02000000u &&
++        addr < g_cp15.itcm_size) {
++        *itcm = true;
++        return true;
++    }
++    if (g_cp15.dtcm_enable && g_cp15.dtcm_size && addr >= g_cp15.dtcm_base &&
++        addr - g_cp15.dtcm_base < g_cp15.dtcm_size) {
++        *itcm = false;
++        return true;
++    }
++    return false;
++}
++
++// The main-RAM mirror of an address under the DTCM window: the same 4 MB offset
++// one mirror over, which no TCM covers.
++static uint32_t dma9_main_ram_alias(uint32_t addr) {
++    return (addr >= 0x02400000u) ? addr - 0x00400000u : addr + 0x00400000u;
++}
++
++static uint32_t dma9_read32(uint32_t addr) {
++    bool itcm = false;
++    if (!dma9_hits_tcm(addr, &itcm)) return bus_read_u32(addr);
++    return itcm ? 0u : bus_read_u32(dma9_main_ram_alias(addr));
++}
++
++static uint16_t dma9_read16(uint32_t addr) {
++    bool itcm = false;
++    if (!dma9_hits_tcm(addr, &itcm)) return bus_read_u16(addr);
++    return itcm ? uint16_t(0) : bus_read_u16(dma9_main_ram_alias(addr));
++}
++
++static void dma9_write32(uint32_t addr, uint32_t v) {
++    bool itcm = false;
++    if (!dma9_hits_tcm(addr, &itcm)) { bus_write_u32(addr, v); return; }
++    if (!itcm) bus_write_u32(dma9_main_ram_alias(addr), v);
++}
++
++static void dma9_write16(uint32_t addr, uint16_t v) {
++    bool itcm = false;
++    if (!dma9_hits_tcm(addr, &itcm)) { bus_write_u16(addr, v); return; }
++    if (!itcm) bus_write_u16(dma9_main_ram_alias(addr), v);
++}
++
+ void nds_dma_run(int cpu, unsigned long long target_cycles) {
+     cpu &= 1;
+     for (int ch = 0; ch < 4; ++ch) {
+@@ -2484,11 +2537,19 @@
+             const uint32_t unit = dma_unit_cycles(cpu, d, width);
+             g_runtime_cycles += uint64_t{unit} << (cpu == 0 ? 1u : 0u);
+             if (width == 4u) {
+-                const uint32_t v = bus_read_u32(d.cur_src & ~3u);
+-                bus_write_u32(d.cur_dst & ~3u, v);
++                if (cpu == 0) {
++                    dma9_write32(d.cur_dst & ~3u, dma9_read32(d.cur_src & ~3u));
++                } else {
++                    const uint32_t v = bus_read_u32(d.cur_src & ~3u);
++                    bus_write_u32(d.cur_dst & ~3u, v);
++                }
+             } else {
+-                const uint16_t v = bus_read_u16(d.cur_src & ~1u);
+-                bus_write_u16(d.cur_dst & ~1u, v);
++                if (cpu == 0) {
++                    dma9_write16(d.cur_dst & ~1u, dma9_read16(d.cur_src & ~1u));
++                } else {
++                    const uint16_t v = bus_read_u16(d.cur_src & ~1u);
++                    bus_write_u16(d.cur_dst & ~1u, v);
++                }
+             }
+             d.cur_src = static_cast<uint32_t>(
+                 int64_t{d.cur_src} + int64_t{d.src_inc} * width);

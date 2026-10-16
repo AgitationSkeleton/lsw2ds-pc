@@ -1,0 +1,543 @@
+{
+  "schema": 1,
+  "note": "Closure functions whose decompiled C reads processor state Ghidra could not account for. These COMPILE and RUN but are not faithful translations: the value they read is whatever the C compiler left in an uninitialised local, not what the register held on the real hardware. Proven on FUN_01ff8404, where the interpreter returns 0 and the decompiled C returns 4.",
+  "why_this_matters": "These are the quiet failures. An untranslated function aborts and names itself; one of these returns a plausible wrong number and keeps going. Each needs translating against the disassembly - real work on a specific function, not a sweep.",
+  "count": 70,
+  "functions": [
+    {
+      "name": "FUN_01ff83c0",
+      "address": "0x01ff83c0",
+      "unaccounted": [
+        "unaff_r4",
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff83dc",
+      "address": "0x01ff83dc",
+      "unaccounted": [
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff83e0",
+      "address": "0x01ff83e0",
+      "unaccounted": [
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff8404",
+      "address": "0x01ff8404",
+      "unaccounted": [
+        "unaff_r4",
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff841c",
+      "address": "0x01ff841c",
+      "unaccounted": [
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff8440",
+      "address": "0x01ff8440",
+      "unaccounted": [
+        "unaff_r4",
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_01ff9188",
+      "address": "0x01ff9188",
+      "unaccounted": [
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_02000e0c",
+      "address": "0x02000e0c",
+      "unaccounted": [
+        "unaff_r10",
+        "unaff_r11",
+        "unaff_r5",
+        "unaff_r6",
+        "unaff_r7",
+        "unaff_r8",
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_020063d4",
+      "address": "0x020063d4",
+      "unaccounted": [
+        "extraout_r1",
+        "extraout_r1_00",
+        "extraout_r1_01",
+        "extraout_r1_02"
+      ]
+    },
+    {
+      "name": "FUN_0200f650",
+      "address": "0x0200f650",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02011384",
+      "address": "0x02011384",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_02011974",
+      "address": "0x02011974",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020140f8",
+      "address": "0x020140f8",
+      "unaccounted": [
+        "extraout_r1",
+        "extraout_r1_00"
+      ]
+    },
+    {
+      "name": "FUN_0202532c",
+      "address": "0x0202532c",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_0204e66c",
+      "address": "0x0204e66c",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020530b0",
+      "address": "0x020530b0",
+      "unaccounted": [
+        "unaff_r4"
+      ]
+    },
+    {
+      "name": "FUN_0205b850",
+      "address": "0x0205b850",
+      "unaccounted": [
+        "unaff_r10"
+      ]
+    },
+    {
+      "name": "FUN_0205c69c",
+      "address": "0x0205c69c",
+      "unaccounted": [
+        "unaff_r5"
+      ]
+    },
+    {
+      "name": "FUN_0205e4f8",
+      "address": "0x0205e4f8",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_02060c7c",
+      "address": "0x02060c7c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02062944",
+      "address": "0x02062944",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02062970",
+      "address": "0x02062970",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_0206299c",
+      "address": "0x0206299c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02062bb4",
+      "address": "0x02062bb4",
+      "unaccounted": [
+        "unaff_r8"
+      ]
+    },
+    {
+      "name": "FUN_0206353c",
+      "address": "0x0206353c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02063680",
+      "address": "0x02063680",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_02065458",
+      "address": "0x02065458",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_0206c8e8",
+      "address": "0x0206c8e8",
+      "unaccounted": [
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_0208926c",
+      "address": "0x0208926c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_0208ce8c",
+      "address": "0x0208ce8c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020a96c8",
+      "address": "0x020a96c8",
+      "unaccounted": [
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_020a9804",
+      "address": "0x020a9804",
+      "unaccounted": [
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_020aaad4",
+      "address": "0x020aaad4",
+      "unaccounted": [
+        "extraout_r1",
+        "extraout_r1_00"
+      ]
+    },
+    {
+      "name": "FUN_020ad320",
+      "address": "0x020ad320",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b1248",
+      "address": "0x020b1248",
+      "unaccounted": [
+        "extraout_r1",
+        "extraout_r1_00"
+      ]
+    },
+    {
+      "name": "FUN_020b3bb8",
+      "address": "0x020b3bb8",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b5bd4",
+      "address": "0x020b5bd4",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b5d3c",
+      "address": "0x020b5d3c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b601c",
+      "address": "0x020b601c",
+      "unaccounted": [
+        "extraout_r1",
+        "extraout_r1_00"
+      ]
+    },
+    {
+      "name": "FUN_020b7dc4",
+      "address": "0x020b7dc4",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b8688",
+      "address": "0x020b8688",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b8d80",
+      "address": "0x020b8d80",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020b9cc4",
+      "address": "0x020b9cc4",
+      "unaccounted": [
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_020b9d94",
+      "address": "0x020b9d94",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020ba140",
+      "address": "0x020ba140",
+      "unaccounted": [
+        "unaff_r10",
+        "unaff_r11",
+        "unaff_r5",
+        "unaff_r6",
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_020ba4b8",
+      "address": "0x020ba4b8",
+      "unaccounted": [
+        "unaff_r6"
+      ]
+    },
+    {
+      "name": "FUN_020bb180",
+      "address": "0x020bb180",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020bb1d8",
+      "address": "0x020bb1d8",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020bb778",
+      "address": "0x020bb778",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020bc568",
+      "address": "0x020bc568",
+      "unaccounted": [
+        "unaff_r7"
+      ]
+    },
+    {
+      "name": "FUN_020bd5d4",
+      "address": "0x020bd5d4",
+      "unaccounted": [
+        "unaff_r4"
+      ]
+    },
+    {
+      "name": "FUN_020bdfcc",
+      "address": "0x020bdfcc",
+      "unaccounted": [
+        "unaff_r6",
+        "unaff_r8"
+      ]
+    },
+    {
+      "name": "FUN_020be37c",
+      "address": "0x020be37c",
+      "unaccounted": [
+        "unaff_r5"
+      ]
+    },
+    {
+      "name": "FUN_020c2ba4",
+      "address": "0x020c2ba4",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020c4234",
+      "address": "0x020c4234",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020cb0d4",
+      "address": "0x020cb0d4",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020cb294",
+      "address": "0x020cb294",
+      "unaccounted": [
+        "unaff_r6"
+      ]
+    },
+    {
+      "name": "FUN_020cd828",
+      "address": "0x020cd828",
+      "unaccounted": [
+        "in_CY",
+        "in_NG",
+        "in_OV",
+        "in_Q",
+        "in_ZR",
+        "in_lr",
+        "in_r12",
+        "unaff_r10",
+        "unaff_r11",
+        "unaff_r4",
+        "unaff_r5",
+        "unaff_r6",
+        "unaff_r7",
+        "unaff_r8",
+        "unaff_r9"
+      ]
+    },
+    {
+      "name": "FUN_020cd900",
+      "address": "0x020cd900",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020cd994",
+      "address": "0x020cd994",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020cda38",
+      "address": "0x020cda38",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    },
+    {
+      "name": "FUN_020ce7f0",
+      "address": "0x020ce7f0",
+      "unaccounted": [
+        "in_CY",
+        "in_NG",
+        "in_OV",
+        "in_Q",
+        "in_ZR"
+      ]
+    },
+    {
+      "name": "FUN_020ce804",
+      "address": "0x020ce804",
+      "unaccounted": [
+        "in_CY",
+        "in_NG",
+        "in_OV",
+        "in_Q",
+        "in_ZR"
+      ]
+    },
+    {
+      "name": "FUN_020d36d0",
+      "address": "0x020d36d0",
+      "unaccounted": [
+        "unaff_r4"
+      ]
+    },
+    {
+      "name": "FUN_020d3f8c",
+      "address": "0x020d3f8c",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020d6430",
+      "address": "0x020d6430",
+      "unaccounted": [
+        "in_r3"
+      ]
+    },
+    {
+      "name": "FUN_020defb0",
+      "address": "0x020defb0",
+      "unaccounted": [
+        "extraout_r1",
+        "unaff_r4"
+      ]
+    },
+    {
+      "name": "FUN_020df1fc",
+      "address": "0x020df1fc",
+      "unaccounted": [
+        "unaff_r11",
+        "unaff_r5"
+      ]
+    },
+    {
+      "name": "FUN_020e0240",
+      "address": "0x020e0240",
+      "unaccounted": [
+        "unaff_r5"
+      ]
+    },
+    {
+      "name": "FUN_020e2be4",
+      "address": "0x020e2be4",
+      "unaccounted": [
+        "extraout_r1"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+// The LSW2 DS PC port's master server (a Cloudflare Worker over D1): the
+// public lobby list for co-op and Bounty Hunter games, room codes, and the
+// Discord log of lobbies. See README.md here for deploying it.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lsw2ds-master-server",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-13",
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "lsw2ds-master-server",
+    "database_id": "04bab9e4-e90a-4b11-9b62-61b32ca181b7"
+  }],
+  // Once a minute: remove lobbies whose host stopped answering, and log them.
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  // The server's address. viosarcade.xyz is a zone on this Cloudflare account;
+  // the address and its certificate are made on the first deploy. The game
+  // speaks plain HTTP on port 80 to it.
+  "routes": [
+    {
+      "pattern": "lsw2server.viosarcade.xyz",
+      "custom_domain": true
+    }
+  ]
+  // Secrets (never in this file - the repository is public):
+  //   DISCORD_WEBHOOK_COOP    the co-op lobbies' Discord channel webhook
+  //   DISCORD_WEBHOOK_BOUNTY  the Bounty Hunter lobbies' Discord channel webhook
+  // `npx wrangler secret put DISCORD_WEBHOOK_COOP` (and _BOUNTY) sets them.
+}

@@ -1,0 +1,252 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "kind_table": "0x020F4D0C",
+  "kind_stride": 12,
+  "kind_count": 15,
+  "count_measured_by": "field +0x02 holds the no-weapon sentinel 630 on every real row",
+  "record": {
+   "+0x00": "u16 weapon id -> 0x020EB7BC",
+   "+0x02": "u16 sentinel 630",
+   "+0x07": "u8 variant - 1 for kind 10, 2 for kind 11 (the stun)",
+   "+0x0A": "u8 flags"
+  },
+  "reader": "0x020187DC .. 0x020187F4",
+  "literal_checks": {
+   "0x020189EC": "0x020F4D0C",
+   "0x02018A00": "0x020F4D16",
+   "0x0209F554": "0x020EB7BC"
+  }
+ },
+ "note": "Read the PROJECTILE KIND table, so every hunter's shot is the right object.\n\nWHY THIS EXISTS. The port fired one model - `blaster_particle/BlasterParticle.glb`\n- for every character. The cartridge does not. Each action row's `+0x04` is a\nprojectile KIND, and the kind table gives each kind its own model. Boba Fett,\nDengar and Zuckuss all fire something visibly larger than a blaster bolt and the\nport was drawing them a small one.\n\nTHE CHAIN, all disassembled:\n\n    0x020F6BA8 + 0x24*row + 0x04     u8 PROJECTILE KIND\n    0x020F4D0C + 0x0C*kind + 0x00    u16 WEAPON ID\n    0x020EB7B8 + 8*weaponId + 0x04   u16 the descriptor set's TAG, which is the\n                                     MODEL ASSET (the game loads this as\n                                     0x020EB7BC + 8*id - see the note below)\n\nThe kind table's base and stride come from the reader itself:\n\n    020187dc  mov   r1,#0xc            STRIDE 12\n    020187e0  mul   r5,r7,r1           kind * 12\n    020187ec  ldr   r1,[pc,#0x1f8]     pool 0x020189EC = 0x020F4D0C\n    020187f4  ldrh  r2,[r1,r5]         field +0x00\n    02018808  bl    0x200fe94\n\nand a second reader takes a flags byte from the same rows:\n\n    pool 0x02018A00 = 0x020F4D16 = 0x020F4D0C + 0x0A\n\nFRAMING NOTE. 0x020EB7BC is not a table of its own: it is the TAG field of the\ndescriptor-set table at 0x020EB7B8, whose records are\n{u32 array, u16 tag, u16 count}. The tag is the model asset the set animates,\nwhich is why loading a halfword there gives a model. An earlier pass in this\nproject described 0x020EB7BC as a separate \"weapon table\" with fields\n{model, flags, anims}; the model was right and the other two were the count and\nthe NEXT set's array.\n\nTHAT `+0x00` IS A WEAPON ID, NOT AN ASSET, and the proof is self-checking: kind\n13 is Bossk's, its `+0x00` reads 550, and 0x020EB7BC + 8*550 gives asset 625\n`BosskGrenade`. A grenade is what Bossk throws. The same walk turns kind 10 into\n`BigBlasterPartic` and kind 0 into `BlasterParticle`, which is the model the port\nalready had for everyone.\n\nWHERE THE TABLE ENDS. Field `+0x02` reads 630 - the no-weapon sentinel that\n0x0209F404 stores as its constructor default and 0x020025F8 compares against -\nfor kinds 0 through 14, and garbage from 15 on. FIFTEEN KINDS, 0..14. Lando's\naction row asks for kind 15, one past the end, which is consistent with\neverything else about him: his dispatch byte `+0x03` is 0, his flags carry the\nmelee bit 0x40, and he swings an axe rather than firing anything.\n\nWHAT THE TEN HUNTERS USE\n\n    kind  0   BlasterParticle 429     4-LOM, Greedo, IG-88, Jango, Leia\n    kind 10   BigBlasterPartic 352    Boba Fett, Dengar\n    kind 11   BigBlasterPartic 352    Zuckuss   (same model, +0x07 = 2 not 1)\n    kind 13   BosskGrenade 625        Bossk\n    kind 15   -                       Lando, out of the table: melee\n\nZuckuss differs from Boba ONLY in byte `+0x07`, 2 against 1. He is the hunter\nwhose shot stuns, so `+0x07` is where that lives; the port already models the\nstun from config/bounty_hunter_combat.json and this is where the ROM says it\ncomes from.\n\nUsage:  python tools/export_projectile_kinds.py",
+ "kinds": [
+  {
+   "kind": 0,
+   "row": "0x020F4D0C",
+   "weapon_id": 528,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 1,
+   "row": "0x020F4D18",
+   "weapon_id": 528,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 2,
+   "row": "0x020F4D24",
+   "weapon_id": 529,
+   "model_asset": 5387,
+   "model_name": "XWingBlaster1",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 3,
+   "row": "0x020F4D30",
+   "weapon_id": 530,
+   "model_asset": 5388,
+   "model_name": "XWingBlaster2",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 4,
+   "row": "0x020F4D3C",
+   "weapon_id": 531,
+   "model_asset": 4930,
+   "model_name": "MDL0H",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 5,
+   "row": "0x020F4D48",
+   "weapon_id": 528,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 6,
+   "row": "0x020F4D54",
+   "weapon_id": 528,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 7,
+   "row": "0x020F4D60",
+   "weapon_id": 532,
+   "model_asset": 3946,
+   "model_name": "ProtonBomb",
+   "variant": 10,
+   "flags": "0x03"
+  },
+  {
+   "kind": 8,
+   "row": "0x020F4D6C",
+   "weapon_id": 533,
+   "model_asset": 4919,
+   "model_name": "TieAdvSuperShot",
+   "variant": 1,
+   "flags": "0x11"
+  },
+  {
+   "kind": 9,
+   "row": "0x020F4D78",
+   "weapon_id": 546,
+   "model_asset": 5211,
+   "model_name": "WhiteSpark",
+   "variant": 8,
+   "flags": "0x01"
+  },
+  {
+   "kind": 10,
+   "row": "0x020F4D84",
+   "weapon_id": 547,
+   "model_asset": 352,
+   "model_name": "BigBlasterPartic",
+   "variant": 1,
+   "flags": "0x01"
+  },
+  {
+   "kind": 11,
+   "row": "0x020F4D90",
+   "weapon_id": 547,
+   "model_asset": 352,
+   "model_name": "BigBlasterPartic",
+   "variant": 2,
+   "flags": "0x01"
+  },
+  {
+   "kind": 12,
+   "row": "0x020F4D9C",
+   "weapon_id": 548,
+   "model_asset": 619,
+   "model_name": "BobaRocket",
+   "variant": 0,
+   "flags": "0x01"
+  },
+  {
+   "kind": 13,
+   "row": "0x020F4DA8",
+   "weapon_id": 550,
+   "model_asset": 625,
+   "model_name": "BosskGrenade",
+   "variant": 9,
+   "flags": "0x01"
+  },
+  {
+   "kind": 14,
+   "row": "0x020F4DB4",
+   "weapon_id": 528,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "variant": 0,
+   "flags": "0x01"
+  }
+ ],
+ "characters": [
+  {
+   "runtime_id": 0,
+   "label": "4-LOM",
+   "kind": 0,
+   "in_table": true,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "note": ""
+  },
+  {
+   "runtime_id": 7,
+   "label": "Boba Fett",
+   "kind": 10,
+   "in_table": true,
+   "model_asset": 352,
+   "model_name": "BigBlasterPartic",
+   "note": ""
+  },
+  {
+   "runtime_id": 8,
+   "label": "Bossk",
+   "kind": 13,
+   "in_table": true,
+   "model_asset": 625,
+   "model_name": "BosskGrenade",
+   "note": ""
+  },
+  {
+   "runtime_id": 13,
+   "label": "Dengar",
+   "kind": 10,
+   "in_table": true,
+   "model_asset": 352,
+   "model_name": "BigBlasterPartic",
+   "note": ""
+  },
+  {
+   "runtime_id": 20,
+   "label": "Greedo",
+   "kind": 0,
+   "in_table": true,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "note": ""
+  },
+  {
+   "runtime_id": 27,
+   "label": "IG-88",
+   "kind": 0,
+   "in_table": true,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "note": ""
+  },
+  {
+   "runtime_id": 29,
+   "label": "Jango Fett",
+   "kind": 0,
+   "in_table": true,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "note": ""
+  },
+  {
+   "runtime_id": 34,
+   "label": "Lando Calrissian",
+   "kind": 15,
+   "in_table": false,
+   "model_asset": null,
+   "model_name": "",
+   "note": "kind 15 is past the end of the 15-row table - melee"
+  },
+  {
+   "runtime_id": 36,
+   "label": "Princess Leia (Boushh)",
+   "kind": 0,
+   "in_table": true,
+   "model_asset": 429,
+   "model_name": "BlasterParticle",
+   "note": ""
+  },
+  {
+   "runtime_id": 71,
+   "label": "Zuckuss",
+   "kind": 11,
+   "in_table": true,
+   "model_asset": 352,
+   "model_name": "BigBlasterPartic",
+   "note": ""
+  }
+ ]
+}

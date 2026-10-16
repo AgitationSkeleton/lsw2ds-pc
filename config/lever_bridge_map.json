@@ -1,0 +1,115 @@
+{
+ "schema": 1,
+ "source": {
+  "rom": "arm9_section_0_02000000.bin",
+  "capture": "out\\work\\gpudump_walk_mos\\inst0",
+  "ram_frame": 12000,
+  "scene_global": "0x0210930C",
+  "group_table": "0x0211F5C4",
+  "command_id_field": "actor + 0x1D9",
+  "handle_walk": "[[[scene+4]+0x2C] + group*8] + (index-1)*8, FUN_02067080",
+  "lever_tick": "0x0201F6F4 (0x0201F6F0 is its argument-spill push)",
+  "dispatcher": "FUN_020675D8"
+ },
+ "note": "Which lever opens which bridge, resolved end to end.\n\nWHY THIS EXISTS. Mos has three levers and two bridges, one bridge shared by\ntwo levers and the other driven by one. That fact was observed in play, not\nread from the cartridge, and until this map existed it was unresolved: the\nlever MECHANISM was decoded but there was no mapping. The port linked each lever\nto the OTHER LEVERS sharing its command id, which is not what the ROM does, so\npulling one actuated nothing.\n\nThis resolves it from ROM code plus captured RAM, with no step guessed.\n\nTHE CHAIN\n\n1.  Each lever carries its COMMAND ID in RAM at `actor + 0x1D9`. The lever tick\n    FUN_0201F6F4 case 2 passes it to FUN_020675D8, the command dispatcher.\n\n2.  config/lever_graph.json holds the decoded command list. The opcodes that\n    matter:\n\n        0x96  actuate entity (group, index) through vtable +0x40\n        0x74  decrement the shared counter, dispatch another command at zero\n\n3.  A (group, index) handle resolves through FUN_02067080:\n\n        [[[scene + 4] + 0x2C] + group*8] + (index - 1)*8\n\n    NOTE THE index - 1. Handle (0, 9) is the eighth slot, not the ninth. The\n    scene itself is [[DAT_020508F4 + 0x68] + 0x38C], and DAT_020508F4 is\n    0x0210930C - the same global the muzzle branch reads its level id from.\n\nWHAT IT RESOLVES TO, at frame 12000 of gpudump_walk_mos:\n\n    command 7  <- lever (99, 49, -69)\n               -> actuate (0, 9) = plank (98, 47, -78)\n\n    command 9  <- lever (-39, -1, 21) AND lever (21, -1, 92)\n               -> opcode 0x74, shared counter, dispatches command 5 at zero\n    command 5  -> act on (2, 2) and (2, 1), which are those two levers\n               -> actuate (0, 7) = plank (-13, -4, 107)\n               -> actuate (0, 8) = plank (-13, -4, 28)\n\nSo one command drives a bridge of TWO planks behind an AND of two levers, and\nthe other drives a single plank from one lever. That is the arrangement seen in\nplay, now with an address behind every arrow.\n\nUsage:  python tools/export_lever_bridge_map.py",
+ "levers": [
+  {
+   "actor": "0x021264C8",
+   "position": [
+    99.0,
+    49.0,
+    -69.0
+   ],
+   "command_id": 7,
+   "targets": [
+    {
+     "handle": [
+      0,
+      9
+     ],
+     "actor": "0x0212482C",
+     "kind": "bridge_plank",
+     "position": [
+      98.0,
+      47.0,
+      -78.0
+     ]
+    }
+   ]
+  },
+  {
+   "actor": "0x02127994",
+   "position": [
+    -39.0,
+    -1.0,
+    21.0
+   ],
+   "command_id": 9,
+   "targets": [
+    {
+     "handle": [
+      0,
+      7
+     ],
+     "actor": "0x021242D8",
+     "kind": "bridge_plank",
+     "position": [
+      -13.0,
+      -4.0,
+      107.0
+     ]
+    },
+    {
+     "handle": [
+      0,
+      8
+     ],
+     "actor": "0x021245C4",
+     "kind": "bridge_plank",
+     "position": [
+      -13.0,
+      -4.0,
+      28.0
+     ]
+    }
+   ]
+  },
+  {
+   "actor": "0x02127BFC",
+   "position": [
+    21.0,
+    -1.0,
+    92.0
+   ],
+   "command_id": 9,
+   "targets": [
+    {
+     "handle": [
+      0,
+      7
+     ],
+     "actor": "0x021242D8",
+     "kind": "bridge_plank",
+     "position": [
+      -13.0,
+      -4.0,
+      107.0
+     ]
+    },
+    {
+     "handle": [
+      0,
+      8
+     ],
+     "actor": "0x021245C4",
+     "kind": "bridge_plank",
+     "position": [
+      -13.0,
+      -4.0,
+      28.0
+     ]
+    }
+   ]
+  }
+ ]
+}

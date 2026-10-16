@@ -1,0 +1,2 @@
+# Drop <asset_id>.bin here - packed bytes, same wrapper as the original.
+# See ../README.md and out/raw/archive/catalog.json for asset ids.

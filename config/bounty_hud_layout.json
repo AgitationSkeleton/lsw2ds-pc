@@ -1,0 +1,623 @@
+{
+  "note": "Bounty Hunter touch screen, derived from a captured in-match frame by tools/export_hud_from_capture.py. Coordinates are DS pixels on a 256x192 screen. Sprites that abut and share a palette are grouped as composites, because the engine builds non-power-of-two art from several OBJ sprites - the portrait circle is 32x32 + 8x32 + 32x8 forming 40x40.",
+  "source_capture": "out/work/archive/gpudump_session1/inst0",
+  "screen": [
+    256,
+    192
+  ],
+  "touch": {
+    "bg_mode": 0,
+    "layers_enabled": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "backgrounds": [
+      {
+        "index": 0,
+        "priority": 0,
+        "char_base": 2,
+        "screen_base": 20,
+        "colour256": 1,
+        "xpos": 0,
+        "ypos": 0,
+        "opaque_px": 5436
+      },
+      {
+        "index": 1,
+        "priority": 1,
+        "char_base": 3,
+        "screen_base": 22,
+        "colour256": 0,
+        "xpos": 0,
+        "ypos": 0,
+        "opaque_px": 19240
+      },
+      {
+        "index": 2,
+        "priority": 2,
+        "char_base": 0,
+        "screen_base": 30,
+        "colour256": 0,
+        "xpos": 2688,
+        "ypos": 0,
+        "opaque_px": 49152
+      },
+      {
+        "index": 3,
+        "priority": 1,
+        "char_base": 0,
+        "screen_base": 31,
+        "colour256": 0,
+        "xpos": 3361,
+        "ypos": 0,
+        "opaque_px": 3744
+      }
+    ],
+    "elements": [
+      {
+        "x": 5,
+        "y": 5,
+        "w": 40,
+        "h": 40,
+        "palette": 4,
+        "priority": 1,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 26
+          },
+          {
+            "x": 32,
+            "y": 0,
+            "w": 8,
+            "h": 32,
+            "tile": 42
+          },
+          {
+            "x": 0,
+            "y": 32,
+            "w": 32,
+            "h": 8,
+            "tile": 46
+          }
+        ]
+      },
+      {
+        "x": 8,
+        "y": 8,
+        "w": 32,
+        "h": 32,
+        "palette": 8,
+        "priority": 0,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 10
+          }
+        ]
+      },
+      {
+        "x": 192,
+        "y": 17,
+        "w": 16,
+        "h": 16,
+        "palette": 2,
+        "priority": 1,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 16,
+            "h": 16,
+            "tile": 50
+          }
+        ]
+      },
+      {
+        "x": 5,
+        "y": 53,
+        "w": 40,
+        "h": 40,
+        "palette": 5,
+        "priority": 1,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 94
+          },
+          {
+            "x": 32,
+            "y": 0,
+            "w": 8,
+            "h": 32,
+            "tile": 110
+          },
+          {
+            "x": 0,
+            "y": 32,
+            "w": 32,
+            "h": 8,
+            "tile": 114
+          }
+        ]
+      },
+      {
+        "x": 8,
+        "y": 56,
+        "w": 32,
+        "h": 32,
+        "palette": 9,
+        "priority": 0,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 54
+          }
+        ]
+      },
+      {
+        "x": 169,
+        "y": 71,
+        "w": 8,
+        "h": 16,
+        "palette": 1,
+        "priority": 0,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 8,
+            "h": 16,
+            "tile": 8
+          }
+        ]
+      },
+      {
+        "x": 5,
+        "y": 101,
+        "w": 40,
+        "h": 40,
+        "palette": 6,
+        "priority": 1,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 118
+          },
+          {
+            "x": 32,
+            "y": 0,
+            "w": 8,
+            "h": 32,
+            "tile": 134
+          },
+          {
+            "x": 0,
+            "y": 32,
+            "w": 32,
+            "h": 8,
+            "tile": 138
+          }
+        ]
+      },
+      {
+        "x": 5,
+        "y": 149,
+        "w": 40,
+        "h": 40,
+        "palette": 7,
+        "priority": 1,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32,
+            "tile": 142
+          },
+          {
+            "x": 32,
+            "y": 0,
+            "w": 8,
+            "h": 32,
+            "tile": 158
+          },
+          {
+            "x": 0,
+            "y": 32,
+            "w": 32,
+            "h": 8,
+            "tile": 162
+          }
+        ]
+      },
+      {
+        "x": 164,
+        "y": 156,
+        "w": 16,
+        "h": 16,
+        "palette": 0,
+        "priority": 0,
+        "parts": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 16,
+            "h": 16,
+            "tile": 0
+          }
+        ]
+      }
+    ]
+  },
+  "top": {
+    "layers_enabled": [
+      1,
+      1,
+      0,
+      0,
+      0
+    ],
+    "backgrounds": [
+      {
+        "index": 0,
+        "priority": 3,
+        "char_base": 4,
+        "screen_base": 28,
+        "colour256": 0,
+        "opaque_px": 0
+      },
+      {
+        "index": 1,
+        "priority": 0,
+        "char_base": 0,
+        "screen_base": 0,
+        "colour256": 0,
+        "opaque_px": 642
+      }
+    ]
+  },
+  "slot_column": {
+    "count": 4,
+    "origin": [
+      5,
+      5
+    ],
+    "pitch": 48,
+    "size": [
+      40,
+      40
+    ],
+    "palettes": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "portrait_inset": [
+      3,
+      3
+    ],
+    "portrait_palettes": [
+      8,
+      9
+    ],
+    "note": "The column is a live scoreboard sorted by score, so the row is a ranking and the palette is the player's identity. Portraits are a second, smaller series drawn inset inside each circle - only occupied slots have one.",
+    "sorting_VERIFIED": "The sentence above is right. It was earlier flagged UNVERIFIED because every frame then to hand showed palettes 4,5,6,7 in slot order - which is what an unsorted column looks like, and also what a sorted one looks like when nobody has scored. out/work/archive/gpudump_3matches spans three matches in 6868 captured frames, and the player-to-row mapping is NOT constant across them: 4193 frames read {0:0, 1:1, 2:2, 3:3} and 461 frames, from f026710 to f031310, read {0:1, 1:0, 2:2, 3:3} - palette 5 in the TOP row and palette 4 in the second. So the column re-sorts and the palette travels with the player.",
+    "sorting_is_ANIMATED": "The transition is a slide, not a swap. At f026700, one frame before the reorder settles, the two bodies sit at y=20 and y=38; at f031320, one frame after it ends, they sit at y=11 and y=50. Between those they are at the exact row origins 5 and 53. That is why arenahud.cpp's read_rows() rejects any sprite whose (y - 5) is not a multiple of 48: mid-slide there is no row to report, and six frames of the capture correctly yield only the two players who were not moving.",
+    "what_this_settles_for_the_port": "read_rows() derives player = palette - 4 and stores rows[player] = row, rather than assuming the top row is player 1. That is now confirmed necessary: for 461 frames of this capture the top row belonged to player 2, and a port that read the column positionally would have shown the wrong player's score strip for all of them."
+  },
+  "bottom_screen_sprites": {
+    "capture": "out/work/gpudump_arena/inst0/state.json - GPU dump taken in Jabbas Tower mid-replay.",
+    "evidence_tier": "RUN - the hardware OAM the DS submitted for one frame.",
+    "CORRECTION": "An earlier analysis recorded that the game uses ZERO OAM and draws its UI as textured 3D quads. That is true of the TOP screen - oam_main is empty - but NOT the bottom. The in-match bottom screen uses 19 hardware sprites.",
+    "player_slots": {
+      "count": 4,
+      "pitch_y": 48,
+      "origin": [
+        5,
+        5
+      ],
+      "composition": "Each slot is three sprites: a 32x32 body, an 8x32 strip on its right at x=37, and a 32x8 strip below it.",
+      "slots": [
+        {
+          "player": 1,
+          "y": 5,
+          "palette": 4
+        },
+        {
+          "player": 2,
+          "y": 53,
+          "palette": 5
+        },
+        {
+          "player": 3,
+          "y": 101,
+          "palette": 6
+        },
+        {
+          "player": 4,
+          "y": 149,
+          "palette": 7
+        }
+      ],
+      "KEY_FINDING": "Each slot uses its OWN palette - 4, 5, 6, 7 in slot order. That is the player-colour system, done by palette swap on a shared tile set rather than by tinting."
+    },
+    "occupied_slot_overlay": [
+      {
+        "sprite": 4,
+        "at": [
+          8,
+          8
+        ],
+        "size": "32x32",
+        "palette": 8,
+        "note": "sits on player 1s slot"
+      },
+      {
+        "sprite": 9,
+        "at": [
+          8,
+          56
+        ],
+        "size": "32x32",
+        "palette": 9,
+        "note": "sits on player 2s slot"
+      }
+    ],
+    "overlay_reading": "Only the two players actually in the match carry this extra 32x32 sprite, so it marks an occupied slot - most likely the character portrait.",
+    "other_sprites": [
+      {
+        "index": 0,
+        "at": [
+          164,
+          156
+        ],
+        "size": "16x16",
+        "note": "bottom right, near the camera icon"
+      },
+      {
+        "index": 1,
+        "at": [
+          169,
+          71
+        ],
+        "size": "8x16"
+      },
+      {
+        "index": 2,
+        "at": [
+          145,
+          44
+        ],
+        "size": "8x16"
+      },
+      {
+        "index": 3,
+        "at": [
+          145,
+          60
+        ],
+        "size": "8x8"
+      },
+      {
+        "index": 8,
+        "at": [
+          119,
+          71
+        ],
+        "size": "16x16",
+        "note": "centre of the radar panel"
+      }
+    ],
+    "not_yet_known": "Which tile graphics correspond to which element.",
+    "four_radar_sprites_identified": {
+      "settled": "2026-08-30, by looking at out/work/gpudump_arena/inst0/screen1.png - the same frame this sprite list was read from. All four are CONTACTS DRAWN ON THE RADAR, not HUD chrome around it. That is what the question was really asking, and it is why none of them sits on a panel edge: the radar panel measures x 96..247, y 8..139, and all four fall inside it.",
+      "sprites": [
+        {"index": 1, "at": [169, 71], "size": "8x16", "reading": "a small grey cone or arrowhead sitting 2px from the panel's measured centre (171,73) - the POV player's own blip, position and facing."},
+        {"index": 8, "at": [119, 71], "size": "16x16", "reading": "a yellow LEGO minifigure head with a face - another character's contact, left of centre."},
+        {"index": 2, "at": [145, 44], "size": "8x16", "reading": "the upper two thirds of a tall grey-framed object with a lighter vertical core."},
+        {"index": 3, "at": [145, 60], "size": "8x8", "reading": "the lower third of that same object - 2 and 3 are vertically adjacent (y 44..59 then 60..67) and one composite, the way the portrait circle is three sprites. A non-character contact; the exact object type is NOT claimed from one frame."}
+      ],
+      "corrects": "This file previously labelled sprite 8 'centre of the radar panel'. It is not: the measured centre is (171,73) and sprite 8 is at (119,71), in the panel's left third. Sprite 1 is the one near the centre - and that explains why arenahud.cpp's old radar anchor of (169,71), which was taken from sprite 1's position with no stated reason, was nevertheless only two pixels out. It was the player's blip, which naturally sits at the middle of their own radar."
+    }
+  },
+  "audio_capture_constraint": "If waveform capture is ever added it must read melonDS SPU state directly, never a desktop loopback device - a system-wide capture would pick up any other application making noise. Nothing so far has sampled audio at all; the sound work has read emulator memory only.",
+  "display_layer_composition": {
+    "capture": "out/work/gpudump_arena/inst0/state.json, in Jabbas Tower.",
+    "evidence_tier": "RUN - the display controller state for one frame.",
+    "top_screen": {
+      "engine": "A (main)",
+      "bg_mode": 0,
+      "dispcnt": "0x00010358",
+      "layers_enabled": {
+        "BG0": true,
+        "BG1": true,
+        "BG2": false,
+        "BG3": false,
+        "OBJ": false
+      },
+      "BG0": {
+        "priority": 3,
+        "note": "the 3D layer - the arena render sits here, at the LOWEST priority"
+      },
+      "BG1": {
+        "priority": 0,
+        "note": "a tile layer above everything"
+      },
+      "reading": "Two layers and no sprites at all, consistent with the top screen being 3D plus one tile overlay.",
+      "CORRECTION_2026_08_31": "TRUE OF THIS FRAME, NOT OF THE SESSION. This reading and the CORRECTION above it were both taken from a single summary state.json; out/work holds 286,097 per-frame ones. Sampling every 25th across all 85 capture streams: 6,229 of 10,931 frames have the MAIN engine's OBJ layer enabled and 5,332 carry sprites in palette 4..7, in lobby captures, in-level walks and a live session alike. In gpudump_lobbywait/inst0 f025386 the main engine carries four 40x40 portrait cells at x=9, y=29/69/109/149 while oam_sub holds one sprite - the opposite assignment to the frame this file was written from. These captures do not record which physical screen each engine drives, so 'the top screen has no sprites' is not established either way. See port/frontend/slotcolour.h."
+    },
+    "bottom_screen": {
+      "engine": "B (sub)",
+      "bg_mode": 0,
+      "dispcnt": "0x00011f50",
+      "layers_enabled": {
+        "BG0": true,
+        "BG1": true,
+        "BG2": true,
+        "BG3": true,
+        "OBJ": true
+      },
+      "BG0": {
+        "priority": 0,
+        "char_base": 2,
+        "screen_base": 20,
+        "colour256": true
+      },
+      "BG1": {
+        "priority": 1,
+        "char_base": 3,
+        "screen_base": 22,
+        "size": 2
+      },
+      "BG2": {
+        "priority": 2,
+        "char_base": 0,
+        "screen_base": 30
+      },
+      "BG3": {
+        "priority": 1,
+        "char_base": 0,
+        "screen_base": 31
+      },
+      "reading": "All FOUR tile layers plus the 19 sprites are in use. The bottom screen is a five-plane composite, not a single image. A port that draws it as one flat canvas cannot reproduce the layering or the priority order, and BG1 and BG3 share priority 1, so their relative order is decided by layer index."
+    },
+    "why_it_matters": "Reproducing the bottom screen faithfully needs the right number of planes at the right priorities, not just the right pixels. This is the composition the DS actually uses.",
+    "not_yet_known": "Which artwork lives on each layer, and what BG2 and BG3 contribute given BG0 and BG1 carry the visible panels."
+  },
+  "ds_top_screen_in_match": {
+    "capture": "out/work/menu_shots/ds_top_during_menus.png - misnamed; it is the IN-MATCH top screen. A later dump in the same run overwrote the settings-screen one.",
+    "evidence_tier": "RUN - a DS frame, now with the correct BGRA channel order.",
+    "first_correct_colour_view_of_the_3d_world": true,
+    "hud_elements_visible": {
+      "portrait": "A circular character portrait in the very top-left corner, dark with a coloured ring.",
+      "hearts": "FOUR red hearts in a row to the right of the portrait - the max-health display, visually confirming the 4 at +0x6B6 that was decoded from memory.",
+      "nothing_else": "No score, no timer, no ammo on the top screen. It is portrait plus hearts only."
+    },
+    "world_render_notes": {
+      "geometry": "Blue LEGO-stud bridge deck, grey stone pillars with visible brick texture, sand-coloured ground, warm hazy sky.",
+      "character": "A small green-torso figure on the bridge - Greedo, consistent with the driven match roster.",
+      "style": "Flat untextured-looking lighting on the studs, strong texture detail on the stone. No visible fog on the near geometry."
+    },
+    "why_it_matters": "The port must match the DS in 3D world space as well as UI. This is the first reference frame for that, and it has never been compared against the port. The port top screen has not been rendered at all in any capture so far.",
+    "still_missing": [
+      "The DS TOP screen during MENUS - every menu dump so far read screen1 and the one screen0 that exists is in-match.",
+      "A port render of the top screen to compare against this.",
+      "The inter-screen gap the hardware shows."
+    ]
+  },
+  "TOP_SCREEN_COMPARISON": {
+    "ds": "out/work/menu_shots/ds_top_during_menus.png (in-match, correct BGRA)",
+    "port": "out/work/godot_ui_capture/04_jabbas_tower_boba_hud.png, 256x192, rendered 18:38",
+    "first_ever_3d_comparison": true,
+    "what_matches": [
+      "Circular character portrait in the top-left corner.",
+      "FOUR red hearts in a row to its right.",
+      "Both are 256x192 native with integer scaling, so pixels are directly comparable."
+    ],
+    "MAJOR_MISMATCH_camera": {
+      "ds": "The camera sits far back. The player occupies roughly 15 percent of the screen height and a large amount of level - bridge, pillars, sky - is visible around them.",
+      "port": "The camera is very close. The player fills roughly 70 percent of the screen height and almost no level context is visible.",
+      "current_port_value": "capture_ui.gd frames the player with camera_offset Vector3(0, 7, 16).",
+      "consequence": "This is the single biggest 3D discrepancy. Every other world comparison - geometry scale, fog, draw distance - is meaningless until the camera matches.",
+      "how_to_get_the_real_value": "Do NOT guess it. The arena GPU dump already captured a real 3D ClipMatrix with content - rows (-221.9, 0, 0, 0), (0, 281.8, -52.6, -52.6), (0, 127.0, 116.7, 116.7), (-163.0, 162.1, 114.7, 115.6). That is projection times view for a real arena frame, and the view half yields the camera distance and field of view directly. It is in out/work/gpudump_mat2/inst0/state.json."
+    },
+    "also_unmatched": [
+      "Environment colour and lighting - though the two frames are at different points in the level, so this is not yet a fair comparison.",
+      "Whether the port applies fog or draw-distance limits at all."
+    ],
+    "assessment": "HUD elements are close. The 3D camera is not, and it invalidates any world-space comparison until fixed.",
+    "after_heart_wiring": {
+      "port": "out/work/godot_ui_capture/04_jabbas_tower_boba_hud.png, re-rendered after wiring",
+      "verified": [
+        "Four hearts render from the extracted 11x13 sprite at the corrected y 25, x 50/66/82/97 with a 16px pitch.",
+        "The portrait circle sits top-left as on the DS.",
+        "Both frames are 256x192 native, so the comparison is pixel-for-pixel valid."
+      ],
+      "still_wrong": [
+        "THE CAMERA, unchanged and still the dominant 3D fault. The DS player occupies about 15 percent of screen height; the port player fills roughly 70 percent. No world comparison means anything until this is fixed.",
+        "The portrait RING is still drawn procedurally, not a sprite. Its measured numbers are right but the pixels are original work.",
+        "Environment colour and lighting cannot be judged while the camera differs this much."
+      ],
+      "assessment": "HUD sprite work is landing. The 3D camera is now the single largest presentational gap and has been deferred three times."
+    },
+    "after_camera_fix": {
+      "port": "out/work/godot_ui_capture/04_jabbas_tower_boba_hud.png, re-rendered with fov 45.0 and offset (0, 22, 43.5)",
+      "result": "The composition now matches. The player occupies roughly 15 percent of screen height as on the DS, and the level is visible around them - blue LEGO bridge deck, tower structure, walls. Before the fix the player filled about 70 percent and almost no level was visible.",
+      "both_camera_values_measured": "fov 45.00 from the projection matrix, distance 43.5 and height 22 from the character polygon groups in camera space. Neither was estimated.",
+      "now_comparable": "With the camera matched, world-space comparisons finally mean something: geometry scale, texture detail, lighting and fog can be judged against the DS frame. None of that was assessable before.",
+      "remaining_visible_differences": [
+        "Lighting - the DS frame has warm hazy sky and softer ambient; the port is flatter and browner.",
+        "The DS shows stone pillars with strong brick texture where the port shows plainer surfaces - though the two frames are at different points in the level, so this is not yet a fair test.",
+        "The portrait ring is still drawn procedurally rather than being a sprite."
+      ]
+    }
+  },
+  "DS_IN_MATCH_TOUCH_SCREEN": {
+    "reference": "out/work/menu_shots/ds_inmatch_touch.png - DS bottom screen during a match, BGRA corrected. The first correct-colour reference for this screen.",
+    "evidence_tier": "RUN - a DS frame.",
+    "measured": {
+      "slot_rings": "Four circular portrait rings down the left, each 36px across at x 6..41, at y 6, 54, 102 and 150 - a 48px pitch, matching the OAM slot pitch already decoded.",
+      "ring_colours": "Slot 1 blue, slot 2 green, slot 3 pink, slot 4 purple. These correspond to the OAM palettes 4, 5, 6, 7 decoded earlier from the sprite list.",
+      "occupied_vs_empty": "Slots 1 and 2 show character portraits (Boba Fett dark helmet, Greedo green). Slots 3 and 4 are plain coloured discs - the players are absent.",
+      "counters": "Each slot carries a white SKULL icon with a number and a red icon with a number, immediately right of the portrait. These are the kill and death counters.",
+      "radar": "A grey-bezelled panel filling the right two thirds. Field is very dark blue (0,0,24) with concentric BLUE rings and cross lines, a white triangle for the local player, orange blips for others, and a small white capsule for an object.",
+      "bottom_row": "A green circular button, a wireless signal-strength icon, and a CAMERA icon at the far right."
+    },
+    "PORT_DIFFERENCES": [
+      "Port radar field is BLACK with RED rings; the DS is dark blue (0,0,24) with BLUE rings.",
+      "Port slot rings read blue/green/red/grey; the DS is blue/green/pink/purple.",
+      "Port bottom-right shows a plain grey circle where the DS has a camera icon.",
+      "Every element on the port screen is drawn procedurally - none of these are extracted sprites."
+    ],
+    "IMPORTANT_for_match_flow": "The kill and death counters ARE rendered on this screen, per player. The scoreboard has never been found in RAM, but it is visibly on the bottom screen - so watchpointing the tiles or the counter digits here is another route to it besides the +0x6B6 death anchor.",
+    "not_yet_done": "None of this is built in the port. All of it is now measured.",
+    "port_after_colour_corrections": {
+      "capture": "out/work/godot_ui_capture/06_arena_touch_screen.png, re-rendered after the ring and radar corrections.",
+      "now_matching": [
+        "All four slot ring colours - blue (0,113,251), green (24,211,0), red (251,0,8), magenta (186,0,251).",
+        "Radar field (8,0,40) and grid (32,8,130) - the near-black blue-purple the DS uses, replacing a lighter navy with brighter blue rings.",
+        "Kill and death counters present per slot, skull icon and red icon with numbers.",
+        "Radar geometry: two concentric rings plus four cross lines, local player as a centre triangle, other players as orange blips."
+      ],
+      "still_wrong": [
+        "OCCUPIED SLOTS SHOW PLAIN DISCS. The DS draws the character PORTRAIT inside the ring for a player who is present - Boba Fett and Greedo are clearly visible in the reference. The port shows only the coloured disc.",
+        "The bottom-right control is a plain grey circle; the DS has a CAMERA icon.",
+        "The DS radar carries a small white capsule contact that the port does not draw - an object rather than a player, unidentified."
+      ],
+      "assessment": "Colour and layout of this screen now match. What is missing is content: portraits in the slots, and the camera icon."
+    },
+    "slot_portraits_now_drawn": {
+      "fixed": "Occupied slots now draw the character portrait inside the ring, 32x32 inset +3,+3, matching the DS.",
+      "how": "arena_bottom_screen already stored and drew a per-slot portrait but was never given one. set_slot now takes a runtime id and resolves the texture through the portrait provider that was already attached.",
+      "two_false_starts_worth_recording": [
+        "My first patch guarded on the string \"runtime_id: int = -1\", which already appeared in _draw_head_glyph, so it reported success and changed nothing while both call sites were updated - breaking the arena capture with an arity error.",
+        "A guard string must be unique to the thing being changed. Matching a substring that exists elsewhere in the file produces a silent no-op that looks like success."
+      ],
+      "verified": "out/work/godot_ui_capture/06_arena_touch_screen.png - faces visible in the occupied rings.",
+      "still_wrong": [
+        "The bottom-right control is a plain grey circle; the DS has a camera icon.",
+        "The DS radar carries a small white capsule contact the port does not draw."
+      ]
+    }
+  }
+}

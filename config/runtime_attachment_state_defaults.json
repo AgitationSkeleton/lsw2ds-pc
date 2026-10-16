@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "suppressed_default_parts": {
+    "177": {
+      "slot": "gear",
+      "reason": "Mode-3 default-state record. ARM9 compares selector 449 against the group's current selector and skips model creation when already selected; treating it as an unconditional attachment incorrectly gives runtime row 48 the TuskenRaiderHead model."
+    }
+  }
+}

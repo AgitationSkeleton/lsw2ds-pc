@@ -1,0 +1,41 @@
+--- a/runner/src/debug_server.cpp
++++ b/runner/src/debug_server.cpp
+@@ -1394,6 +1394,38 @@
+         return "{\"hex\":\"" + hex + "\"}";
+     }
+ 
++    // LSW2 PORT PATCH: a write counterpart to read_mem.
++    //
++    // The surface being read-only is the right default for something whose job
++    // is to observe a running program, but it makes anything that CHANGES guest
++    // state untestable from a script. Verifying the level warp meant driving the
++    // host mouse to click a button in our own UI; checking all 73 level names
++    // would have meant doing that 73 times.
++    //
++    // This runs on the frontend thread inside debug_pump(), between frames, the
++    // same as every other command here - so it is as safe as the guest's own
++    // writes and cannot land mid-instruction.
++    //
++    // Opt-in rather than always available, because a session that only wants to
++    // watch should not be writable by accident.
++    if (cmd == "write_mem") {
++        static const bool allowed = [] {
++            const char* v = std::getenv("NDS_DEBUG_ALLOW_WRITES");
++            return v != nullptr && v[0] == '1' && v[1] == 0;
++        }();
++        if (!allowed)
++            return "{\"error\":\"writes disabled; set NDS_DEBUG_ALLOW_WRITES=1\"}";
++        uint64_t cpu = json_u64(line, "cpu", 9);
++        uint32_t addr = (uint32_t)json_u64(line, "addr", 0);
++        uint32_t value = (uint32_t)json_u64(line, "value", 0);
++        uint32_t width = (uint32_t)json_u64(line, "width", 32);
++        const int which = cpu == 7 ? 7 : 9;
++        if (width == 32) bus_device_write32(which, addr, value);
++        else if (width == 16) bus_device_write16(which, addr, (uint16_t)value);
++        else return "{\"error\":\"width must be 16 or 32\"}";
++        return "{\"ok\":true}";
++    }
++
+     if (cmd == "read_io") {
+         uint64_t cpu = json_u64(line, "cpu", 9);
+         uint32_t addr = (uint32_t)json_u64(line, "addr", 0);

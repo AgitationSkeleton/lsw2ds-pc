@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "approved_character_renders": {
+    "zuckuss": {
+      "path": "renders/characters/zuckuss.png",
+      "state": "complete_reference_pose",
+      "source": "out/exported/characters/zuckuss/static_glb/ZuckussMiniKit.glb"
+    }
+  },
+  "candidate_character_renders": {
+    "greedo": "runtime assembly with corrected head/leg/torso bindings, pistol socket, and gun-idle pose; awaits visual approval",
+    "princess_leia_boushh": "runtime row 36 assembly with helmet and weapon; safe generic idle is provisional",
+    "lando_calrissian_jabbas_palace": "runtime row 34 assembly with helmet and axe; safe generic idle is provisional"
+  },
+  "rejected_character_renders": {
+    "4lom": "old textured MiniKit build rig in disassembled state",
+    "boba_fett": "old textured MiniKit build rig in disassembled state",
+    "bossk": "old textured MiniKit build rig in disassembled state",
+    "boussh": "old textured MiniKit build rig in disassembled state; superseded by runtime row 36 candidate",
+    "dengar": "old textured MiniKit build rig in disassembled state",
+    "ig88": "old textured MiniKit build rig in disassembled state",
+    "jango_fett": "old textured MiniKit build rig in disassembled state"
+  },
+  "rejected_output_directory": "out/work/rejected_character_previews",
+  "policy": "A generated PNG is not canonical until its assembly, pose, and appearance textures are visually approved."
+}

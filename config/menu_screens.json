@@ -1,0 +1,501 @@
+{
+ "source": "Huffman text bank, decompressed at runtime and captured by a write watchpoint on the staging buffer at 0x02104918. Decoder disassembled at 0x0205CD70.",
+ "evidence_tier": "BOTH - runtime capture plus ROM disassembly of the decoder",
+ "note": "These are the game's own strings. Anything the port shows that is not in this file is an addition, not parity, and must be labelled as such.",
+ "screens": {
+  "arena_mode_select": {
+   "title": "Arena Mode Select",
+   "entries": [
+    "Host Multi-Card Game",
+    "Host Single-Card Game",
+    "Join Wireless Game",
+    "Exit"
+   ],
+   "note": "The two Host entries are distinct. Single-Card is DS Download Play, which a second cartridge-running DS cannot join; Multi-Card is the one that pairs two carts.",
+   "layout": {
+    "captured": "out/work/menu_shots/connection_screen.png",
+    "evidence_tier": "RUN - measured from a captured framebuffer.",
+    "screen": "bottom (touch), 256x192",
+    "background": "starfield, same as Game Settings",
+    "title": {
+     "text": "Arena Mode Select",
+     "colour_rgb": [
+      "243",
+      "203",
+      "16"
+     ],
+     "bbox": {
+      "x0": 53,
+      "x1": 199,
+      "y0": 16,
+      "y1": 26
+     },
+     "centred": true
+    },
+    "entries": {
+     "left_aligned_x": 31,
+     "rows_y": [
+      62,
+      90,
+      118,
+      154
+     ],
+     "pitch_px": 28,
+     "exit_gap_px": 36,
+     "note": "The first three entries are evenly spaced 28px apart. Exit sits 36px below the third, visibly separated, and is the only entry without a DS icon.",
+     "order_top_to_bottom": [
+      "Host Multi-Card Game",
+      "Host Single-Card Game",
+      "Join Wireless Game",
+      "Exit"
+     ],
+     "icons": "The three wireless entries carry a small DS icon to their left; Exit does not."
+    },
+    "selection_highlight": {
+     "selected_rgb": [
+      "81",
+      "243",
+      "251"
+     ],
+     "unselected_rgb": [
+      "0",
+      "113",
+      "251"
+     ],
+     "note": "Selection is shown by colour alone - the highlighted entry is yellow, the rest orange. There is no cursor, bar or box. Host Multi-Card Game was selected in the capture, which is the default.",
+     "unselected_shade_rgb": [
+      "0",
+      "81",
+      "178"
+     ]
+    },
+    "COLOUR_CORRECTION": "These three were stored with RED and BLUE EXCHANGED - the melonDS framebuffer is BGRA and the first measurement read it as RGBA. Selected was recorded as (251,243,81) and unselected as (243,121,32), which are the exact channel reverses of the true (81,243,251) and (0,113,251). Re-measured directly from out/work/menu_shots/connection_screen.png: title #F3CB10, highlighted row #51F3FB, normal rows #0071FB with #0051B2 shading. runtime/ds_menu.gd already held the CORRECTED values, so the port was right and this file was stale - do not \"fix\" ds_menu.gd from this file again."
+   },
+   "CONFIRMED_AGAINST_STRINGS": "The rendered screen shows exactly the four decoded entries, in the order this file already recorded, which independently confirms the Huffman string extraction against a picture of the screen."
+  },
+  "connection": {
+   "entries": [
+    "Hosting Wireless Game",
+    "Browsing Wireless Game",
+    "Waiting for Host",
+    "START"
+   ],
+   "templates": [
+    "@1 - Arena"
+   ],
+   "note": "@1 - Arena renders as the host's wireless nickname followed by ' - Arena'."
+  },
+  "game_settings": {
+   "title": "Game Settings",
+   "entries": [
+    "Start Game"
+   ],
+   "templates": [
+    "Time: @2 min"
+   ],
+   "settings": {
+    "match_type": [
+     "Deathmatch",
+     "Capture"
+    ],
+    "arena": [
+     "Mos Eisley Streets",
+     "Jabba's Tower"
+    ],
+    "scoring_strings": [
+     "Kills - Deaths",
+     "Points - Deaths",
+     "DM Points"
+    ]
+   },
+   "NOT_ESTABLISHED": "Which control owns the three scoring strings, and whether they are a scoring mode or a scoreboard column header. They appear in the same flow as the match type but are separate strings.",
+   "layout": {
+    "captured": "out/work/menu_shots/mode_select_screen.png",
+    "evidence_tier": "RUN - measured from a captured framebuffer, like the arena HUD.",
+    "screen": "bottom (touch), 256x192",
+    "background": "starfield - black with scattered white points. The port already has starfield.gd.",
+    "title": {
+     "text": "Game Settings",
+     "colour_rgb": [
+      16,
+      195,
+      195
+     ],
+     "bbox": {
+      "x0": 72,
+      "x1": 183,
+      "y0": 12,
+      "y1": 24
+     },
+     "centred": true
+    },
+    "option_rows": {
+     "count": 3,
+     "contents_top_to_bottom": [
+      "arena",
+      "match type",
+      "time limit"
+     ],
+     "bands_y": [
+      [
+       35,
+       63
+      ],
+      [
+       75,
+       103
+      ],
+      [
+       115,
+       143
+      ]
+     ],
+     "pitch_px": 40,
+     "row_height_px": 29,
+     "arrows": {
+      "colour_rgb": [
+       243,
+       113,
+       0
+      ],
+      "left_x0": 40,
+      "right_x1": 216,
+      "note": "A left and right arrow flank each row; the span 40..216 is constant for all three."
+     }
+    },
+    "action": {
+     "text": "Start Game",
+     "colour_rgb_approx": [
+      255,
+      255,
+      80
+     ],
+     "bbox": {
+      "x0": 84,
+      "x1": 172,
+      "y0": 164,
+      "y1": 174
+     },
+     "centred": true
+    },
+    "other": "A wireless signal-strength icon sits in the bottom-right corner."
+   },
+   "SETTLED": "The settings screen has exactly THREE arrow-selectable rows - arena, match type and time limit - and a Start Game action. So the three scoring strings (Kills - Deaths, Points - Deaths, DM Points) are NOT controls on this screen. They belong somewhere else, most likely the scoreboard. This replaces the earlier guess that all five strings came from one option cycle."
+  },
+  "character_select": {
+   "title": "Select Character",
+   "entries": [
+    "4-LOM",
+    "Boba Fett",
+    "Bossk",
+    "Dengar",
+    "Greedo",
+    "IG-88",
+    "Jango Fett",
+    "Lando Jabba's Palace",
+    "Leia Bounty Hunter",
+    "Zuckuss"
+   ],
+   "note": "Ten names, complete, and the on-screen spinner order is now recorded in spinner_order. entries[] stays alphabetical for lookup; spinner_order is what the port must present.",
+   "confirmed_indices": {
+    "4-LOM": 0,
+    "Boba Fett": 7,
+    "Bossk": 8,
+    "Dengar": 13,
+    "Greedo": 20,
+    "IG-88": 27,
+    "Jango Fett": 29,
+    "Lando Jabba's Palace": 34,
+    "Leia Bounty Hunter": 36,
+    "Zuckuss": 71
+   },
+   "index_source": "actor +0x6BB during play. ALL TEN are now confirmed.",
+   "layout": {
+    "captured": "out/work/menu_shots/try_99.png - GPU dump mid-replay, ~99s after launch.",
+    "evidence_tier": "RUN - measured from a captured framebuffer.",
+    "screen": "bottom (touch), 256x192, starfield background",
+    "title": {
+     "text": "Select Character",
+     "colour": "yellow",
+     "bbox": {
+      "x0": 63,
+      "x1": 191,
+      "y0": 12,
+      "y1": 22
+     },
+     "centred": true,
+     "colour_rgb": [
+      243,
+      203,
+      16
+     ],
+     "shade_rgb": [
+      178,
+      154,
+      16
+     ],
+     "colour_correction": "MEASURED from out/work/menu_shots/try_99.png. This entry said cyan; the title is yellow and the SELECTED NAME is the cyan one - the two were exchanged. All values sit on the DS 6-bit lattice."
+    },
+    "selected_name": {
+     "colour": "cyan",
+     "bbox": {
+      "x0": 51,
+      "x1": 204,
+      "y0": 52,
+      "y1": 64
+     },
+     "centred": true,
+     "note": "One character at a time, flanked by arrows - a spinner, not a grid.",
+     "colour_rgb": [
+      81,
+      243,
+      251
+     ],
+     "shade_rgb": [
+      56,
+      178,
+      178
+     ],
+     "colour_correction": "MEASURED - this is the cyan element, not the title."
+    },
+    "arrows": {
+     "colour": "blue",
+     "span_x": [
+      24,
+      232
+     ],
+     "band_y": [
+      43,
+      71
+     ],
+     "note": "Wider span than the Game Settings arrows, which run 40..216.",
+     "colour_rgb": [
+      0,
+      113,
+      251
+     ],
+     "colour_correction": "MEASURED - blue, the same blue as slot ring 0. The Game Settings arrows really are orange (243,113,0); these are not."
+    },
+    "countdown": {
+     "colour": "red",
+     "bbox": {
+      "x0": 119,
+      "x1": 136,
+      "y0": 76,
+      "y1": 86
+     },
+     "centred": true,
+     "note": "Showed 27 in the capture. The text buffer was seen counting 29 down to 21 across this window, so this is the pick timer in seconds.",
+     "colour_rgb": [
+      243,
+      40,
+      40
+     ],
+     "shade_rgb": [
+      178,
+      32,
+      32
+     ],
+     "colour_correction": "MEASURED - red, not blue."
+    },
+    "peer_status": {
+     "colour": "white",
+     "position": "lower left, from x=24",
+     "template": "@1 - @2",
+     "observed": "melonDS - ????",
+     "note": "The other player's wireless nickname and their chosen character.",
+     "colour_rgb": [
+      251,
+      251,
+      251
+     ],
+     "shade_rgb": [
+      203,
+      203,
+      203
+     ]
+    },
+    "no_grid": "There is no portrait grid on this screen - it is a single centred name with arrows."
+   },
+   "CORRECTION_the_???_is_not_a_character": "Earlier this file recorded ???? as a tenth, locked roster entry. It is NOT. The capture shows \"melonDS - ????\" in the peer-status line: ???? is the placeholder for a player who has not yet confirmed a character. The roster string list therefore holds NINE named characters plus a placeholder that was mistaken for a tenth. Since the roster is stated to be ten Bounty Hunters, one name is still missing from the decode - the demonstrated flow simply never scrolled past it.",
+   "ROSTER_COMPLETE": "All TEN Bounty Hunters are now decoded. The tenth is 4-LOM, recovered by cycling the character spinner under a driven script while watchpointing the Huffman decoder output at 0x02104918 - the same technique that recovered the rest of the menu vocabulary. It never appeared in earlier captures because no demonstrated flow scrolled onto it.",
+   "spinner_order": {
+    "direction": "pressing LEFT, starting from the default selection",
+    "sequence": [
+     "Greedo",
+     "Jango Fett",
+     "Zuckuss",
+     "Leia Bounty Hunter",
+     "Lando Jabba's Palace",
+     "IG-88",
+     "Dengar",
+     "Bossk",
+     "Boba Fett",
+     "4-LOM"
+    ],
+    "wraps": "Yes - 4-LOM wraps back to Greedo, confirmed across two full cycles.",
+    "cycle_length": 10,
+    "reverse_order_pressing_right": [
+     "Greedo",
+     "4-LOM",
+     "Boba Fett",
+     "Bossk",
+     "Dengar",
+     "IG-88",
+     "Lando Jabba's Palace",
+     "Leia Bounty Hunter",
+     "Zuckuss",
+     "Jango Fett"
+    ],
+    "default_selection": "Greedo - the spinner sat on it before any input.",
+    "evidence": "Driven script pressed LEFT 16 times during character select while the Huffman decoder output was watchpointed. 36 roster-name decodes produced a clean repeating cycle of length 10 over two full laps, so the order is measured rather than assumed.",
+    "evidence_tier": "RUN - decoder output captured under scripted input.",
+    "note": "The interleaved ???? decodes are the peer-status line being redrawn on every change, not roster entries.",
+    "supersedes": "The alphabetical listing in entries[], which was flagged as not the on-screen order. It now is known."
+   },
+   "four_lom_index_recovered": {
+    "index": 0,
+    "method": "Driven script: nine LEFT presses at character select - which the measured spinner order lands exactly on 4-LOM - followed by a twelve-frame A press to confirm. The match then came up with indices 0 and 20 ticking, 736 samples each.",
+    "first_attempt_failed_because": "The pulse generator had no way to append a trailing button, so it overwrote the confirm press in the source script and player one never joined. The generator now takes --then.",
+    "evidence_tier": "RUN - actor +0x6BB read during a driven match.",
+    "note": "4-LOM is index 0, the lowest of the ten, while the rest are scattered up to 71. The roster is not contiguous."
+   }
+  },
+  "boot": {
+   "entries": [
+    "LICENSED BY NINTENDO"
+   ]
+  }
+ },
+ "format_placeholders": {
+  "tokens": [
+   "@1",
+   "@2",
+   "@3"
+  ],
+  "encoding": "The decoder tests for bytes >= 0xF0, which is very likely how placeholders are carried in the compressed stream. Not confirmed.",
+  "observed": {
+   "@1 - @2": "melonDS - Arena on the connection screen, and melonDS - ???? on character select, where @2 is the peer's chosen character. One template, two uses.",
+   "Time: @2 min": "the time-limit row"
+  }
+ },
+ "not_yet_captured": [
+  "The connection sub-screens: Hosting / Browsing / Waiting for Host.",
+  "The complete option list for each setting."
+ ],
+ "menus_are_2d_not_polygons": "The GPU dump of the settings screen reported polygon_count 0. The menus are drawn as 2D background layers, not as textured 3D quads. The earlier note about the game drawing its UI as 3D quads with zero OAM applies to the ARENA HUD only. Menu layout must therefore be measured from the framebuffer, not recovered from a display list.",
+ "in_match_bottom_screen": {
+  "captured": "out/work/menu_shots/in_match_hud.png",
+  "contents": "Four player slots down the left, each a circular portrait with a status icon beside it; a circular radar or map panel filling the right two-thirds with concentric red rings and player blips; a green action button, a wireless signal icon and a camera icon along the bottom right.",
+  "note": "This is the arena HUD bottom screen, already scored at 70% from earlier framebuffer work. Recorded here because the capture exists, not as new decoding."
+ },
+ "SCREEN_NAMING": {
+  "why_this_note": "The two setup screens are easy to mislabel, and were. The screen TITLED \"Arena Mode Select\" is functionally the CONNECTION chooser - how do you connect - while the screen titled \"Game Settings\" is where the match MODE is actually chosen. Corrected after the capture files were named the wrong way round.",
+  "connection_screen": {
+   "game_title": "Arena Mode Select",
+   "purpose": "choose how to connect: Host Multi-Card Game, Host Single-Card Game, Join Wireless Game, Exit",
+   "capture": "out/work/menu_shots/connection_screen.png"
+  },
+  "mode_select_screen": {
+   "game_title": "Game Settings",
+   "purpose": "choose the arena, the match mode (Deathmatch or Capture) and the time limit, then Start Game",
+   "capture": "out/work/menu_shots/mode_select_screen.png"
+  },
+  "in_match_hud": {
+   "purpose": "the bottom-screen HUD during a match - radar, player slots, action buttons",
+   "capture": "out/work/menu_shots/in_match_hud.png"
+  },
+  "note": "The config keys below remain arena_mode_select and game_settings because those are the game s own titles and the entries under each are content-correct. Only the capture FILENAMES were wrong."
+ },
+ "CHANNEL_ORDER_CORRECTION": {
+  "what_went_wrong": "melonDS writes its framebuffer as BGRA. Every screen capture was read as RGBA, so red and blue were exchanged in every colour measured from a captured frame.",
+  "reported_by": "Visual review: the menu shots looked colour-inverted.",
+  "wrong_values_that_were_pushed_into_the_port": {
+   "title": "cyan (16,195,195)",
+   "unselected": "orange (243,121,32)",
+   "selected": "yellow (251,243,81)"
+  },
+  "correct_values": {
+   "title": "gold (243,203,16)",
+   "unselected": "blue (0,113,251)",
+   "selected": "cyan (81,243,251)"
+  },
+  "the_worst_part": "The port ALREADY had a gold title and blue items, and they were essentially right. They were overwritten with the swapped values, and test_runtime.gd - which had correctly been asserting gold and blue - was edited to assert the swapped ones. A test that was catching the error was changed to endorse it.",
+  "fixed": "ds_menu.gd, test_runtime.gd and test_menu_strings.gd all restored to the corrected measurements, and every .bin capture reconverted to PNG with the right channel order.",
+  "standing_rule": "Any colour taken from a melonDS framebuffer must be read BGRA. Geometry measurements are unaffected - only colour was wrong."
+ },
+ "SIDE_BY_SIDE_COMPARISON": {
+  "ds": "out/work/menu_shots/mode_select_screen.png (Game Settings, captured from the running game)",
+  "port": "out/work/godot_ui_capture/01_server_setup.png (Arena Setup, rendered 18:06)",
+  "what_matches": [
+   "Gold title, blue entries - the palette is right now that the BGRA order is fixed.",
+   "Starfield background.",
+   "The four connection strings are exact: Host Multi-Card Game, Host Single-Card Game, Join Wireless Game, Exit."
+  ],
+  "what_does_NOT_match": [
+   "TITLE: the port says \"Arena Setup\". The DS says \"Game Settings\". The port title is invented.",
+   "LAYOUT: the DS centres each VALUE with a left and right arrow flanking it. The port uses a two-column label-left / value-right list with no arrows. Completely different presentation.",
+   "ROW COUNT: the DS Game Settings screen has exactly THREE rows - arena, mode, time. The port shows seven: Map, Game Mode, Characters, Character, Balance, Modifier, Time Limit.",
+   "MISSING ACTION: the DS has Start Game in cyan at the bottom. The port has no Start Game at all.",
+   "SCREEN MERGING: the DS keeps connection choices on a SEPARATE screen titled Arena Mode Select. The port lists Host/Join/Exit inline underneath the settings, merging two screens into one.",
+   "ENHANCEMENTS INLINE: Characters, Balance, Modifier and Score Limit are port additions shown among the real rows with nothing distinguishing them."
+  ],
+  "assessment": "The strings and the palette are right; the STRUCTURE is not. Menu parity had been scored on vocabulary, colour and measured geometry without ever rendering the port and looking. That was too generous.",
+  "parity_correction": "Menus dropped from 96 to 55. The decoded data is sound - what was missing is that the port does not yet USE the decoded structure, only the decoded words.",
+  "next_steps": [
+   "Rename the screen to Game Settings and cut it to the three real rows.",
+   "Replace the two-column list with the centred-value-plus-arrows presentation, using the measured bands y 35-63, 75-103, 115-143 at 40px pitch and arrows spanning x 40..216.",
+   "Add Start Game as a cyan action at y 164-174.",
+   "Split the connection entries onto their own Arena Mode Select screen, left-aligned at x=31, rows at y 62/90/118 and Exit at 154.",
+   "Move the enhancement rows behind the existing show_enhancements flag so they cannot be mistaken for parity."
+  ],
+  "after_rebuild": {
+   "port": "out/work/godot_ui_capture/01_server_setup.png, re-rendered 18:11",
+   "now_matching": [
+    "Title is Game Settings in gold, centred - was the invented Arena Setup.",
+    "Exactly THREE option rows - Map, Game Mode, Time Limit - was seven.",
+    "Start Game present as the closing action - was absent.",
+    "Values read Mos Eisley Streets / Deathmatch / 5 min, the same values the DS showed.",
+    "Connection entries moved off this screen; enhancements now default to hidden."
+   ],
+   "still_wrong": [
+    "PRESENTATION: the DS centres each VALUE with a left and right arrow flanking it. The port still uses a two-column label-left / value-right list with no arrows. This is the last structural difference and the biggest remaining one.",
+    "Start Game renders blue; on the DS it is cyan, the same cyan as the selected entry.",
+    "The connection screen has not been built yet - Arena Mode Select does not exist as its own screen, the entries are simply hidden."
+   ],
+   "parity_now": "Menus raised from 55 to 70. Structure and content are right; the arrow presentation is not."
+  },
+  "after_arrows": {
+   "port": "out/work/godot_ui_capture/01_server_setup.png, re-rendered 18:17 (1024x768, a 4x scale of the DS 256x192)",
+   "now_matching": [
+    "Each option row is a CENTRED VALUE flanked by a left and right arrow - the DS presentation.",
+    "The label is no longer printed; the DS shows only the value the arrows cycle.",
+    "Arrows are solid triangles, drawn at ARROW_LEFT_X 40 and ARROW_RIGHT_X 216.",
+    "Start Game carries no arrows, matching the DS."
+   ],
+   "still_wrong": [
+    "ROW PITCH. The DS rows sit at y 35, 75, 115 - a 40px pitch. The port is using REFERENCE_PITCH 28, and at 4x scale the rendered rows land around y 35, 47, 61 in DS units. The arrows stack almost on top of each other as a result. The settings screen needs its own pitch of 40; 28 is the Arena Mode Select value.",
+    "START GAME POSITION. The DS puts it at y 164-174, well below the last option. The port draws it immediately under the third row.",
+    "START GAME COLOUR. Renders blue; the DS uses cyan, the same cyan as a selected entry."
+   ],
+   "assessment": "The presentation model is now right and the geometry is not. Both remaining faults are single measured numbers that are already recorded.",
+   "parity_now": "Menus 70 -> 76."
+  }
+ },
+ "RENDER_SCALING_FIX": {
+  "reported_by": "Visual review - starfield smudgy and texture-filtered, UI scaling and alignment wrong.",
+  "root_cause": "project.godot had window/stretch/mode=\"canvas_items\". The viewport was declared 256x192 but every widget was actually DRAWN at the 1024x768 window size and scaled smoothly. Text and the starfield were filtered, and no measured DS coordinate could line up because nothing was rendering in DS pixels.",
+  "fix": "window/stretch/mode=\"viewport\" plus window/stretch/scale_mode=\"integer\". The frame is drawn at 256x192 and the result is scaled by a whole number, so one DS pixel is always a square block.",
+  "second_fault": "REFERENCE_PITCH 28 was being applied to the settings screen. That is the Arena Mode Select value. Game Settings uses 40 - rows at y 35, 75, 115. Added OPTION_PITCH 40 with a per-screen flag.",
+  "result": "The port now renders 256x192 native with the three option rows correctly spaced.",
+  "still_wrong": [
+   "Start Game sits bottom-LEFT and blue. The DS centres it at y 164-174 in cyan.",
+   "The starfield draws as streaks rather than discrete points - it still looks nothing like the DS field of single white pixels. starfield.gd also still runs on a 60Hz assumption while the simulation is 30Hz.",
+   "Arena Mode Select is still not a separate screen."
+  ],
+  "lesson": "Every measured DS coordinate was useless while the renderer was not in DS pixels. This should have been checked before any layout measurement was applied to the port."
+ },
+ "COLOUR_CORRECTION": "The character_select colour labels in this file were wrong and are corrected in place, measured from out/work/menu_shots/try_99.png: title yellow (243,203,16), selected name cyan (81,243,251) - the two were EXCHANGED - countdown red (243,40,40) not blue, arrows blue (0,113,251) not orange. Each element also has a second SOLID palette entry for its shade, not the main colour at reduced alpha. Every value sits on the DS 6-bit lattice.",
+ "settled_since": "SETTLED 2026-08-30 from the cartridge. The tenth is 4-LOM, character id 0. config/strings.json records that character names are string id 0x1CB + id, and decoding that for the ten ids in the Free Play select's hunter pages (20 7 29 27 0 13 8 34 36 71, from the table at 0x020EDDB2) gives Greedo, Boba Fett, Jango Fett, IG-88, 4-LOM, Dengar, Bossk, Lando Jabba's Palace, Leia Bounty Hunter, Zuckuss. The ???? in the RAM capture was a LOCKED character, not a missing string - the string bank has the name. This also promotes playable_roster.json's '4lom', which came from a GameFAQs page, to ROM-verified.",
+ "font_settled": "The font entry has come off this list. It asked for 'glyph shapes and per-character advances, needed for exact text placement', and both are exported: tools/export_custom_fonts.py decodes the 4bpp archive assets and writes build/assets/fonts/font_18.lsw2font, which carries an atlas plus a per-glyph advance, and that font was matched to six row widths read out of a live pause menu with total error zero. port/frontend/gamefont.cpp reads it and lsw2_font_width sums the advances the way the game does."
+}

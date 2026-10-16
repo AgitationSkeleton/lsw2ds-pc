@@ -1,0 +1,945 @@
+{
+  "schema_version": 1,
+  "purpose": "ROM-derived visual assets relevant to the bounty-arena UI and Godot feasibility prototype.",
+  "groups": {
+    "legal_stars": {
+      "classification": "confirmed menu/legal-screen background",
+      "model": 3426,
+      "animations": [
+        3425,
+        3427,
+        3428,
+        3429
+      ],
+      "notes": "Two 256x256 star layers. Asset 3427 is a 385-frame intro and 3429 is a 30-frame loop."
+    },
+    "legal_screens": {
+      "classification": "confirmed boot/menu presentation",
+      "models": [
+        3416,
+        3419,
+        3422
+      ],
+      "animations": [
+        3415,
+        3418,
+        3421,
+        3423
+      ]
+    },
+    "id_controls": [
+      {
+        "name": "skull_white",
+        "file": "godot/assets/ui_rom/skull_white.png",
+        "meaning": "KILL counter icon - the upper of the two icons in each slot",
+        "size_px": [
+          11,
+          13
+        ],
+        "position": {
+          "x": 50,
+          "y": 11
+        },
+        "pitch_y": 48,
+        "palette": [
+          [
+            251,
+            251,
+            251
+          ],
+          [
+            203,
+            203,
+            203
+          ],
+          [
+            178,
+            178,
+            178
+          ]
+        ],
+        "source": "out/work/menu_shots/ds_inmatch_touch.png, BGRA corrected",
+        "evidence_tier": "RUN - the game s own rendered pixels",
+        "verified": "out/work/menu_shots/skull_white_zoom.png - eye sockets and teeth clearly visible at 8x"
+      },
+      {
+        "name": "skull_red",
+        "file": "godot/assets/ui_rom/skull_red.png",
+        "meaning": "DEATH counter icon - the lower of the two",
+        "size_px": [
+          11,
+          13
+        ],
+        "position": {
+          "x": 50,
+          "y": 26
+        },
+        "pitch_y": 48,
+        "palette": [
+          [
+            251,
+            0,
+            0
+          ],
+          [
+            203,
+            0,
+            0
+          ],
+          [
+            178,
+            0,
+            0
+          ]
+        ],
+        "note": "Same 11x13 skull as the white one, in red. Both repeat once per slot at a 48px pitch, matching the ring pitch."
+      }
+    ],
+    "bounty_detector": [
+      {
+        "name": "radar_panel",
+        "file": "godot/assets/ui_rom/radar_panel.png",
+        "size_px": [
+          149,
+          135
+        ],
+        "position": {
+          "x0": 96,
+          "y0": 6,
+          "x1": 244,
+          "y1": 140
+        },
+        "screen": "bottom (touch)",
+        "contents": "Grey bezel with a near-black blue-purple field, concentric blue-purple rings and cross lines.",
+        "note": "Extracted whole. The contacts drawn on top - local triangle, player blips, the unidentified white capsule - are separate and still to be isolated."
+      },
+      {
+        "name": "button_green",
+        "file": "godot/assets/ui_rom/button_green.png",
+        "size_px": [
+          38,
+          47
+        ],
+        "position": {
+          "x0": 117,
+          "y0": 145
+        }
+      },
+      {
+        "name": "signal_bars",
+        "file": "godot/assets/ui_rom/signal_bars.png",
+        "size_px": [
+          19,
+          31
+        ],
+        "position": {
+          "x0": 163,
+          "y0": 155
+        },
+        "meaning": "DS wireless connection status"
+      },
+      {
+        "name": "button_camera",
+        "file": "godot/assets/ui_rom/button_camera.png",
+        "size_px": [
+          36,
+          45
+        ],
+        "position": {
+          "x0": 190,
+          "y0": 145
+        },
+        "meaning": "Camera control - a movie camera on a grey circular button, confirmed at 5x magnification",
+        "replaces": "The plain grey circle the port draws"
+      }
+    ],
+    "heart_candidate": [
+      {
+        "name": "health_heart",
+        "file": "godot/assets/ui_rom/heart.png",
+        "source": "out/work/gpudump_menuframe/inst0/screen0.bin - the DS in-match TOP screen, BGRA corrected",
+        "evidence_tier": "RUN - the game s own rendered pixels",
+        "size_px": [
+          11,
+          13
+        ],
+        "first_heart_position": {
+          "x0": 50,
+          "y0": 25,
+          "x1": 60,
+          "y1": 37,
+          "screen": "top, 256x192"
+        },
+        "pitch_px": 16,
+        "count": 4,
+        "all_positions_x": [
+          50,
+          66,
+          82,
+          97
+        ],
+        "palette": [
+          [
+            162,
+            8,
+            8
+          ],
+          [
+            178,
+            16,
+            16
+          ],
+          [
+            81,
+            0,
+            8
+          ]
+        ],
+        "cross_reference": "Four hearts on screen matches the max health of 4 decoded independently from actor +0x6BB in memory. Two sources agreeing - the rendered HUD and the health field.",
+        "note": "The fourth cluster measures 13 wide against 11 for the others, so something adjacent overlaps it. The sprite was taken from the first heart, which is clean.",
+        "wired": {
+          "status": "WIRED into match_hud.gd.",
+          "corrections_made": [
+            "HEART_TOP_Y was 29; the DS frame measures 25. Four pixels too low.",
+            "HEART_SIZE was Vector2(12,13); the real sprite is 11x13.",
+            "HEART_FIRST_X 50 and HEART_PITCH_X 16 were ALREADY correct and are confirmed by measurement."
+          ],
+          "sprite_source_replaced": "The HUD was using the HeartDS atlas, model 2634 / animation 2635, and the code comment admitted it was never proven to be the asset the HUD actually uses. It is now the sprite cropped from a real DS frame, so the question does not arise."
+        },
+        "IS_THE_UI_HEART_not_the_pickup": {
+          "concern": "Make sure the UI hearts are not the spinning pickup heart sprites.",
+          "the_port_WAS_wrong": "match_hud.gd previously drew from the HeartDS atlas - model 2634 with animation 2635. That is an ANIMATED 3D MODEL, which is exactly the spinning world pickup, not a HUD element. The code comment even admitted it was never proven to be what the HUD uses.",
+          "what_is_used_now": "An 11x13 sprite cropped from the DS top-screen framebuffer at x50 y25 - a fixed HUD position. It is static across frames, sits with three siblings on a 16px pitch at x 50/66/82/97, and is heart-shaped with red shading. A world pickup would move with the camera and be a 3D model; this does neither.",
+          "verified_visually": "out/work/menu_shots/heart_keyed10.png - a 10x magnification showing the heart shape and its shading.",
+          "alpha": "19 of 143 pixels were background bleed in the corners and are now transparent; the 124 red pixels are kept."
+        }
+      }
+    ],
+    "multiplayer_arrow": [
+      {
+        "name": "option_arrow_left",
+        "file": "godot/assets/ui_rom/arrow_left.png",
+        "source": "out/work/menu_shots/mode_select_screen.bin - the DS Game Settings frame, with the BGRA channel order corrected",
+        "evidence_tier": "RUN - the game's own rendered pixels, not an approximation",
+        "size_px": [
+          14,
+          29
+        ],
+        "position_on_screen": {
+          "x0": 40,
+          "y0": 35,
+          "x1": 53,
+          "y1": 63,
+          "screen": "bottom (touch), 256x192"
+        },
+        "repeats": "Identical on all three option rows: row 2 at y 75-103, row 3 at y 115-143. A 40px pitch.",
+        "palette": [
+          {
+            "rgb": [
+              0,
+              113,
+              251
+            ],
+            "count": 182
+          },
+          {
+            "rgb": [
+              0,
+              0,
+              0
+            ],
+            "count": 133
+          },
+          {
+            "rgb": [
+              0,
+              97,
+              219
+            ],
+            "count": 28
+          },
+          {
+            "rgb": [
+              0,
+              65,
+              154
+            ],
+            "count": 27
+          }
+        ],
+        "replaces": "A hand-authored draw_colored_polygon triangle measuring 12x14. The real sprite is 14x29 - twice the height and a different shape."
+      },
+      {
+        "name": "option_arrow_right",
+        "file": "godot/assets/ui_rom/arrow_right.png",
+        "size_px": [
+          14,
+          29
+        ],
+        "position_on_screen": {
+          "x0": 203,
+          "y0": 35,
+          "x1": 216,
+          "y1": 63
+        },
+        "note": "Mirror of the left arrow, at the far end of the same 40..216 span."
+      }
+    ],
+    "arena_models": {
+      "classification": "confirmed target render geometry and texture banks",
+      "jabbas_tower": {
+        "model": 322,
+        "texture_bank": 324
+      },
+      "mos_eisley_streets": {
+        "model": 327,
+        "texture_bank": 329
+      }
+    },
+    "custom_fonts": {
+      "classification": "confirmed custom 4bpp glyph resources used by the game's text renderer",
+      "assets": {
+        "2300": {
+          "nominal_height": 8,
+          "stored_height": 9
+        },
+        "2298": {
+          "nominal_height": 8,
+          "stored_height": 9
+        },
+        "2299": {
+          "nominal_height": 13,
+          "stored_height": 12
+        },
+        "2374": {
+          "nominal_height": 14,
+          "stored_height": 14
+        },
+        "3442": {
+          "nominal_height": 18,
+          "stored_height": 18
+        }
+      },
+      "notes": "Mixed-endian format: little-endian character range and 32-bit glyph offsets, big-endian 16-bit table locations; coverage is packed low nibble first, then high nibble."
+    },
+    "portrait_ring_ATTEMPT_FAILED": {
+      "goal": "Extract the circular character portrait ring from the in-match top screen.",
+      "result": "NOT CLEAN. A brightness mask over the top-left region returned the whole 48x50 block including background and character skin tones, not an isolated annulus. The crop was discarded rather than recorded as an asset.",
+      "why": "The ring is a thin coloured annulus over a disc, and a simple brightness threshold cannot separate it from what is behind and inside it.",
+      "what_the_port_currently_uses": "Procedural drawing - RING_CENTRE (25.5, 28.0), RING_OUTER_DIAMETER 36, RING_STROKE 3, DISC_FILL (142,142,190). Those are measured numbers but the ring itself is still drawn, not a sprite.",
+      "next_approach": "Isolate by the ring colour specifically rather than by brightness, or find the ring in the OAM sprite list - the in-match bottom screen already showed player slots built from 32x32 plus strip sprites, so the top-screen portrait is likely a sprite too and could be pulled from VRAM by tile index rather than cropped."
+    }
+  },
+  "rejected_name_matches": {
+    "AvHUD2": "Random bytes in LukeLoseHand1 NSBCA asset 3643, not a HUD asset.",
+    "Radar": "Asset 4046 is an animated LEGO world prop.",
+    "ArenaFont1_ArenaFont2": "Textures embedded in Jabba arena geometry; not evidence of the menu or match-HUD font."
+  },
+  "ASSET_AUDIT_PROGRESS": {
+    "populated": [
+      "multiplayer_arrow - extracted and WIRED",
+      "heart_candidate - extracted, keyed and WIRED",
+      "id_controls - white and red skulls, extracted and WIRED",
+      "bounty_detector - radar panel, green button, signal bars, camera button, extracted and WIRED",
+      "custom_fonts - all five ROM fonts, in use"
+    ],
+    "still_empty": [
+      "legal_stars",
+      "legal_screens",
+      "arena_models"
+    ],
+    "note": "Eight sprites now render from DS pixels. The gap between the asset folder and the screen is closed for everything extracted so far - previously six sat on disk unused, which is why successive renders looked unchanged despite the extraction work.",
+    "wired_into_the_port": {
+      "multiplayer_arrow": "DONE. ds_menu.gd preloads arrow_left.png and arrow_right.png and draws them with draw_texture at the measured x 40 and x 203, floored to whole pixels. The hand-authored draw_colored_polygon is retired - kept as _draw_arrow_polygon_unused so the diff is visible, not deleted silently. ARROW_WIDTH and ARROW_HEIGHT corrected from 12x14 to the real 14x29.",
+      "no_tint": "The sprite carries its own three shades of blue; the DS does not tint these, so no modulate is applied.",
+      "verified": "Rendered at 256x192 and compared against the DS frame - the arrows are now the right size and shape."
+    },
+    "biggest_remaining": "custom_fonts. Every glyph on every screen is currently a substituted typeface. The DS font is a ROM asset and until it is extracted, no text on any screen is game-accurate no matter how right its position and colour are.",
+    "CORRECTION_fonts_were_always_ROM_derived": {
+      "earlier_claim": "An earlier entry said that every glyph on every screen is a substituted typeface and that no text was game-accurate. That was WRONG, and the menu and HUD scores were cut partly on it.",
+      "the_truth": "The fonts are extracted from the ROM. A structural scan for the custom font header - u16 first, u16 last, u8 height, big-endian offset and width tables - found EXACTLY FIVE font assets archive-wide, and all five are exported: assets 2298, 2299, 2300, 2374 and 3442, with character ranges and heights recorded in out/exported/godot_ui/fonts/manifest.json.",
+      "what_the_port_loads": [
+        "font_8_primary = archive asset 2300, range 32..185, height 9",
+        "font_13 = archive asset 2299, range 32..197, height 12"
+      ],
+      "loaded_how": "main.gd load_external_bitmap_font, reading the exported .fnt and .png pairs - real glyph bitmaps, not a typeface substitution.",
+      "rom_cross_reference": "The font constructor is at ARM 0x020654BC and selects one of the five resources.",
+      "why_it_was_wrong": "The audit of ds_menu.gd saw draw_string and concluded the text was synthetic without checking what font object was being passed in. draw_string with a bitmap FontFile built from extracted glyphs is exactly what a faithful port should do.",
+      "what_IS_still_synthetic": [
+        "The DS console glyph beside the Host entries - still draw_rect primitives.",
+        "The hearts on the in-match top screen - not yet extracted.",
+        "Six asset groups remain empty: legal_stars, legal_screens, id_controls, bounty_detector, heart_candidate, arena_models."
+      ]
+    },
+    "still_synthesised_in_the_port": [
+      "The slot circle - asset 621, three OBJ sprites composited, named in the code but never extracted. Still a drawn circle.",
+      "Radar contacts - the DS uses angry yellow minifig heads; the port draws yellow squares.",
+      "The starfield behind the arena touch screen - still absent; the DS shows white star dots behind the slots and radar.",
+      "The local-player triangle on the radar."
+    ]
+  },
+  "CAPTURE_HYGIENE": "out/work/godot_ui_capture is flushed before every render so no stale image can be mistaken for current output. Added after an out-of-date capture was compared as if it were fresh.",
+  "review_findings": {
+    "reviewed": "Port captures 02, 03, 04, 06 alongside DS frames.",
+    "heart_bug_ROOT_CAUSE": {
+      "symptom": "Tilted narrow capsules instead of hearts, spotted in a visual review.",
+      "first_fix_was_incomplete": "The first fix preloaded the extracted sprite and corrected the geometry constants but never changed the code that assigns the texture, so nothing changed - and it was reported as done.",
+      "the_real_culprit": "_process ran every frame stepping a nine-cell atlas of model 2634 / animation 2635 - the WORLD PICKUP heart - and overwriting the texture. Seen edge-on those cells are tall narrow capsules. The HUD hearts on the DS do not animate at all.",
+      "fix": "The animation tick is removed entirely; the texture is assigned once from the extracted UI sprite.",
+      "verified": "out/work/menu_shots/cmp_ds_hearts.png against cmp_port_hearts.png - both now show four wide static hearts."
+    },
+    "still_wrong": {
+      "02_touch_screen": "Looks bad and inaccurate. The touch screen has never been compared against a DS bottom-screen frame at all - only the settings menu has.",
+      "06_arena_touch_screen": "Uses a number of synthesised substitutes. The in-match bottom screen is 19 hardware sprites over four BG layers with per-player palette swaps at 4/5/6/7 - all decoded, none built. The circles, buttons and radar in the port are original work.",
+      "04_jabbas_tower": "No sky textures. The DS frame shows a warm hazy sky; the port shows flat brown. The skybox or far-plane treatment is not implemented."
+    },
+    "lesson": "Preloading an asset is not using it. Both heart attempts passed tests and looked plausible in a thumbnail; only a 6x side-by-side crop showed the shape was wrong. Magnified comparison should be the default check for any sprite claim."
+  },
+  "SPRITES_STILL_TO_EXTRACT": {
+    "requirement": "Every touch-screen element must use the exact ROM sprites. These are all still synthesised or approximated.",
+    "list": [
+      {
+        "name": "white skull icon",
+        "where": "each slot, right of the portrait - the KILL counter icon",
+        "status": "not extracted"
+      },
+      {
+        "name": "red skull icon",
+        "where": "each slot, below the white one - the DEATH counter icon",
+        "status": "not extracted"
+      },
+      {
+        "name": "slot circle",
+        "where": "the 36px ring around each portrait",
+        "status": "code names asset 621 composited from THREE OBJ sprites, recoloured by palette - identified but NOT extracted; the port draws a procedural circle"
+      },
+      {
+        "name": "radar panel",
+        "where": "grey bezel and field, x 96..244 y 6..136",
+        "status": "drawn procedurally"
+      },
+      {
+        "name": "radar contact blips",
+        "where": "orange markers for other players, white triangle for local, white capsule for an unidentified object",
+        "status": "drawn procedurally"
+      },
+      {
+        "name": "camera icon",
+        "where": "bottom right control",
+        "status": "port draws a plain grey circle"
+      },
+      {
+        "name": "DS connection status icon",
+        "where": "bottom row, the wireless signal bars",
+        "status": "not verified against the ROM"
+      },
+      {
+        "name": "angry yellow minifig heads",
+        "where": "radar contacts on the DS reference are yellow minifig heads, not abstract blips",
+        "status": "not extracted"
+      }
+    ],
+    "note": "Every one of these must come from the ROM at its exact position, size and palette. None may be authored."
+  },
+  "PLAYER_4_IS_PURPLE": "Corrected. _slot_circle greyed out any UNOCCUPIED slot, so player 4 rendered grey. The DS reference shows slots 3 and 4 as plain RED and PURPLE discs while empty - a slot keeps its colour whether or not someone is in it.",
+  "review_round_2": {
+    "02_touch_screen": "Portraits not centred in their circles. OPEN - the 32x32 portrait is drawn at inset +3,+3 inside a 36px ring, which leaves 1px at right and bottom. The DS inset needs measuring rather than assuming symmetry.",
+    "04_jabbas_tower": [
+      "No visible skybox. OPEN.",
+      "Synthesised blue ring. OPEN - the slot circle is asset 621 per the code, composited from three OBJ sprites, identified but never extracted.",
+      "Portrait does not match ring size. Same measurement problem as 02."
+    ],
+    "06_arena_touch_screen": {
+      "assessment": "The most egregious of the screens.",
+      "legitimate": "Portraits and rings only.",
+      "wrong": [
+        "No starfield background - the DS shows white star dots behind the slots and radar.",
+        "Radar panel, bezel and field drawn procedurally.",
+        "Camera button synthesised.",
+        "Radar button synthesised.",
+        "DS status bars synthesised.",
+        "White and red skulls were synthesised - NOW EXTRACTED this pass, not yet wired.",
+        "Angry yellow minifig heads used as radar contacts - not extracted."
+      ]
+    }
+  },
+  "EXTRACTION_METHOD_CORRECTION": {
+    "criticism": "Cropping sprites out of a composited framebuffer is a shortcut. A framebuffer crop bakes in the background behind the sprite, any blending applied over it, and whatever else was drawn at those pixels. It is a PICTURE of the asset, not the asset.",
+    "what_was_done_that_way": [
+      "skull_white and skull_red - cropped, then background keyed out by colour threshold",
+      "heart - same",
+      "arrow_left and arrow_right - same",
+      "radar_panel, button_green, signal_bars, button_camera - same",
+      "slot_circle_purple - same, and the other three ring colours were generated from it by recolouring rather than extracted"
+    ],
+    "why_it_is_wrong": "The keying threshold is a judgement call, so edge pixels are guesswork. Anti-aliased or blended edges keep background contamination. And the palette is whatever survived compositing, not the palette the ROM actually assigns.",
+    "the_correct_source": "The OAM entry gives tile index, palette index and size. The tile data lives in the OBJ VRAM bank and the palette in OBJ palette memory. Both are already captured in every GPU dump - vram_*.bin and palette.bin sit beside state.json. Decoding tile index plus palette index yields the exact asset at its exact palette with true transparency, with no thresholds and no guessing.",
+    "what_the_oam_gives_us": [
+      {
+        "index": 4,
+        "x": 8,
+        "y": 8,
+        "size": "32x32",
+        "tile": 14,
+        "palette": 8,
+        "note": "slot 1 portrait"
+      },
+      {
+        "index": 5,
+        "x": 5,
+        "y": 5,
+        "size": "32x32",
+        "tile": 30,
+        "palette": 4,
+        "note": "slot 1 ring, palette 4 - the blue player palette"
+      },
+      {
+        "index": 6,
+        "x": 37,
+        "y": 5,
+        "size": "8x32",
+        "tile": 46,
+        "palette": 4
+      },
+      {
+        "index": 7,
+        "x": 5,
+        "y": 37,
+        "size": "32x8",
+        "tile": 50,
+        "palette": 4
+      },
+      {
+        "index": 0,
+        "x": 164,
+        "y": 156,
+        "size": "16x16",
+        "tile": 0,
+        "palette": 0
+      }
+    ],
+    "status": "The framebuffer crops stay in place as an INTERIM so the port renders something closer than a drawn circle, but they are explicitly not final. Every one must be replaced by a VRAM tile decode.",
+    "next_action": "Write a decoder: read the OAM entry, take tile index and size, pull the 4bpp tile rows from the OBJ VRAM bank in the dump, index them through the given OBJ palette, and emit RGBA with colour 0 transparent. That is the same path the hardware takes and it needs no thresholds at all."
+  },
+  "PROPER_EXTRACTION_WORKING": {
+    "tool": "tools/extract_oam_sprites.py",
+    "method": "The hardware path, not a screenshot crop. Each OAM entry names a tile index, a palette index and a size. The tile rows are read 4bpp from the sub-engine OBJ VRAM bank and indexed through the OBJ palette at 0x600 in the palette dump. Colour index 0 is transparent by definition, so there is no threshold and no guessing at edges.",
+    "result": "All 19 OAM sprites of the in-match touch screen decoded from out/work/gpudump_arena/inst0 into out/work/oam_sprites.",
+    "verified": "oam16_t152_p7_32x32 renders as a clean purple ring around a pale lavender disc with transparent corners - the slot 4 ring, at its true palette.",
+    "what_this_corrects": [
+      "The slot ring is 32x32, NOT the 36x36 measured off the framebuffer - the crop included a shadow or adjacent pixels.",
+      "The ring is genuinely THREE sprites as the code comment always said: a 32x32 body, an 8x32 strip at x37 and a 32x8 strip below. My crop treated it as one square.",
+      "Palette indices are now known per element: slot 1 uses OBJ palette 4, slot 2 palette 5, slot 3 palette 6, slot 4 palette 7 - confirming the palette-swap mechanism directly rather than by inference.",
+      "Portraits are OAM 4, 9 and so on at palettes 8 and 9, separate sprites from the rings."
+    ],
+    "sprite_table": [
+      {
+        "oam": 5,
+        "tile": 30,
+        "palette": 4,
+        "size": "32x32",
+        "role": "slot 1 ring body"
+      },
+      {
+        "oam": 6,
+        "tile": 46,
+        "palette": 4,
+        "size": "8x32",
+        "role": "slot 1 ring right strip"
+      },
+      {
+        "oam": 7,
+        "tile": 50,
+        "palette": 4,
+        "size": "32x8",
+        "role": "slot 1 ring bottom strip"
+      },
+      {
+        "oam": 10,
+        "tile": 104,
+        "palette": 5,
+        "size": "32x32",
+        "role": "slot 2 ring body"
+      },
+      {
+        "oam": 13,
+        "tile": 128,
+        "palette": 6,
+        "size": "32x32",
+        "role": "slot 3 ring body"
+      },
+      {
+        "oam": 16,
+        "tile": 152,
+        "palette": 7,
+        "size": "32x32",
+        "role": "slot 4 ring body"
+      },
+      {
+        "oam": 4,
+        "tile": 14,
+        "palette": 8,
+        "size": "32x32",
+        "role": "slot 1 portrait"
+      },
+      {
+        "oam": 9,
+        "tile": 88,
+        "palette": 9,
+        "size": "32x32",
+        "role": "slot 2 portrait"
+      }
+    ],
+    "next": "Replace every framebuffer crop with its decoded counterpart and re-wire at the OAM x,y positions.",
+    "rings_now_wired": {
+      "what": "The four slot rings are now composited from their THREE real OAM sprites each and wired into the port.",
+      "composition": "Body 32x32 at the slot origin, right strip 8x32 at +32,0, bottom strip 32x8 at 0,+32 - a 40x40 result, taken from the OAM x,y offsets rather than assumed.",
+      "sources": {
+        "blue": "OAM 5/6/7 tiles 30/46/50 palette 4",
+        "green": "OAM 10/11/12 tiles 104/120/124 palette 5",
+        "red": "OAM 13/14/15 tiles 128/144/148 palette 6",
+        "purple": "OAM 16/17/18 tiles 152/168/172 palette 7"
+      },
+      "replaces": "A 36x36 framebuffer crop of one ring, with the other three faked by recolouring it.",
+      "verified": "out/work/menu_shots/ring_blue_zoom.png and the re-rendered 06_arena_touch_screen.png."
+    }
+  },
+  "HEART_ANIMATION_CORRECTION": {
+    "earlier_error": "An earlier entry said \"The HUD hearts DO NOT ANIMATE\" and the animation tick was removed entirely. That over-corrected. The pickup atlas was indeed wrong - those tilted capsules were model 2634 / animation 2635, the spinning world pickup - but removing all animation was also wrong.",
+    "the_truth": "On the DS the RIGHTMOST heart, the one representing current health, does an expanding beating animation. So the HUD hearts do animate, just not by spinning: a single heart pulses, and only the one at the current health boundary.",
+    "what_that_implies": [
+      "The animation is per-heart, not per-row - three static hearts and one beating.",
+      "Which heart beats moves as health changes, so it is driven by the health value at +0x6B6, not by a fixed index.",
+      "It is a scale or size pulse, not a frame-by-frame atlas walk."
+    ],
+    "how_to_find_it": "Capture the DS in-match top screen across consecutive frames and diff the heart row. A pulsing heart changes pixels while its neighbours do not, which isolates both the affected heart and the pulse period. The driver can hold a match steady while dumps are taken, and the earlier work already showed ANIM_TICK runs at 30Hz so the period will be in 30Hz ticks.",
+    "status": "OPEN. The port currently draws four static hearts, which is closer than four spinning pickups but still not right.",
+    "resolved_by": "TOP_SCREEN_HUD_DECODED"
+  },
+  "regression_introduced": {
+    "what": "Rewriting _slot_circle replaced everything up to the next function and deleted the var portrait_provider declaration with it.",
+    "effect": "main.gd failed to parse. The port would not run at all, and 3,845 error lines were emitted before anyone looked at the actual message.",
+    "fix": "Declaration restored; 15/15 suites pass and the capture renders again.",
+    "lesson": "Replacing a span up to the next func boundary is unsafe when other declarations live inside that span. Anchor edits on the exact text being changed, not on structural landmarks."
+  },
+  "OAM_INVENTORY_COMPLETE": {
+    "finding": "The in-match touch screen uses only 19 OAM sprites, and they are NOT what was assumed. They are: four slot rings of three sprites each (12), two character portraits, and five small sprites. The skulls, the radar panel, the three bottom buttons and the starfield are NOT sprites at all - they are BG tile layers.",
+    "consequence": "The framebuffer crops of the skulls, radar panel and buttons cannot be replaced by an OAM decode, because those elements were never OAM. They need the BG-tile equivalent: screen-base map entries indexed into char-base tiles through the BG palette. The four BG layers and their bases are already recorded in config/bounty_hud_layout.json.",
+    "small_sprites_identified": {
+      "oam08": {
+        "tile": 54,
+        "palette": 2,
+        "size": "16x16",
+        "at": [
+          119,
+          71
+        ],
+        "IS": "the ANGRY YELLOW MINIFIG HEAD used as a radar contact, as seen in play. Decoded from VRAM, saved as radar_contact_head.png."
+      },
+      "oam01": {
+        "tile": 8,
+        "palette": 1,
+        "size": "8x16",
+        "at": [
+          169,
+          71
+        ],
+        "likely": "a second radar contact, different palette"
+      },
+      "oam02": {
+        "tile": 4,
+        "palette": 3,
+        "size": "8x16",
+        "at": [
+          145,
+          44
+        ],
+        "likely": "radar contact"
+      },
+      "oam03": {
+        "tile": 6,
+        "palette": 3,
+        "size": "8x8",
+        "at": [
+          145,
+          60
+        ],
+        "likely": "radar contact, smaller"
+      },
+      "oam00": {
+        "tile": 0,
+        "palette": 0,
+        "size": "16x16",
+        "at": [
+          164,
+          156
+        ],
+        "unidentified": true
+      }
+    },
+    "radar_contacts_are_sprites": "This settles how the radar draws players: each contact is an OBJ sprite, and the earlier note that other players are a pair of sprites whose dimensions swap with direction fits the 8x16 and 8x8 entries seen here.",
+    "minifig_head_wired": {
+      "status": "WIRED and rendering. Radar contacts draw the decoded 16x16 head, centred on the contact position, replacing a drawn yellow glyph.",
+      "verified": "out/work/godot_ui_capture/06_arena_touch_screen.png"
+    }
+  },
+  "REMAINING_SYNTHESISED": {
+    "still_framebuffer_crops": [
+      "heart",
+      "arrow_left",
+      "arrow_right",
+      "signal_bars"
+    ],
+    "now_genuinely_decoded": [
+      "Four slot rings (12 OAM sprites, palettes 4-7)",
+      "Radar contact minifig head (OAM 8)",
+      "White and red skulls (BG0 tiles, 15px minifig heads)",
+      "Starfield (BG2)",
+      "Radar field, green button, camera button, digit strip (BG1)",
+      "All five ROM fonts"
+    ]
+  },
+  "BG_TILE_DECODER_WORKING": {
+    "tool": "tools/extract_bg_layers.py",
+    "method": "The hardware path for BG layers: screen-base map entry gives tile number, flip flags and palette row; tile data read from char-base; pixels indexed through the sub BG palette at 0x400. Colour 0 transparent.",
+    "result": "All four sub-engine BG layers decoded from vram_C.bin. BG0 (char 2, screen 20, 256-colour) carries the skulls and the radar bezel.",
+    "what_it_corrected": "My framebuffer crop of the skulls was 11x13 and plain. The REAL asset is a 15px-wide MINIFIG HEAD with a stud on top and a skull face - white 15x17, red 15x14, stacked as a pair at x48. Wrong size, wrong width, wrong shape, and the stud was missing entirely. The crop had also clipped the stud off and keyed away part of the outline.",
+    "now_extracted_properly": [
+      {
+        "name": "skull_white",
+        "size": [
+          15,
+          17
+        ],
+        "source": "BG0 tiles at (48,9)"
+      },
+      {
+        "name": "skull_red",
+        "size": [
+          15,
+          14
+        ],
+        "source": "BG0 tiles at (48,26)"
+      }
+    ],
+    "draw_position_corrected": "SKULL_X moved from 50 to 48, the true tile x.",
+    "still_to_pull_from_BG": [
+      "The radar bezel and field - visible in BG0 as a grey frame.",
+      "The three bottom buttons.",
+      "The starfield, which is on one of the lower-priority layers."
+    ],
+    "layers": {
+      "bg0": "char 2 screen 20, 256-colour, priority 0 - skulls and radar frame",
+      "bg1": "char 3 screen 22, priority 1",
+      "bg2": "char 0 screen 30, priority 2",
+      "bg3": "char 0 screen 31, priority 1"
+    },
+    "starfield": {
+      "source": "BG2 - char base 0, screen base 30, priority 2 - decoded from vram_C.bin through the sub BG palette.",
+      "size": "256x192 taken from the top of the 256x256 map; rows below 192 are unused map area and were discarded.",
+      "wired": "Drawn behind everything else on the touch screen and rendering.",
+      "bug_found_and_fixed": "First attempt added the starfield BEFORE the opaque black ColorRect, so the backdrop painted straight over it and nothing appeared. Godot draws children in order; the stars must be added after the backdrop.",
+      "verified": "out/work/godot_ui_capture/06_arena_touch_screen.png - white star dots behind the slots and around the radar, as on the DS."
+    },
+    "bg1_is_the_ui_layer": {
+      "finding": "BG1 - char base 3, screen base 22, priority 1 - carries almost the whole touch-screen UI: the radar field with its blue rings and cross lines, the green button, the camera button, spare button variants in other palettes, and a 0123456789 DIGIT STRIP.",
+      "extracted_at_true_bounds": [
+        {
+          "name": "radar_panel",
+          "bounds": [
+            104,
+            16,
+            240,
+            145
+          ],
+          "size": [
+            136,
+            129
+          ]
+        },
+        {
+          "name": "button_green",
+          "bounds": [
+            116,
+            145,
+            156,
+            184
+          ],
+          "size": [
+            40,
+            39
+          ]
+        },
+        {
+          "name": "button_camera",
+          "bounds": [
+            188,
+            145,
+            228,
+            184
+          ],
+          "size": [
+            40,
+            39
+          ]
+        },
+        {
+          "name": "digits",
+          "bounds": [
+            1,
+            194,
+            120,
+            215
+          ],
+          "size": [
+            119,
+            21
+          ],
+          "note": "0 through 9 as one strip - the glyphs the kill and death counters are drawn from"
+        }
+      ],
+      "crop_corrections": [
+        "radar_panel was cropped 149x135 from a screenshot; the real tile graphic is 136x129 at (104,16).",
+        "button_green was 38x47; the real one is 40x39.",
+        "button_camera was 36x45; the real one is 40x39.",
+        "Every crop had the wrong size, and all three carried background from the composited frame."
+      ],
+      "wired": "All three now draw from the decoded tiles at their BG1 positions.",
+      "verified": "out/work/godot_ui_capture/06_arena_touch_screen.png",
+      "still_to_do": "The grey radar BEZEL is on BG0, separate from the BG1 field - the port currently draws only the field. And the digit strip is extracted but the counters still use a font."
+    },
+    "radar_is_two_layers": {
+      "finding": "The radar is built from TWO layers, not one. BG0 carries the grey bezel at (96,8), 152x132; BG1 carries the blue field with its rings at (104,16), 136x129. My screenshot crop had flattened both into a single 149x135 image.",
+      "wired": "Bezel drawn first, field over it, at the offsets their layers specify relative to RADAR_RECT.",
+      "verified": "out/work/godot_ui_capture/06_arena_touch_screen.png"
+    }
+  },
+  "DIGIT_STRIP_OPEN": {
+    "extracted": "godot/assets/ui_rom/digits.png, 119x21, from BG1 at (1,194).",
+    "problem": "An automatic column split found only four groups because adjacent glyphs touch, so the ten digits cannot be separated that way.",
+    "next": "Slice on a fixed pitch instead - 119/10 is 11.9px, so the glyphs are almost certainly 12px cells with the strip one pixel short of 120. Confirm against out/work/menu_shots/digits_zoom.png before cutting.",
+    "why_it_matters": "The kill and death counters currently use a font. The DS draws them from this strip, so the numbers are the wrong glyphs even though the positions are right."
+  },
+  "DIGIT_STRIP_RESOLVED": {
+    "supersedes": "DIGIT_STRIP_OPEN",
+    "the_old_plan_was_wrong": "The plan was to slice a 119x21 image on a ~12px pitch because an automatic column split only found four groups. Both the image and the pitch were the mistake. That image was a render of map rows 24 and 25 of sub BG1, which sit at y192..207 - below the 192px screen. It is a parked tile bank, not something drawn, and rendering it as a picture and then cutting it up was the same shortcut as cropping a framebuffer.",
+    "what_it_actually_is": "Ten glyphs in the sub BG1 tile set at char base 3, each two tiles stacked: 178+n on top of 190+n, drawn through BG palette row 5. So 8 wide and 16 tall, gold with a black outline. The guessed pitch would have been wrong in both axes.",
+    "how_it_was_found": "Read the tilemap at screen base 22 rather than looking at pixels. Rows 24 and 25 hold the run 178..187 over 190..199, which is the bank; scanning the visible rows for those same tile numbers finds where they are used.",
+    "counter_positions": {
+      "note": "Absolute cells read off the map, all reading '0' in this capture.",
+      "slot_0_kills": [
+        80,
+        8
+      ],
+      "slot_0_deaths": [
+        80,
+        24
+      ],
+      "slot_1_kills": [
+        80,
+        56
+      ],
+      "slot_1_deaths": [
+        80,
+        72
+      ],
+      "slot_pitch": 48
+    },
+    "still_unverified": "Which way a two-digit score grows. Every counter reads 0, so only the single cell at x=80 is ever populated. Right-aligned on x=80 is what the port assumes; a capture of a match reaching ten would settle it.",
+    "wired": "godot/runtime/arena_bottom_screen.gd, replacing draw_string in a substitute font tinted yellow.",
+    "assets": "godot/assets/ui_rom/digits/digit_0.png .. digit_9.png"
+  },
+  "TOP_SCREEN_HUD_DECODED": {
+    "summary": "The top-screen HUD is main-engine BG1, decoded from tiles. This replaces the last cropped sprite in the port.",
+    "why_oam_main_was_empty": "DISPCNT is 0x00010358. Bit 3 makes BG0 the 3D layer, bits 8-12 read 3 so only BG0 and BG1 are on and OBJ is off entirely. The HUD was never going to be in OAM.",
+    "where_the_tiles_live": "VRAMCNT puts banks F and G on main BG, F at 0x06000000 and G at 0x06004000, 16KB each. Concatenating them in that order gives the 32KB the engine sees. BG1 runs char base 0 and screen base 0, so the map occupies the first 2KB and usable tile numbers start at 64.",
+    "heart_layout": {
+      "from_the_map": "ty3: 64 66 67 66 67 66 67 68 69 64 / ty4: 64 74 75 74 75 74 75 76 77 64",
+      "reading": "Four hearts, each a 2x2 tile cell, so 16x16 on a 16px pitch, first cell at x=48 y=24.",
+      "corrects": "The crop this replaces was 11x13 at (50,25) - the red pixels only, which lost the cell origin and misplaced the whole row. It also explains the old note that 'the fourth heart measures 13 because something adjacent overlaps it': nothing overlapped it, it was the larger beat frame."
+    },
+    "four_frames_resident": {
+      "f0": "tiles 66/67/74/75, 14x14 red, the normal heart",
+      "f1": "tiles 68/69/76/77, 16x16 red, the expanded beat frame",
+      "f2": "tiles 70/71/78/79, 14x15 red, an intermediate",
+      "f3": "tiles 72/73/80/81, 14x14 dark, the empty heart",
+      "note": "All four saved as 16x16 canvases holding the art at its true offset in the cell, so any frame draws at the cell origin."
+    },
+    "beat_animation": {
+      "observation_was_right": "An earlier claim that the HUD hearts do not animate was wrong. They do. The rightmost heart, the one representing current health, expands and contracts.",
+      "evidence": "Fourteen samples across seven in-match dumps. The first three hearts were f0 in every one. The fourth was f1 in four dumps (arena, cam, cam2, mat2) and f0 in the other three (anchor, mat, menuframe). Both DS instances agreed in every single dump, so the pulse runs off a global timer rather than per player, and the duty cycle is close to even. f2 was never caught in a sample.",
+      "still_unverified": "The period. Snapshots cannot give it. A write watchpoint on the map entries for the fourth heart - 0x060000CC at ty3 tx12 and 0x0600018C at ty4 tx12 - would give it directly, as the gap between writes. The port currently runs a 30-tick cycle at even duty, which matches the observed ratio but is not measured.",
+      "also_unverified": "The dark frame has never been seen in use, because every dump so far is at full health. The port shows a lost heart as the dark frame rather than removing it, on the reasoning that the quad would not be worth its tile space otherwise. Needs a capture taken after taking a hit.",
+      "rom_scan_negative": "The ARM9 holds no static table of the heart tile quads. Searched arm9_decompressed.bin for 66/67/74/75, 68/69/76/77, 70/71/78/79 and 72/73/80/81 as halfword runs, both bare and with the palette-1 map bits, and all eight patterns are absent. So the map entries are computed at runtime from a base tile plus a frame index, or the whole 2KB map is staged in RAM and DMAed.",
+      "how_to_measure_the_period": "Sample rather than watchpoint. A write watchpoint on 0x060000CC only fires if the CPU writes the map, and the ROM scan suggests it may be DMAed instead. Adding a per-frame sample to GPUDump.cpp - read main BG VRAM offset 0xCC, log the tile number against the frame counter - works either way and gives the period straight off the transition gaps. Log for a few hundred frames of a live match."
+    },
+    "also_in_this_tile_set": "Tiles 82..91 are a second set of digits, 8x8 and red, unreferenced by the current map. Distinct from the gold 8x16 sub-engine digits used for the kill and death counters. Not yet traced to a use.",
+    "assets": "godot/assets/ui_rom/heart_full.png, heart_beat.png, heart_mid.png, heart_empty.png"
+  },
+  "PORT_MATCHES_DS_BIT_EXACT": {
+    "what": "The top-screen heart row in the port is bit-exact against the DS BG1 layer.",
+    "method": "Cropped each 16x16 heart cell from both out/work/bg_layers/main_bg1_char0_screen0.png and out/work/godot_ui_capture/04_jabbas_tower_boba_hud.png and diffed over the DS layer alpha mask.",
+    "result": "All four cells, max channel difference 0 and mean 0.00. Cells 0-2 have 146 opaque pixels (the f0 normal frame) and cell 3 has 204 (the f1 beat frame), matching the DS dump exactly - including which frame the pulsing heart was on."
+  },
+  "TOP_SCREEN_RING_CORRECTED": {
+    "was_wrong_two_ways": [
+      "Position: RING_CENTRE was (25.5, 28.0). Measured off a real in-match DS frame (out/work/gpudump_arena/inst0/screen0.bin, read as BGRA) the annulus spans x8..43 y6..41 - 36x36 centred on (25.5, 23.5). The port drew it four pixels low.",
+      "Asset: it was draw_circle plus draw_arc. The DS row profile across the annulus is a hard 10/14/10; the port produced a soft 9/15/19. Synthesised against hard-edged."
+    ],
+    "the_real_asset": "out/exported/godot_ui/slot_circles/circle_<colour>.png, ROM asset 621 - a blue annulus around a pale lavender disc, which is exactly what the frame shows. The same asset already backed the bottom-screen slot rings, so the top screen was the odd one out.",
+    "scaling": "The asset canvas is 40x40 with a 38x38 opaque extent, and the DS puts that extent on screen at 36x36. Drawing the whole canvas into Rect2(8, 6, 37.895, 37.895) lands the opaque part exactly on x8..43 y6..41.",
+    "where_it_comes_from": "Not a sprite. Main DISPCNT is 0x00010358, so OBJ is off and only BG0 (the 3D layer) and BG1 are enabled - and BG1 holds nothing but the four hearts. The portrait and its ring are textured 3D geometry in BG0, which is why the DS can scale them freely and why they never appear in an OAM dump. This also settles that the DS top screen contains exactly two HUD elements: the ring with its portrait, and the four hearts. Nothing else."
+  },
+  "STARFIELD_IS_TWO_SCROLLING_LAYERS": {
+    "was_wrong": "The touch screen starfield was one static 256x192 still (starfield_bg2.png) drawn at the origin with no scroll. Its stars did not line up with a real DS frame - 334 of 2628 background-band pixels differed against out/work/gpudump_arena/inst0/screen1.bin.",
+    "what_it_actually_is": "Sub BG2 and BG3, both char base 0, screen bases 30 and 31. BG3 has the lower priority number so it draws on top of BG2. Decoding both and applying the captured scroll offset (BG2 xpos 135) cut the mismatch to 192 px.",
+    "they_scroll": {
+      "evidence": "xpos across consecutive dump frames, 60 frames apart: BG2 1376, 1388, 1400, 1412 and BG3 1721, 1736, 1751, 1766. Holds identically in gpudump_snd2 and gpudump_cam2.",
+      "rates": "BG2 +12 per 60 frames = 0.2 px/frame; BG3 +15 per 60 frames = 0.25 px/frame.",
+      "meaning": "Two layers moving at different rates is a parallax field. A single static image cannot reproduce it, which also explains the 192 px residue - a still only matches on the one frame it was taken from.",
+      "direction": "The hardware samples map column (screen_x + xpos), so a rising xpos moves the field left across the screen."
+    },
+    "assets": "godot/assets/ui_rom/starfield_far.png (BG2) and starfield_near.png (BG3), exported at the full 256x256 map size so they wrap.",
+    "wired": "arena_bottom_screen.gd draws both, each blitted twice one wrap apart to cover the seam, advanced in emulator-frame units at 60Hz."
+  },
+  "PALETTE_EXPANSION_WAS_WRONG": {
+    "severity": "Affected every asset extracted so far - 31 files.",
+    "what_was_wrong": "Every extractor expanded a 5-bit DS colour channel as v * 255 // 31. That is not what the hardware pipeline does and not what melonDS does when it builds the framebuffer these assets are checked against.",
+    "the_correct_formula": "From GPU2D_Soft.cpp:296-305 the internal channel is 6-bit (the 5-bit palette entry doubled), it is shifted into the top 6 bits of the byte, and the top 2 bits are replicated into the bottom 2: out8 = (v6 << 2) | (v6 >> 4) with v6 = v5 << 1, which reduces to (v5 << 3) | (v5 >> 3).",
+    "the_disagreements": {
+      "5-bit 7": "wrong 57, correct 56",
+      "5-bit 9": "wrong 74, correct 73",
+      "5-bit 31": "wrong 255, correct 251"
+    },
+    "consequence": "Nothing extracted was ever pure white - the DS white is 251. The error was found by comparing background luminance histograms between the port and a real DS frame: the DS bucket sat at 56 and 73 where the port sat at 57 and 74, and the DS maximum was 251 where the port reached 255.",
+    "how_it_was_fixed": "tools/fix_asset_palettes.py remaps in place - each of the 32 wrong values maps to exactly one correct value. Verified equivalent to re-extraction: after remapping, all four heart assets diff to zero against a freshly extracted layer using the corrected formula. The three extractors (extract_bg_layers, extract_oam_sprites, reconstruct_screen) are patched too.",
+    "files_not_remapped": "4 files hold channel values outside the 32-value set, so they did not come from this pipeline and remapping them would be wrong: heart.png (the superseded crop, now unused), signal_bars.png, and two others. signal_bars.png is still a framebuffer crop and remains to be extracted properly."
+  },
+  "SUB_OAM_FULLY_ACCOUNTED": {
+    "summary": "All 19 sub-engine OAM entries identified, which closes out the touch screen sprite layer.",
+    "inventory": {
+      "oam00 16x16 (164,156)": "the DS connection signal bars",
+      "oam01 8x16 (169,71)": "the local player own-marker on the radar, a cone",
+      "oam02 8x16 (145,44) + oam03 8x8 (145,60)": "a vertical gauge, two sprites stacked. UNIDENTIFIED PURPOSE - extracted and drawn, but nothing drives it yet.",
+      "oam08 16x16 (119,71)": "a radar contact, the angry yellow minifig head",
+      "oam04 32x32 (8,8) and oam09 32x32 (8,56)": "slot 0 and slot 1 portraits - and there are ONLY TWO",
+      "oam05/06/07, 10/11/12, 13/14/15, 16/17/18": "the four slot rings, each built from three sprites: 32x32 at (5,y), 8x32 at (37,y), 32x8 at (5,y+32), pitch 48, y = 5/53/101/149, palettes 4/5/6/7 giving blue, green, red, purple"
+    },
+    "crops_replaced": {
+      "signal_bars.png": "was a 19x31 framebuffer crop at (163,155). The real sprite is OAM entry 0, 16x16 at (164,156) - wrong in both size and position.",
+      "button_green.png / button_camera.png": "were 38x47 and 36x45 crops. They are not sprites at all: sub BG1 holds them as two clean 40x40 tile blocks at (116,144) and (188,144). Confirmed by connected-component analysis of the layer, which finds exactly two blobs in the bottom row.",
+      "slot circles": "were the 3D-exported circle_<colour>.png. Now composited from the OAM sprites that actually draw them - same 1124-pixel shape, but carrying the sub OBJ palette."
+    },
+    "empty_slots_have_no_portrait": "Four rings are present but only two portrait sprites. Slots 2 and 3 were empty in this capture and the DS drew their rings with nothing inside. The port already guarded on this correctly.",
+    "no_crops_remain": "Every asset on the touch screen is now decoded from OAM or BG tiles."
+  },
+  "TOP_SCREEN_PORTRAIT_GEOMETRY": {
+    "reported": "Portraits floated above the ring border on the HUD.",
+    "was": "PORTRAIT_DISC 28, positioned by centring on RING_CENTRE, which put the rect at (11.5, 9.5) with its bottom edge at y37.5 against a ring inner edge near y39.",
+    "now": "32x32 at (10, 8). Measured off a real DS frame: the annulus spans x8..43 y6..41 and the disc content inside it spans x10..41 y8..39.",
+    "cross_check": "This matches the bottom screen, where OAM is exact: ring 40x40 at (5,5) and portrait 32x32 at (8,8), an inset of 3. The top ring canvas starts at x6.941, so an origin of 10 is the same inset of about 3. Both screens share the relationship, which is a good sign the top-screen figure is right rather than fitted.",
+    "REMAINING": "The rect is now correct but the portrait still under-fills it. The port's portrait sources carry transparent margins - the extracted DS OAM portraits measure only 24x24 of content inside their 32x32 sprite - so the drawn head is smaller than the DS's even at the right rect and size. Closing that needs the per-character portrait as the DS composites it rather than a render with padding. Only Boba Fett and Greedo have been captured as OAM sprites so far; the other eight hunters need captures with those characters selected.",
+    "VERIFIED": "Fixed and confirmed against a matched-camera DS frame. Over the disc interior (716 px) and the annulus (344 px), ZERO pixels differ by more than 16, mean difference 2.9 and max 4 - and that residual is the 3D-rendering difference already known for the ring, not a placement error. The portrait no longer floats.",
+    "measurement_correction": "An earlier follow-up measurement reported the port at 30x27 against the DS 32x32 and concluded the portrait still under-filled because the source sprites carry transparent margins. That was a BAD MASK, not a real difference - a saturation threshold that clipped the darker portrait pixels. Masking properly, and then diffing the two frames directly, shows them matching. The under-fill claim was wrong and the note about needing per-character OAM portraits does not apply here."
+  }
+}

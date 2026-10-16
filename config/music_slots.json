@@ -1,0 +1,190 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "table": "0x02100A00",
+  "selector": "0x020B90E8",
+  "slot_count": 29,
+  "stride": 4,
+  "out_of_range": "clamps to slot 0 (0x020B910C movhs r5,#0)",
+  "repeat_request": "no-op unless flag bit 2 (0x020B9118)",
+  "suppress_flag": "bit 0x20 of [0x0210DB14+0xA] (0x020B90F8)"
+ },
+ "note": "Export the DS music slot table.\n\nThe game does not address music by the SoundData group index. It addresses it by\na SLOT, and remaps that through a 29-row table.\n\n    0x02100A00   the table, stride 4:\n                     +0x00  u16  group / module id\n                     +0x02  u8   mode\n                     +0x03  u8   parameter, 0 in every row\n\nThe row layout is fixed by the ACCESS WIDTHS in the selector, not by guessing at\nthe byte pattern - three separate literals, each read differently:\n\n    0x020B9130  ldr r1,[pc,#0x50] -> 0x02100A00, read `ldrh r1,[r1,r3]`  u16 @+0\n    0x020B912C  ldr r2,[pc,#0x50] -> 0x02100A02, read `ldrb r2,[r2,r5,lsl #2]`  u8 @+2\n    0x020B9128  ldr r0,[pc,#0x50] -> 0x02100A03, read `ldrb r0,[r0,r5,lsl #2]`  u8 @+3\n\nwith r3 = slot << 2. So what looks like \"b1 and b3 are padding\" is really a u16\ngroup whose high byte is zero because groups only reach 28, plus a real +3 field\nthat happens to be zero throughout.\n\nTHE SELECTOR, 0x020B90E8:\n\n    0x020B90F0  ldrb r0,[r2,#0xA] / tst r0,#0x20 / popne\n                  a global flag bit suppresses music outright\n    0x020B9104  cmp r5,#0x1d\n    0x020B910C  movhs r5,#0\n                  OUT OF RANGE CLAMPS TO 0. Not a modulo wrap, and the bound is\n                  29 - which is the row count.\n    0x020B9108  ldrb r1,[r0,#9]         the slot currently playing\n    0x020B9110  cmp r5,r1 / bne\n    0x020B9118  ldrb r0,[r0,#0xA] / tst r0,#2 / popeq\n                  REQUESTING THE SLOT ALREADY PLAYING IS A NO-OP unless flag\n                  bit 2 is set\n    0x020B913C  cmp r4,#0xff / moveq r4,r0\n                  a caller passing 0xFF takes the row's +3 field as the parameter\n    0x020B9154  bl 0x020B3D08  with r0=0, r1=group, r2=mode, r3=param\n\nTHE 29 BOUND, two ways\n----------------------\n1. `cmp r5,#0x1d / movhs r5,#0` in the selector itself.\n2. Geometry: 0x02100A00 + 29*4 = 0x02100A74, which is the base of the sound\n   EVENT table - the two abut exactly, the same proof that fixes the event\n   table at 201 rows.\n\nUsage:  python tools/export_music_slots.py",
+ "slots": [
+  {
+   "slot": 0,
+   "group": 20,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 1,
+   "group": 17,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 2,
+   "group": 2,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 3,
+   "group": 10,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 4,
+   "group": 11,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 5,
+   "group": 7,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 6,
+   "group": 4,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 7,
+   "group": 9,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 8,
+   "group": 12,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 9,
+   "group": 16,
+   "mode": 0,
+   "param": 0
+  },
+  {
+   "slot": 10,
+   "group": 25,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 11,
+   "group": 6,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 12,
+   "group": 14,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 13,
+   "group": 13,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 14,
+   "group": 23,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 15,
+   "group": 5,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 16,
+   "group": 3,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 17,
+   "group": 0,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 18,
+   "group": 26,
+   "mode": 2,
+   "param": 0
+  },
+  {
+   "slot": 19,
+   "group": 22,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 20,
+   "group": 24,
+   "mode": 2,
+   "param": 0
+  },
+  {
+   "slot": 21,
+   "group": 18,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 22,
+   "group": 8,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 23,
+   "group": 15,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 24,
+   "group": 19,
+   "mode": 2,
+   "param": 0
+  },
+  {
+   "slot": 25,
+   "group": 21,
+   "mode": 2,
+   "param": 0
+  },
+  {
+   "slot": 26,
+   "group": 27,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 27,
+   "group": 28,
+   "mode": 1,
+   "param": 0
+  },
+  {
+   "slot": 28,
+   "group": 1,
+   "mode": 1,
+   "param": 0
+  }
+ ]
+}

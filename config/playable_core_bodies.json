@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "purpose": "Verified reusable body rigs and non-humanoid playable actors; appearance-specific heads, palettes, capes, backpacks, and weapons are separate runtime attachments.",
+  "bodies": {
+    "human": {"model": 2836, "texture_bank": 2837, "idle_animation": 491},
+    "human_small": {"model": 2835, "idle_animation": 5464},
+    "c3po": {"model": 933, "idle_animation": 909},
+    "c3po_one_leg": {"model": 911, "idle_animation": 913},
+    "chewbacca": {"model": 1472, "idle_animation": 1461},
+    "ewok": {"model": 2191},
+    "gamorrean_guard": {"model": 2416, "idle_animation": 2408},
+    "ghost_human": {"model": 2465},
+    "ghost_yoda": {"model": 2474},
+    "han_in_carbonite": {"model": 2551, "idle_animation": 2563},
+    "ig88": {"model": 2935, "idle_animation": 2874},
+    "mse6": {"model": 3789, "idle_animation": 3788},
+    "gonk": {"model": 3923, "idle_animation": 3925},
+    "r2d2_r5d4": {"model": 4012, "idle_animation": 4019},
+    "salacious_crumb": {"model": 4211, "idle_animation": 4214},
+    "wicket": {"model": 5212}
+  }
+}

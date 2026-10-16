@@ -1,0 +1,97 @@
+Say WHICH instruction made a bad bus access, and stop capping the count at 64.
+
+WHY. The fork's route into the cartridge's own multiplayer - state 54, the
+map/gamemode/time chooser - produces a burst of "[bus] ARM9 unmapped read" and
+then the frame loop stops. Four attempts to explain that burst failed, and each
+failed the same way: the log gives the ADDRESS and nothing else, so the guest
+instruction responsible has to be guessed at. It was guessed at four times.
+
+Worse, the "64" everyone had been counting is this function's own warning cap.
+An earlier analysis recorded "exactly 64 reads, always" and built a reading on it - a
+bounded 32-node walk - when the truth is that the logger stops after 64. A
+diagnostic whose limit gets mistaken for a measurement is worse than none.
+
+So: print the PC, the LR and the low registers, and let the cap be set from the
+environment. LSW2_BUS_WARN_LIMIT=0 means no limit; unset keeps the old 64, so a
+run that did not ask sees no change other than the extra fields.
+
+g_cpu is already in scope - bus.cpp includes state.h and runtime_arm.h and uses
+g_cpu.R[15] a few hundred lines above in the dispatch diagnostic.
+
+--- a/runner/src/bus.cpp
++++ b/runner/src/bus.cpp
+@@ -422,13 +422,70 @@
+ }
+ 
+ void unmapped(uint32_t addr, bool write, uint32_t width, uint32_t value) {
+-    static int warned = 0;
+-    if (warned < 64) {
+-        std::fprintf(stderr, "[bus] ARM%c unmapped %s 0x%08X w=%u%s\n",
++    // THE LIMIT IS A LIMIT, NOT A MEASUREMENT. It was a hard 64, and a burst
++    // that reached it got read downstream as "exactly 64 accesses" - turning a
++    // truncated log into a false fact about the guest. Say so when it bites,
++    // and let a run that is investigating raise it.
++    static const long limit = [] {
++        if (const char* s = std::getenv("LSW2_BUS_WARN_LIMIT")) {
++            char* end = nullptr;
++            const long n = std::strtol(s, &end, 0);
++            if (end != s) return n;          // 0 means no limit
++        }
++        return 64L;
++    }();
++    static long warned = 0;
++    if (limit == 0 || warned < limit) {
++        // THE PC IS THE WHOLE POINT. An address alone says a pointer was wrong;
++        // the PC says which instruction believed it, and LR says who called
++        // that code. The low registers are what a bad index is built from.
++        std::fprintf(stderr,
++                     "[bus] ARM%c unmapped %s 0x%08X w=%u%s  pc=%08X lr=%08X "
++                     "r0=%08X r1=%08X r2=%08X r3=%08X r4=%08X r5=%08X\n",
+                      g_nds_active == NDS_ARM9 ? '9' : '7',
+                      write ? "write" : "read", addr, width,
+-                     write ? "" : " (â†’0)");
++                     write ? "" : " (->0)",
++                     g_cpu.R[15], g_cpu.R[14], g_cpu.R[0], g_cpu.R[1],
++                     g_cpu.R[2], g_cpu.R[3], g_cpu.R[4], g_cpu.R[5]);
+         ++warned;
++        // AND WHAT LED HERE, when a run asked for it: with deep trace on, the
++        // runtime keeps a ring of recent branches, and the first bad access is
++        // the one moment it is worth reading.
++        if (warned == 1 && g_runtime_deep_trace) runtime_trace_dump_recent(96);
++        // AND WHO CALLED IT, without deep trace's cost: the runtime's own stack
++        // of guest return addresses, for the first few reports. The first use
++        // was the lobby return after a four-player match, where the
++        // game's decompressor is handed a source that is not data at all and
++        // pc/lr name only the decompressor. LSW2_BUS_WARN_STACK=1.
++        static const bool stack_on = [] {
++            const char* s = std::getenv("LSW2_BUS_WARN_STACK");
++            return s && s[0] != '\0' && s[0] != '0';
++        }();
++        if (stack_on && warned <= 4) {
++            const uint32_t depth = runtime_call_stack_depth();
++            const uint32_t* ret = runtime_call_stack_data();
++            // PAST THE HELPER'S OWN FRAMES. The ITCM decompressor BLs its bit
++            // refill hundreds of times without unwinding, so the innermost ten
++            // were all its own; after the first few, only main-RAM code is
++            // printed, which is where the caller that handed it the source is.
++            std::fprintf(stderr, "[bus]   call stack (innermost first, depth %u):",
++                         unsigned(depth));
++            uint32_t shown = 0, skipped = 0;
++            for (uint32_t i = 0; i < depth && shown < 16u; ++i) {
++                const uint32_t a = ret[depth - 1u - i];
++                if (i >= 3u && a < 0x02000000u) { ++skipped; continue; }
++                std::fprintf(stderr, " %08X", unsigned(a));
++                ++shown;
++            }
++            std::fprintf(stderr, "  (%u TCM frames skipped)\n", unsigned(skipped));
++        }
++        if (limit != 0 && warned == limit) {
++            std::fprintf(stderr,
++                         "[bus] ... %ld unmapped accesses reported; further "
++                         "ones are NOT shown. That is the log's limit, not the "
++                         "guest's - raise it with LSW2_BUS_WARN_LIMIT (0 = no "
++                         "limit) before counting anything.\n", limit);
++        }
+     }
+     (void)value;
+ }

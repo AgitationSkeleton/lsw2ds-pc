@@ -1,0 +1,673 @@
+{
+ "source": "SOUND events in gpudump_snd + gpudump_snd2, 300,965 rows",
+ "how": "r0 is the sound id, r1 a parameter, lr the CALL SITE. Each of the nine sites emits exactly one id - a clean 1:1 mapping, so the site identifies the context.",
+ "caveat": "These captures are MENU/ambient era. The six high-count ids are loops; 0x17/0x19/0x1A fire four times each and are one-shots. NO combat, damage or death sound is present here - those need a SOUND trace during session_live_01-style play, which was never armed for sound.",
+ "bindings": [
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x1000",
+   "occurrences": 20062
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x1000",
+   "occurrences": 20062
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x2000",
+   "occurrences": 19026
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x2000",
+   "occurrences": 19026
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0800",
+   "occurrences": 17999
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0800",
+   "occurrences": 17998
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x4000",
+   "occurrences": 13061
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x4000",
+   "occurrences": 13061
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0400",
+   "occurrences": 11743
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0400",
+   "occurrences": 11743
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0200",
+   "occurrences": 9414
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0200",
+   "occurrences": 9414
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0100",
+   "occurrences": 8542
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0100",
+   "occurrences": 8542
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0080",
+   "occurrences": 6963
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0080",
+   "occurrences": 6963
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0040",
+   "occurrences": 5136
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0040",
+   "occurrences": 5136
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x8000",
+   "occurrences": 5060
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x8000",
+   "occurrences": 5060
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0020",
+   "occurrences": 4350
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0020",
+   "occurrences": 4350
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0002",
+   "occurrences": 2684
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0002",
+   "occurrences": 2684
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0010",
+   "occurrences": 2619
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0010",
+   "occurrences": 2619
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0004",
+   "occurrences": 2478
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0004",
+   "occurrences": 2478
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000F",
+   "occurrences": 2455
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x8000",
+   "occurrences": 2455
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x8000",
+   "occurrences": 2455
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x8000",
+   "occurrences": 2222
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0008",
+   "occurrences": 2153
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0008",
+   "occurrences": 2153
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x4000",
+   "occurrences": 1997
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000E",
+   "occurrences": 1996
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x4000",
+   "occurrences": 1996
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x4000",
+   "occurrences": 1810
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x1000",
+   "occurrences": 1127
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0800",
+   "occurrences": 1080
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000B",
+   "occurrences": 1075
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0800",
+   "occurrences": 1075
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x1000",
+   "occurrences": 1021
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000C",
+   "occurrences": 1017
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x2000",
+   "occurrences": 898
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000D",
+   "occurrences": 894
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x2000",
+   "occurrences": 894
+  },
+  {
+   "call_site": "0x020d0744",
+   "sound_id": "0x14",
+   "param": "0x0001",
+   "occurrences": 885
+  },
+  {
+   "call_site": "0x020d0764",
+   "sound_id": "0x15",
+   "param": "0x0001",
+   "occurrences": 884
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0800",
+   "occurrences": 802
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x1000",
+   "occurrences": 778
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0400",
+   "occurrences": 656
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF000A",
+   "occurrences": 650
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0400",
+   "occurrences": 650
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x2000",
+   "occurrences": 548
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0400",
+   "occurrences": 542
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0200",
+   "occurrences": 327
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0009",
+   "occurrences": 325
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0200",
+   "occurrences": 325
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0100",
+   "occurrences": 245
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0008",
+   "occurrences": 244
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0100",
+   "occurrences": 244
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0020",
+   "occurrences": 234
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0200",
+   "occurrences": 226
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0080",
+   "occurrences": 209
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0100",
+   "occurrences": 209
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0007",
+   "occurrences": 208
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0080",
+   "occurrences": 208
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0080",
+   "occurrences": 185
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0040",
+   "occurrences": 156
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0006",
+   "occurrences": 155
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0040",
+   "occurrences": 155
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0040",
+   "occurrences": 135
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0005",
+   "occurrences": 124
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0020",
+   "occurrences": 124
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0020",
+   "occurrences": 118
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0010",
+   "occurrences": 90
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0004",
+   "occurrences": 89
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0010",
+   "occurrences": 89
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0003",
+   "occurrences": 85
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0008",
+   "occurrences": 85
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0008",
+   "occurrences": 85
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0010",
+   "occurrences": 74
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0002",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0004",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0004",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0001",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0002",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0002",
+   "occurrences": 73
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0002",
+   "occurrences": 72
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0004",
+   "occurrences": 63
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0008",
+   "occurrences": 51
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0001",
+   "occurrences": 27
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0xFFFF0000",
+   "occurrences": 26
+  },
+  {
+   "call_site": "0x020d071c",
+   "sound_id": "0x13",
+   "param": "0x0001",
+   "occurrences": 26
+  },
+  {
+   "call_site": "0x020d065c",
+   "sound_id": "0x0D",
+   "param": "0x0001",
+   "occurrences": 25
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF000A",
+   "occurrences": 6
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF000B",
+   "occurrences": 5
+  },
+  {
+   "call_site": "0x020d07d0",
+   "sound_id": "0x17",
+   "param": "0x007F",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d07f8",
+   "sound_id": "0x19",
+   "param": "0x0000",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d06fc",
+   "sound_id": "0x1A",
+   "param": "0xFFFF",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d05f8",
+   "sound_id": "0x0C",
+   "param": "0x0000",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF000C",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF000D",
+   "occurrences": 4
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0009",
+   "occurrences": 2
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0004",
+   "occurrences": 1
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0000",
+   "occurrences": 1
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0008",
+   "occurrences": 1
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0006",
+   "occurrences": 1
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF0007",
+   "occurrences": 1
+  },
+  {
+   "call_site": "0x020d07b0",
+   "sound_id": "0x0E",
+   "param": "0x1FF000E",
+   "occurrences": 1
+  }
+ ]
+}

@@ -1,0 +1,1579 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "resolver": "0x0208DAD8",
+  "categoriser": "0x0208DA74",
+  "slot_field": "descriptor +8",
+  "group_field": "descriptor +9",
+  "actor_slot_record": "actor + 0x6E8 + slot*2",
+  "empty_sentinel": "0xFA - and 0x0208DA74 returns category 5 for it",
+  "categories": [
+   {
+    "lo": 0,
+    "hi": 44,
+    "table": "0x020F2414",
+    "stride": 40
+   },
+   {
+    "lo": 45,
+    "hi": 106,
+    "table": "0x020F3E68",
+    "stride": 44
+   },
+   {
+    "lo": 107,
+    "hi": 176,
+    "table": "0x020F3490",
+    "stride": 36
+   },
+   {
+    "lo": 177,
+    "hi": 231,
+    "table": "0x020F2B1C",
+    "stride": 44
+   },
+   {
+    "lo": 232,
+    "hi": 249,
+    "table": "0x020F2144",
+    "stride": 40
+   }
+  ]
+ },
+ "note": "Every attachable part, by the slot it occupies. Regenerable from the ROM.\n\nWHY THIS EXISTS. Character customization has to offer the player parts and apply\nthem, and the head re-attach has to supply a head to a character whose helmet a\nhat replaced. Both need the same\nthing the project has never written down: which parts exist, and what each one\nIS.\n\nTHE DERIVATION is `0x0208DAD8` and its categoriser `0x0208DA74`. The categoriser\nsplits the id space into five ranges; each range has its own descriptor table;\n`descriptor + 8` is the slot and `+9` the group.\n\n    id range      table         stride   slot   group\n    0x00..0x2C    0x020F2414    0x28     0      3\n    0x2D..0x6A    0x020F3E68    0x2C     1      10\n    0x6B..0xB0    0x020F3490    0x24     2      10\n    0xB1..0xE7    0x020F2B1C    0x2C     3      2\n    0xE8..0xF9    0x020F2144    0x28     4      0/1\n\nTHE RANGES ARE THE SLOTS. Every part in a category reports the same slot, so\nthe categoriser is not an implementation detail sitting beside the slot - it IS\nthe slot, and a part's id alone determines where it goes.\n\nWHAT EACH SLOT IS, by evidence rather than by naming guess. `0x02012EC8` and\n`0x02016F98` both write the same hardcoded four-part outfit for one specific\ncase - parts 36, 94, 163 and 177 - and those land in slots 0, 1, 2 and 3, one\neach. A complete minifigure is head, torso, legs and headgear, in that order,\nand the counts agree: 45 heads, 62 torsos, 70 legs, 55 hats. Slot 4's 18 parts\nare what the Extras modes hand out alongside a hat.\n\n    python tools/export_part_slots.py\n",
+ "slots": {
+  "0": {
+   "name": "head",
+   "count": 45,
+   "first": 0,
+   "last": 44
+  },
+  "1": {
+   "name": "torso",
+   "count": 62,
+   "first": 45,
+   "last": 106
+  },
+  "2": {
+   "name": "legs",
+   "count": 70,
+   "first": 107,
+   "last": 176
+  },
+  "3": {
+   "name": "headgear",
+   "count": 55,
+   "first": 177,
+   "last": 231
+  },
+  "4": {
+   "name": "accessory",
+   "count": 18,
+   "first": 232,
+   "last": 249
+  }
+ },
+ "parts": {
+  "0": {
+   "descriptor": "0x020F2414",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "1": {
+   "descriptor": "0x020F243C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "2": {
+   "descriptor": "0x020F2464",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "3": {
+   "descriptor": "0x020F248C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "4": {
+   "descriptor": "0x020F24B4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "5": {
+   "descriptor": "0x020F24DC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "6": {
+   "descriptor": "0x020F2504",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "7": {
+   "descriptor": "0x020F252C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "8": {
+   "descriptor": "0x020F2554",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "9": {
+   "descriptor": "0x020F257C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "10": {
+   "descriptor": "0x020F25A4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "11": {
+   "descriptor": "0x020F25CC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "12": {
+   "descriptor": "0x020F25F4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "13": {
+   "descriptor": "0x020F261C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "14": {
+   "descriptor": "0x020F2644",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "15": {
+   "descriptor": "0x020F266C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "16": {
+   "descriptor": "0x020F2694",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "17": {
+   "descriptor": "0x020F26BC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "18": {
+   "descriptor": "0x020F26E4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "19": {
+   "descriptor": "0x020F270C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "20": {
+   "descriptor": "0x020F2734",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "21": {
+   "descriptor": "0x020F275C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "22": {
+   "descriptor": "0x020F2784",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "23": {
+   "descriptor": "0x020F27AC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "24": {
+   "descriptor": "0x020F27D4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "25": {
+   "descriptor": "0x020F27FC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "26": {
+   "descriptor": "0x020F2824",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "27": {
+   "descriptor": "0x020F284C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "28": {
+   "descriptor": "0x020F2874",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "29": {
+   "descriptor": "0x020F289C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "30": {
+   "descriptor": "0x020F28C4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "31": {
+   "descriptor": "0x020F28EC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "32": {
+   "descriptor": "0x020F2914",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "33": {
+   "descriptor": "0x020F293C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "34": {
+   "descriptor": "0x020F2964",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "35": {
+   "descriptor": "0x020F298C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "36": {
+   "descriptor": "0x020F29B4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "37": {
+   "descriptor": "0x020F29DC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "38": {
+   "descriptor": "0x020F2A04",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "39": {
+   "descriptor": "0x020F2A2C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "40": {
+   "descriptor": "0x020F2A54",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "41": {
+   "descriptor": "0x020F2A7C",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "42": {
+   "descriptor": "0x020F2AA4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "43": {
+   "descriptor": "0x020F2ACC",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "44": {
+   "descriptor": "0x020F2AF4",
+   "slot": 0,
+   "slot_name": "head",
+   "group": 3
+  },
+  "45": {
+   "descriptor": "0x020F3E68",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "46": {
+   "descriptor": "0x020F3E94",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "47": {
+   "descriptor": "0x020F3EC0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "48": {
+   "descriptor": "0x020F3EEC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "49": {
+   "descriptor": "0x020F3F18",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "50": {
+   "descriptor": "0x020F3F44",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "51": {
+   "descriptor": "0x020F3F70",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "52": {
+   "descriptor": "0x020F3F9C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "53": {
+   "descriptor": "0x020F3FC8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "54": {
+   "descriptor": "0x020F3FF4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "55": {
+   "descriptor": "0x020F4020",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "56": {
+   "descriptor": "0x020F404C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "57": {
+   "descriptor": "0x020F4078",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "58": {
+   "descriptor": "0x020F40A4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "59": {
+   "descriptor": "0x020F40D0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "60": {
+   "descriptor": "0x020F40FC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "61": {
+   "descriptor": "0x020F4128",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "62": {
+   "descriptor": "0x020F4154",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "63": {
+   "descriptor": "0x020F4180",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "64": {
+   "descriptor": "0x020F41AC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "65": {
+   "descriptor": "0x020F41D8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "66": {
+   "descriptor": "0x020F4204",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "67": {
+   "descriptor": "0x020F4230",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "68": {
+   "descriptor": "0x020F425C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "69": {
+   "descriptor": "0x020F4288",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "70": {
+   "descriptor": "0x020F42B4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "71": {
+   "descriptor": "0x020F42E0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "72": {
+   "descriptor": "0x020F430C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "73": {
+   "descriptor": "0x020F4338",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "74": {
+   "descriptor": "0x020F4364",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "75": {
+   "descriptor": "0x020F4390",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "76": {
+   "descriptor": "0x020F43BC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "77": {
+   "descriptor": "0x020F43E8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "78": {
+   "descriptor": "0x020F4414",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "79": {
+   "descriptor": "0x020F4440",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "80": {
+   "descriptor": "0x020F446C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "81": {
+   "descriptor": "0x020F4498",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "82": {
+   "descriptor": "0x020F44C4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "83": {
+   "descriptor": "0x020F44F0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "84": {
+   "descriptor": "0x020F451C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "85": {
+   "descriptor": "0x020F4548",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "86": {
+   "descriptor": "0x020F4574",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "87": {
+   "descriptor": "0x020F45A0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "88": {
+   "descriptor": "0x020F45CC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "89": {
+   "descriptor": "0x020F45F8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "90": {
+   "descriptor": "0x020F4624",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "91": {
+   "descriptor": "0x020F4650",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "92": {
+   "descriptor": "0x020F467C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "93": {
+   "descriptor": "0x020F46A8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "94": {
+   "descriptor": "0x020F46D4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "95": {
+   "descriptor": "0x020F4700",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "96": {
+   "descriptor": "0x020F472C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "97": {
+   "descriptor": "0x020F4758",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "98": {
+   "descriptor": "0x020F4784",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "99": {
+   "descriptor": "0x020F47B0",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "100": {
+   "descriptor": "0x020F47DC",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "101": {
+   "descriptor": "0x020F4808",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "102": {
+   "descriptor": "0x020F4834",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "103": {
+   "descriptor": "0x020F4860",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "104": {
+   "descriptor": "0x020F488C",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "105": {
+   "descriptor": "0x020F48B8",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "106": {
+   "descriptor": "0x020F48E4",
+   "slot": 1,
+   "slot_name": "torso",
+   "group": 10
+  },
+  "107": {
+   "descriptor": "0x020F3490",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "108": {
+   "descriptor": "0x020F34B4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "109": {
+   "descriptor": "0x020F34D8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "110": {
+   "descriptor": "0x020F34FC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "111": {
+   "descriptor": "0x020F3520",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "112": {
+   "descriptor": "0x020F3544",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "113": {
+   "descriptor": "0x020F3568",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "114": {
+   "descriptor": "0x020F358C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "115": {
+   "descriptor": "0x020F35B0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "116": {
+   "descriptor": "0x020F35D4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "117": {
+   "descriptor": "0x020F35F8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "118": {
+   "descriptor": "0x020F361C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "119": {
+   "descriptor": "0x020F3640",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "120": {
+   "descriptor": "0x020F3664",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "121": {
+   "descriptor": "0x020F3688",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "122": {
+   "descriptor": "0x020F36AC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "123": {
+   "descriptor": "0x020F36D0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "124": {
+   "descriptor": "0x020F36F4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "125": {
+   "descriptor": "0x020F3718",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "126": {
+   "descriptor": "0x020F373C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "127": {
+   "descriptor": "0x020F3760",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "128": {
+   "descriptor": "0x020F3784",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "129": {
+   "descriptor": "0x020F37A8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "130": {
+   "descriptor": "0x020F37CC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "131": {
+   "descriptor": "0x020F37F0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "132": {
+   "descriptor": "0x020F3814",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "133": {
+   "descriptor": "0x020F3838",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "134": {
+   "descriptor": "0x020F385C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "135": {
+   "descriptor": "0x020F3880",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "136": {
+   "descriptor": "0x020F38A4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "137": {
+   "descriptor": "0x020F38C8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "138": {
+   "descriptor": "0x020F38EC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "139": {
+   "descriptor": "0x020F3910",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "140": {
+   "descriptor": "0x020F3934",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "141": {
+   "descriptor": "0x020F3958",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "142": {
+   "descriptor": "0x020F397C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "143": {
+   "descriptor": "0x020F39A0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "144": {
+   "descriptor": "0x020F39C4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "145": {
+   "descriptor": "0x020F39E8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "146": {
+   "descriptor": "0x020F3A0C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "147": {
+   "descriptor": "0x020F3A30",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "148": {
+   "descriptor": "0x020F3A54",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "149": {
+   "descriptor": "0x020F3A78",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "150": {
+   "descriptor": "0x020F3A9C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "151": {
+   "descriptor": "0x020F3AC0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "152": {
+   "descriptor": "0x020F3AE4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "153": {
+   "descriptor": "0x020F3B08",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "154": {
+   "descriptor": "0x020F3B2C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "155": {
+   "descriptor": "0x020F3B50",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "156": {
+   "descriptor": "0x020F3B74",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "157": {
+   "descriptor": "0x020F3B98",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "158": {
+   "descriptor": "0x020F3BBC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "159": {
+   "descriptor": "0x020F3BE0",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "160": {
+   "descriptor": "0x020F3C04",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "161": {
+   "descriptor": "0x020F3C28",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "162": {
+   "descriptor": "0x020F3C4C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "163": {
+   "descriptor": "0x020F3C70",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "164": {
+   "descriptor": "0x020F3C94",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "165": {
+   "descriptor": "0x020F3CB8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "166": {
+   "descriptor": "0x020F3CDC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "167": {
+   "descriptor": "0x020F3D00",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "168": {
+   "descriptor": "0x020F3D24",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "169": {
+   "descriptor": "0x020F3D48",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "170": {
+   "descriptor": "0x020F3D6C",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "171": {
+   "descriptor": "0x020F3D90",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "172": {
+   "descriptor": "0x020F3DB4",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "173": {
+   "descriptor": "0x020F3DD8",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "174": {
+   "descriptor": "0x020F3DFC",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "175": {
+   "descriptor": "0x020F3E20",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "176": {
+   "descriptor": "0x020F3E44",
+   "slot": 2,
+   "slot_name": "legs",
+   "group": 10
+  },
+  "177": {
+   "descriptor": "0x020F2B1C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "178": {
+   "descriptor": "0x020F2B48",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "179": {
+   "descriptor": "0x020F2B74",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "180": {
+   "descriptor": "0x020F2BA0",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "181": {
+   "descriptor": "0x020F2BCC",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "182": {
+   "descriptor": "0x020F2BF8",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "183": {
+   "descriptor": "0x020F2C24",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "184": {
+   "descriptor": "0x020F2C50",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "185": {
+   "descriptor": "0x020F2C7C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "186": {
+   "descriptor": "0x020F2CA8",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "187": {
+   "descriptor": "0x020F2CD4",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "188": {
+   "descriptor": "0x020F2D00",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "189": {
+   "descriptor": "0x020F2D2C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "190": {
+   "descriptor": "0x020F2D58",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "191": {
+   "descriptor": "0x020F2D84",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "192": {
+   "descriptor": "0x020F2DB0",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "193": {
+   "descriptor": "0x020F2DDC",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "194": {
+   "descriptor": "0x020F2E08",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "195": {
+   "descriptor": "0x020F2E34",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "196": {
+   "descriptor": "0x020F2E60",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "197": {
+   "descriptor": "0x020F2E8C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "198": {
+   "descriptor": "0x020F2EB8",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "199": {
+   "descriptor": "0x020F2EE4",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "200": {
+   "descriptor": "0x020F2F10",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "201": {
+   "descriptor": "0x020F2F3C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "202": {
+   "descriptor": "0x020F2F68",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "203": {
+   "descriptor": "0x020F2F94",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "204": {
+   "descriptor": "0x020F2FC0",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "205": {
+   "descriptor": "0x020F2FEC",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "206": {
+   "descriptor": "0x020F3018",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "207": {
+   "descriptor": "0x020F3044",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "208": {
+   "descriptor": "0x020F3070",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "209": {
+   "descriptor": "0x020F309C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "210": {
+   "descriptor": "0x020F30C8",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "211": {
+   "descriptor": "0x020F30F4",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "212": {
+   "descriptor": "0x020F3120",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "213": {
+   "descriptor": "0x020F314C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "214": {
+   "descriptor": "0x020F3178",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "215": {
+   "descriptor": "0x020F31A4",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "216": {
+   "descriptor": "0x020F31D0",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "217": {
+   "descriptor": "0x020F31FC",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "218": {
+   "descriptor": "0x020F3228",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "219": {
+   "descriptor": "0x020F3254",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "220": {
+   "descriptor": "0x020F3280",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "221": {
+   "descriptor": "0x020F32AC",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "222": {
+   "descriptor": "0x020F32D8",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "223": {
+   "descriptor": "0x020F3304",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "224": {
+   "descriptor": "0x020F3330",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "225": {
+   "descriptor": "0x020F335C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "226": {
+   "descriptor": "0x020F3388",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "227": {
+   "descriptor": "0x020F33B4",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "228": {
+   "descriptor": "0x020F33E0",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "229": {
+   "descriptor": "0x020F340C",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "230": {
+   "descriptor": "0x020F3438",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "231": {
+   "descriptor": "0x020F3464",
+   "slot": 3,
+   "slot_name": "headgear",
+   "group": 2
+  },
+  "232": {
+   "descriptor": "0x020F2144",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "233": {
+   "descriptor": "0x020F216C",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "234": {
+   "descriptor": "0x020F2194",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "235": {
+   "descriptor": "0x020F21BC",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "236": {
+   "descriptor": "0x020F21E4",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "237": {
+   "descriptor": "0x020F220C",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "238": {
+   "descriptor": "0x020F2234",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "239": {
+   "descriptor": "0x020F225C",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "240": {
+   "descriptor": "0x020F2284",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "241": {
+   "descriptor": "0x020F22AC",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "242": {
+   "descriptor": "0x020F22D4",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "243": {
+   "descriptor": "0x020F22FC",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "244": {
+   "descriptor": "0x020F2324",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "245": {
+   "descriptor": "0x020F234C",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "246": {
+   "descriptor": "0x020F2374",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "247": {
+   "descriptor": "0x020F239C",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 1
+  },
+  "248": {
+   "descriptor": "0x020F23C4",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  },
+  "249": {
+   "descriptor": "0x020F23EC",
+   "slot": 4,
+   "slot_name": "accessory",
+   "group": 0
+  }
+ }
+}

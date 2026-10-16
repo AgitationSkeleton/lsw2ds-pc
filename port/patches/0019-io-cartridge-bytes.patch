@@ -1,0 +1,29 @@
+--- a/runner/src/io.h
++++ b/runner/src/io.h
+@@ -304,6 +304,12 @@
+ // serves to the guest, without a second copy or a second load path.
+ const uint8_t* nds_firmware_bytes();
+ uint32_t       nds_firmware_size();
++// LSW2 PORT PATCH: the same read-only view over the loaded cartridge (empty
++// until nds_io_load_cartridge runs), for a title that needs a constant the
++// game keeps in its ROM but stages in RAM only some of the time. The secure
++// area (0x4000..0x7FFF) is served re-encrypted; nothing else is changed.
++const uint8_t* nds_cartridge_bytes();
++uint32_t       nds_cartridge_size();
+ // Installs user-provided cartridge data and derives KEY1 from the user's
+ // ARM7 BIOS at runtime. Neither input is compiled into native objects.
+ bool     nds_io_load_cartridge(const uint8_t* rom, uint32_t rom_size,
+--- a/runner/src/io.cpp
++++ b/runner/src/io.cpp
+@@ -1896,6 +1896,11 @@
+ 
+ const uint8_t* nds_firmware_bytes() { return g_fw.empty() ? nullptr : g_fw.data(); }
+ uint32_t       nds_firmware_size()  { return static_cast<uint32_t>(g_fw.size()); }
++// LSW2 PORT PATCH: see nds_cartridge_bytes in io.h.
++const uint8_t* nds_cartridge_bytes() {
++    return g_card_rom.empty() ? nullptr : g_card_rom.data();
++}
++uint32_t nds_cartridge_size() { return static_cast<uint32_t>(g_card_rom.size()); }
+ 
+ bool nds_io_load_cartridge(const uint8_t* rom, uint32_t rom_size,
+                            const uint8_t* arm7_bios, uint32_t bios_size) {

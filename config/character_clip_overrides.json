@@ -1,0 +1,298 @@
+{
+ "purpose": "Per-character animation clips that OVERRIDE the shared humanoid set.",
+ "why": "Derived from the ROM's own animation-descriptor cascade in 0x02005C44 (actor vtable +0x24, the PlayAnimation the attack behaviour-state calls with state 0x2C). The cascade is: (1) action-row record +0x10 at 0x020F6BB8+row*0x24, (2) the body/motion record's set at +0x1C reached through 0x0208DAD8, (3) action-row record +0x0C at 0x020F6BB4+row*0x24 (the shared Blstr set 0x020E92DC), (4) the 630-set table 0x020EB7B8 indexed by actor+0x180. The action row itself is descriptor byte +0x05 of the 24-byte table at 0x020EF57C, copied to actor+0x6C3 by 0x02006288..0x020062A0. Each descriptor is 10 bytes {state, anim, attached, events, queued}.",
+ "how_to_extend": "python - <<'X'\nimport pathlib,re\nfor p in sorted(pathlib.Path('out/raw/archive/entries').glob('*.nsbca')):\n    d=p.read_bytes()\n    for m in set(re.findall(rb'<NamePrefix>[A-Za-z0-9_]{0,14}',d)):\n        print(p.stem, m.decode())\nX",
+ "characters": {
+  "29": {
+   "label": "Jango Fett",
+   "note": "Dual blasters. Fire event track 3061 fires TWICE: frame 1 from attach point 5, frame 8 from attach point 4.",
+   "states": {
+    "armed_idle": {
+     "asset": 3024,
+     "clip": "JangoFettIdleGun",
+     "state": 0,
+     "evidence": "set 0x020E92F4 state 0."
+    },
+    "primary_fire": {
+     "asset": 3063,
+     "clip": "JangoFettShootGu",
+     "state": 44,
+     "events_asset": 3061,
+     "evidence": "action row 27, set 0x020E92F4. Row flags 0x0028 - bit 0x20 is the DUAL-WIELD bit."
+    },
+    "weapon_in": {
+     "asset": 3015,
+     "clip": "JangoFettGunIn",
+     "state": 13,
+     "evidence": "set 0x020E92F4 state 13."
+    },
+    "weapon_out": {
+     "asset": 3017,
+     "clip": "JangoFettGunOut",
+     "state": 12,
+     "evidence": "set 0x020E92F4 state 12."
+    },
+    "hover_idle": {
+     "asset": 3019,
+     "clip": "JangoFettHoverId",
+     "state": 105,
+     "evidence": "NSBCA name truncates at 16 chars."
+    },
+    "hover_move": {
+     "asset": 3020,
+     "clip": "JangoFettHoverMo",
+     "state": 104,
+     "evidence": "NSBCA name truncates at 16 chars."
+    },
+    "hover_action": {
+     "asset": 3023,
+     "clip": "JangoFettHoverSh",
+     "state": 106,
+     "evidence": "NSBCA name truncates at 16 chars."
+    }
+   },
+   "action_row": 27
+  },
+  "0": {
+   "label": "4-LOM",
+   "action_row": 31,
+   "note": "4-LOM's fire clip is ROM-CONFIRMED as LOM_ShootGun (asset 48, events 47) from his body descriptor set 0x020E967C - every clip in that set is LOM_* and its state-0 entry is asset 44 LOM_IdleGun, which config/bounty_hunter_weapons.json independently recorded as 4-LOM's idle. The override is NOT applied yet because tools/export_character_animations.py has not exported a 4-LOM body library, and pointing at a clip the AnimationPlayer does not hold makes play_state() return false, i.e. NO fire animation at all - strictly worse than today's wrong-but-present BlstrShootGun. Export assets 41-50 as a 4-LOM body, then move this into states.",
+   "states": {}
+  },
+  "7": {
+   "label": "Boba Fett",
+   "action_row": 4,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 613,
+     "clip": "BobaFettShootGun",
+     "state": 44,
+     "events_asset": 611,
+     "evidence": "action row 4, set 0x020E92EC."
+    }
+   }
+  },
+  "8": {
+   "label": "Bossk",
+   "action_row": 5,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 676,
+     "clip": "BosskShootGun",
+     "state": 44,
+     "events_asset": 674,
+     "evidence": "action row 5, set 0x020E9334."
+    }
+   }
+  },
+  "13": {
+   "label": "Dengar",
+   "action_row": 4,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 613,
+     "clip": "BobaFettShootGun",
+     "state": 44,
+     "events_asset": 611,
+     "evidence": "action row 4, set 0x020E92EC - Dengar shares Boba's row."
+    }
+   }
+  },
+  "20": {
+   "label": "Greedo",
+   "action_row": 26,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 532,
+     "clip": "BlstrShootPistol",
+     "state": 44,
+     "events_asset": 531,
+     "evidence": "action row 26, set 0x020E932C."
+    }
+   }
+  },
+  "27": {
+   "label": "IG-88",
+   "action_row": 31,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 2927,
+     "clip": "IG88ShootGun",
+     "state": 44,
+     "events_asset": 2926,
+     "evidence": "body set 0x020E964C (motions 19/71/135); row 31 has no +0x10 set. Clip is in the ig88 special-body library."
+    }
+   }
+  },
+  "36": {
+   "label": "Leia Boushh",
+   "action_row": 31,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "state": 44,
+     "events_asset": 529,
+     "evidence": "row 31 has no +0x10 set and Leia has no body set with state 44, so the shared set 0x020E92DC applies."
+    }
+   }
+  },
+  "71": {
+   "label": "Zuckuss",
+   "action_row": 34,
+   "note": "",
+   "states": {
+    "primary_fire": {
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "state": 44,
+     "events_asset": 529,
+     "evidence": "row 34 has no +0x10 set, shared set 0x020E92DC applies."
+    }
+   }
+  },
+  "34": {
+   "label": "Lando (Jabbas Palace)",
+   "action_row": 16,
+   "note": "NO RANGED ATTACK AT ALL. Action row 16 has type byte +0x03 = 0 (not 1, so 0x0200E1C4's shooting branch is unreachable) and flags +0x1A = 0x0040 with bit 0x08 CLEAR, so the attack behaviour-state ENTER at 0x020325F0 exits immediately without playing state 0x2C. Row 16's descriptor set 0x020E9304 carries no state 44. Lando must use the melee set.",
+   "states": {}
+  }
+ },
+ "clip_name_length": "NSBCA names are 16 BYTES. Every clip name here is the truncated 16-char name as it appears in the archive and therefore in the exported AnimationLibrary. The previous Jango entries used untruncated names (JangoFettShootGun, JangoFettHoverIdle, JangoFettHoverMove, JangoFettHoverShoot); AnimationPlayer.has_animation() missed every one of them, so play_state() returned false and Jango's fire and hover animations never played at all.",
+ "fire_event_tracks": {
+  "format": "6-byte records {u16 frame, u16 opcode, u16 param}, terminated by FFFF FFFF FFFF. Walked in ITCM at 0x01FFAE6C-0x01FFAEB8 and dispatched by 0x0209FA28.",
+  "opcode_0x18": "FIRE THE WEAPON, param = attach-point index. Posts event 0x0B to the behaviour state (0x02004B68); the attack state handles it at 0x02032740.",
+  "opcode_0x02": "positioned 3D sound, param = sound event id (0x020B95BC)",
+  "opcode_0x03": "2D sound, param = sound event id (0x020B8F70)",
+  "tracks": {
+   "47": [
+    [
+     2,
+     24,
+     5
+    ]
+   ],
+   "529": [
+    [
+     1,
+     24,
+     5
+    ]
+   ],
+   "531": [
+    [
+     0,
+     24,
+     5
+    ]
+   ],
+   "611": [
+    [
+     1,
+     24,
+     5
+    ]
+   ],
+   "674": [
+    [
+     5,
+     24,
+     5
+    ]
+   ],
+   "2926": [
+    [
+     1,
+     24,
+     5
+    ],
+    [
+     2,
+     24,
+     5
+    ]
+   ],
+   "3061": [
+    [
+     1,
+     24,
+     5
+    ],
+    [
+     8,
+     24,
+     4
+    ]
+   ]
+  },
+  "note": "NOT ONE fire clip carries a sound event. The fire sound is emitted by the PROJECTILE, not the animation - see fire_sound below."
+ },
+ "fire_sound": {
+  "where": "0x02018CBC-0x02018CD4, the tail of the projectile launch 0x02018AD8.",
+  "table": "0x020F4D0C, stride 12, indexed by the projectile subtype at obj+0x1C3 (= action-row byte +0x04).",
+  "field": "byte +0x08 (literal 0x020F4D14 at 0x02018CF0) is the SOUND EVENT ID; 0xC9 (201) means silent and is the same no-sound sentinel as config/sound_events.json.",
+  "dispatch": "FUN_020B95BC(id, projectile) - the positioned 3D emitter, source = the bolt.",
+  "per_subtype": {
+   "0": 9,
+   "1": 9,
+   "2": 49,
+   "3": 49,
+   "4": 49,
+   "5": 49,
+   "6": 160,
+   "7": 201,
+   "8": 7,
+   "9": 115,
+   "10": 9,
+   "11": 9,
+   "12": 9,
+   "13": 9,
+   "14": 9
+  },
+  "hunters": "every hunter except Bossk uses subtype 0/10/11 -> sound event 9 (out/snd/samples/sample_127.wav). Bossk's action row 4 byte is 13, which 0x02010C6C routes down the separate grenade branch (0x0200CB48) that never reaches 0x02018AD8 - his launch sound is UNRESOLVED."
+ },
+ "cooldown": {
+  "where": "action-row byte +0x18 (literal 0x020F6BC0 at 0x0200E4E4), stored to actor+0x6C1 at 0x0200E480 and decremented once per tick at 0x0200E1D0.",
+  "per_character": {
+   "0": 8,
+   "7": 8,
+   "8": 48,
+   "13": 8,
+   "20": 8,
+   "27": 8,
+   "29": 8,
+   "34": 8,
+   "36": 8,
+   "71": 8
+  }
+ },
+ "pending_export": {
+  "0": {
+   "label": "4-LOM",
+   "state": "primary_fire",
+   "target": {
+    "asset": 48,
+    "clip": "LOM_ShootGun",
+    "state": 44,
+    "events_asset": 47,
+    "evidence": "body set 0x020E967C (all clips LOM_*); row 31 has no +0x10 set. NOT YET EXPORTED - needs a 4-LOM body library."
+   },
+   "whole_set": {
+    "0": "44 LOM_IdleGun",
+    "1": "50 LOM_WalkGun",
+    "6": "46 LOM_RunGun",
+    "9": "43 LOM_Idle",
+    "11": "45 LOM_Run",
+    "12": "42 LOM_GunOut",
+    "44": "48 LOM_ShootGun"
+   },
+   "set_address": "0x020E967C -> array 0x020E8D6E, 8 descriptors"
+  }
+ }
+}

@@ -1,0 +1,3 @@
+# Third-party binaries and source checkouts are installed here and stay local.
+*
+!.gitignore

@@ -1,0 +1,236 @@
+--- a/runner/CMakeLists.txt
++++ b/runner/CMakeLists.txt
+@@ -330,6 +330,7 @@
+ 
+ add_executable(nds_runner
+     src/runtime_arm.cpp
++    src/lsw2_first_run.cpp
+     src/battery_save.cpp
+     src/firmware_state.cpp
+     src/generated_firmware.cpp
+--- a/runner/src/main.cpp
++++ b/runner/src/main.cpp
+@@ -38,6 +38,7 @@
+ #include "debug_server.h"
+ #include "frontend.h"
+ #include "gpu2d.h"
++#include "lsw2_first_run.h"
+ #include "gpu3d.h"
+ #include "melonds_compute/TextureUpscale.h"
+ #include "net/net_ring.h"
+--- /dev/null
++++ b/runner/src/lsw2_first_run.h
+@@ -0,0 +1,20 @@
++// LSW2 PORT PATCH: the first-run ROM request.
++//
++// A bare double-click of the port with nothing in rom/ used to print an
++// explanation to a console that closed with it. The player never saw it, so
++// the port simply "did nothing". This asks with a real window and, on Windows,
++// a file picker, and verifies what it is given before anything boots.
++#pragma once
++
++#include <filesystem>
++#include <string>
++
++// The [game] sha1 from a game.toml, or "" when it names none.
++std::string lsw2_expected_rom_sha1(const std::filesystem::path& game_toml);
++
++// A ROM in rom_dir whose SHA-1 is want_sha1 (any .nds when want_sha1 is
++// empty). Failing that, asks the player for one: the dump they choose is
++// verified, copied into rom_dir, and returned. Returns an empty path when the
++// player declines - the caller should exit quietly, the player has been told.
++std::filesystem::path lsw2_first_run_rom(const std::filesystem::path& rom_dir,
++                                         const std::string& want_sha1);
+--- /dev/null
++++ b/runner/src/lsw2_first_run.cpp
+@@ -0,0 +1,190 @@
++// LSW2 PORT PATCH: the first-run ROM request. See lsw2_first_run.h.
++//
++// Its own translation unit because the Windows file picker needs windows.h,
++// which main.cpp keeps out on purpose (see the Winsock note at the top of
++// main()).
++#include "lsw2_first_run.h"
++
++#include <cstdio>
++#include <fstream>
++#include <initializer_list>
++#include <iterator>
++#include <system_error>
++#include <vector>
++
++#include <SDL.h>
++
++#include "sha1.h"
++
++#ifdef _WIN32
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#ifndef NOMINMAX
++#define NOMINMAX
++#endif
++#include <windows.h>
++#include <commdlg.h>
++#endif
++
++namespace fs = std::filesystem;
++
++namespace {
++
++const char* const kTitle = "LEGO Star Wars II DS - PC port";
++
++std::string trim(const std::string& s) {
++    const size_t a = s.find_first_not_of(" \t\r\n");
++    if (a == std::string::npos) return "";
++    const size_t b = s.find_last_not_of(" \t\r\n");
++    return s.substr(a, b - a + 1);
++}
++
++// "" when the file cannot be read.
++std::string file_sha1(const fs::path& path) {
++    std::ifstream in(path, std::ios::binary);
++    if (!in) return "";
++    std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(in)),
++                                     std::istreambuf_iterator<char>());
++    if (bytes.size() < 0x200u) return "";
++    return gba::sha1(bytes.data(), bytes.size()).hex();
++}
++
++bool matches(const fs::path& path, const std::string& want) {
++    if (want.empty()) return true;
++    return file_sha1(path) == want;
++}
++
++// 0 = the first button, -1 = closed.
++int ask(Uint32 flags, const std::string& text,
++        std::initializer_list<const char*> labels) {
++    std::vector<SDL_MessageBoxButtonData> buttons;
++    int id = 0;
++    for (const char* label : labels) {
++        SDL_MessageBoxButtonData b{};
++        b.buttonid = id;
++        if (id == 0) b.flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
++        if (id == static_cast<int>(labels.size()) - 1)
++            b.flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
++        b.text = label;
++        buttons.push_back(b);
++        ++id;
++    }
++    SDL_MessageBoxData data{};
++    data.flags = flags;
++    data.title = kTitle;
++    data.message = text.c_str();
++    data.numbuttons = static_cast<int>(buttons.size());
++    data.buttons = buttons.data();
++    int chosen = -1;
++    if (SDL_ShowMessageBox(&data, &chosen) != 0) {
++        // No window system to ask with: say it where a console can see it.
++        std::fprintf(stderr, "%s\n", text.c_str());
++        return -1;
++    }
++    return chosen;
++}
++
++#ifdef _WIN32
++// The picker, loaded on demand so neither link line needs comdlg32.
++fs::path pick_file() {
++    HMODULE dlg = LoadLibraryW(L"comdlg32.dll");
++    if (!dlg) return {};
++    using Fn = BOOL(WINAPI*)(LPOPENFILENAMEW);
++    auto open = reinterpret_cast<Fn>(
++        reinterpret_cast<void*>(GetProcAddress(dlg, "GetOpenFileNameW")));
++    fs::path chosen;
++    if (open) {
++        wchar_t file[4096] = L"";
++        OPENFILENAMEW ofn{};
++        ofn.lStructSize = sizeof(ofn);
++        ofn.lpstrFilter = L"Nintendo DS ROM (*.nds)\0*.nds\0All files (*.*)\0*.*\0";
++        ofn.lpstrFile = file;
++        ofn.nMaxFile = static_cast<DWORD>(std::size(file));
++        ofn.lpstrTitle = L"Choose your LEGO Star Wars II: The Original Trilogy (USA) ROM";
++        ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
++        if (open(&ofn)) chosen = fs::path(file);
++    }
++    FreeLibrary(dlg);
++    return chosen;
++}
++#endif
++
++}  // namespace
++
++std::string lsw2_expected_rom_sha1(const fs::path& game_toml) {
++    std::ifstream in(game_toml);
++    std::string line, section;
++    while (std::getline(in, line)) {
++        const std::string t = trim(line);
++        if (t.empty() || t[0] == '#') continue;
++        if (t[0] == '[') {
++            section = trim(t.substr(1, t.find(']') - 1));
++            continue;
++        }
++        if (section != "game" || t.rfind("sha1", 0) != 0) continue;
++        const size_t q1 = t.find('"');
++        const size_t q2 = q1 == std::string::npos ? q1 : t.find('"', q1 + 1);
++        if (q2 != std::string::npos) return t.substr(q1 + 1, q2 - q1 - 1);
++    }
++    return "";
++}
++
++fs::path lsw2_first_run_rom(const fs::path& rom_dir, const std::string& want) {
++    std::error_code ec;
++    bool wrong_one_present = false;
++    for (const auto& e : fs::directory_iterator(rom_dir, ec)) {
++        if (e.path().extension() != ".nds") continue;
++        if (matches(e.path(), want)) return e.path();
++        wrong_one_present = true;
++    }
++
++    const std::string expect =
++        "This port needs your own dump of\n"
++        "LEGO Star Wars II: The Original Trilogy (USA) for Nintendo DS.\n\n" +
++        (want.empty() ? std::string() : "Its SHA-1 is " + want + ".\n\n");
++    std::string why = wrong_one_present
++        ? "The .nds in " + rom_dir.string() + " is not that game (or not the USA "
++          "release).\n\n" + expect
++        : "Welcome! " + expect;
++
++#ifdef _WIN32
++    for (;;) {
++        if (ask(SDL_MESSAGEBOX_INFORMATION,
++                why + "Choose the ROM file and it will be copied into\n" +
++                    rom_dir.string() + "\nso you are only asked once.",
++                {"Choose ROM...", "Quit"}) != 0)
++            return {};
++        const fs::path picked = pick_file();
++        if (picked.empty()) return {};
++        const std::string got = file_sha1(picked);
++        if (!want.empty() && got != want) {
++            why = picked.filename().string() + " is not the right ROM.\n\n" +
++                  (got.empty() ? std::string("It could not be read.\n\n")
++                               : "Its SHA-1 is " + got + ".\n\n") +
++                  expect;
++            continue;
++        }
++        fs::create_directories(rom_dir, ec);
++        const fs::path dest = rom_dir / picked.filename();
++        if (fs::equivalent(picked, dest, ec)) return dest;
++        std::error_code copy_ec;
++        fs::copy_file(picked, dest, fs::copy_options::overwrite_existing, copy_ec);
++        if (copy_ec) {
++            // Not fatal: run from where it is, and ask again next time.
++            std::fprintf(stderr, "[rom] could not copy %s into %s: %s\n",
++                         picked.string().c_str(), rom_dir.string().c_str(),
++                         copy_ec.message().c_str());
++            return picked;
++        }
++        std::fprintf(stderr, "[rom] copied %s into %s\n",
++                     picked.filename().string().c_str(), rom_dir.string().c_str());
++        return dest;
++    }
++#else
++    ask(SDL_MESSAGEBOX_INFORMATION,
++        why + "Put the .nds file in\n" + rom_dir.string() + "\nand start the port again.",
++        {"OK"});
++    return {};
++#endif
++}

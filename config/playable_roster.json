@@ -1,0 +1,64 @@
+{
+  "source": "https://gamefaqs.gamespot.com/ds/932109-lego-star-wars-ii-the-original-trilogy/faqs/79302/characters",
+  "bounty_hunters_rom_verified": "SETTLED 2026-08-30 from the cartridge, so this one group no longer rests on the third-party page in `source`. config/strings.json records that character names are string id 0x1CB + character id; decoding that for the ten ids in the Free Play select's hunter pages (20 7 29 27 0 13 8 34 36 71, table at 0x020EDDB2) gives Greedo, Boba Fett, Jango Fett, IG-88, 4-LOM, Dengar, Bossk, Lando Jabba's Palace, Leia Bounty Hunter, Zuckuss. 4-LOM is character id 0.",
+  "fixed_appearance_count": 65,
+  "custom_slot_count": 2,
+  "groups": {
+    "leia": ["normal", "cloud_city", "hoth", "jabbas_prisoner", "endor", "bounty_hunter"],
+    "han_solo": ["stormtrooper", "normal", "hoth", "sarlacc_pit", "in_carbonite"],
+    "chewbacca": ["normal"],
+    "luke_skywalker": ["tatooine", "stormtrooper", "endor", "jabbas_palace", "dagobah", "cloud_city"],
+    "lando_calrissian": ["normal", "jabbas_palace"],
+    "rebel_trooper": ["normal", "hoth"],
+    "biggs_darklighter": ["normal"],
+    "imperial_stormtroopers": ["stormtrooper", "sandtrooper", "snowtrooper", "scout_trooper", "tie_fighter_pilot"],
+    "imperial_army": ["officer", "death_star_trooper", "shuttle_pilot"],
+    "obi_wan_kenobi": ["normal", "force_ghost"],
+    "emperor_palpatine": ["normal"],
+    "anakin_skywalker": ["darth_vader", "force_ghost"],
+    "mace_windu": ["normal"],
+    "yoda": ["normal", "force_ghost"],
+    "protocol_droids": ["c3po", "k3po"],
+    "astromechs": ["r2d2", "r5d4"],
+    "small_droids": ["mse6", "gonk"],
+    "bounty_hunters": ["greedo", "boba_fett", "jango_fett", "ig88", "4lom", "dengar", "bossk", "zuckuss", "princess_leia_boushh", "lando_calrissian_jabbas_palace"],
+    "extras": ["jawa", "wicket", "ewok", "salacious_crumb", "emperors_guard", "tusken_raider", "gamorrean_guard", "bith_1", "bith_2", "bith_3", "bith_4", "wuher"],
+    "custom": ["custom_1", "custom_2"]
+  },
+  "verified_runtime_assemblies": {
+    "greedo": {
+      "runtime_appearance_id": 20,
+      "actor_parts": [16, 65, 128],
+      "body_model": 2836,
+      "texture_bank": 2837,
+      "legs_companion": 2527,
+      "torso_companion": 2535,
+      "head_model": 2526,
+      "weapon_model": 3865,
+      "idle_animation": 491
+    },
+    "lando_calrissian_jabbas_palace": {
+      "runtime_appearance_id": 34,
+      "actor_parts": [22, 76, 139, 203, 250],
+      "helmet_model": 3364,
+      "legs_companion": 3368,
+      "torso_companion": 3370,
+      "head_companion": 3373,
+      "weapon_model": 3377,
+      "idle_animation": 491,
+      "idle_animation_status": "provisional generic safe pose"
+    },
+    "princess_leia_boushh": {
+      "runtime_appearance_id": 36,
+      "actor_parts": [23, 77, 141, 206, 250],
+      "helmet_model": 3474,
+      "legs_companion": 3478,
+      "torso_companion": 3480,
+      "head_companion": 3496,
+      "weapon_model": 4706,
+      "idle_animation": 493,
+      "idle_animation_status": "provisional generic safe pose"
+    }
+  },
+  "core_body_manifest": "config/playable_core_bodies.json"
+}

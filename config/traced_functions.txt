@@ -1,0 +1,62 @@
+# Narrowing down a wild function-pointer call. Execution reaches a loaded DLL,
+# where the pages are executable, so the indirect-call dispatcher never sees it
+# and the frame chain is gone by the time it faults. Counting which of these is
+# reached last says where it comes from.
+FUN_020dd930
+FUN_020dd698
+FUN_020dd6d8
+FUN_020dd6c0
+FUN_020dd860
+FUN_020dd7e4
+FUN_020dd82c
+FUN_020dd8bc
+FUN_020dd978
+FUN_020cdd94
+
+# The card-removal check and the fatal path it leads to. The port halts in
+# FUN_020cea74 by way of FUN_020d6070 -> FUN_020d60e4, and FUN_020d6070 is a
+# general fatal handler reached from more than one place, so a call count is
+# what distinguishes "the card check rejected the cartridge" from "something
+# else asked to shut down and the card check was never involved".
+FUN_020d6118
+FUN_020d6070
+FUN_020d60e4
+FUN_020d5b3c
+
+# Is VRAM initialisation reached at all? An earlier analysis predicted that
+# widening the element types would make banks appear, and the report still says none were
+# enabled - but the run now crashes in the file system, which may simply be
+# before graphics init. A call count settles which, instead of leaving the
+# prediction unresolved.
+FUN_020c9ab4
+FUN_020ca300
+FUN_020ca040
+
+# The null callback the port dies on. FUN_020D2374 calls *(obj + 0x54) guarded
+# only by a flag bit at +0x58, and FUN_020D27CC - the only writer of both -
+# refuses to set one without the other. So either the registrar never ran, or
+# the object FUN_020D2374 is looking at is not the one that was initialised.
+FUN_020d27cc
+FUN_020d2374
+
+# Did the file system ever register its device? FUN_020D28C0 opens a file by
+# reading the default device from *DAT_020d2a00 (0x021173CC) and got null, so
+# param_1[2] was null and FUN_020D2374 faulted reading 0x1C. FUN_020D2584 is
+# the registrar and writes both 0x021173C8 and 0x021173CC; FUN_020D2544 is the
+# lookup it skips on. Counts say which of "never ran", "took the else branch"
+# and "found one already there" it was.
+FUN_020d2584
+FUN_020d2544
+FUN_020d2518
+
+# The device IS registered - "device list head 0x021173F4, default device
+# 0x021173F4" - and FUN_020D2544's single call is the one the registrar makes,
+# so FUN_020D28C0 never took its drive-prefix branch either. If open ran at all
+# it would have set the handle's [2] from *DAT_020d2a00, which is valid. So the
+# question is whether the handle was ever opened.
+# PERTURBS - tracing these three changes the port's failure (a read fault at
+# 0x1C becomes an execute fault at 0, and reverts when they are removed), so
+# they are left off deliberately:
+# PERTURBS - left off deliberately: FUN_020d28c0
+# PERTURBS - left off deliberately: FUN_020d2a04
+# PERTURBS - left off deliberately: FUN_0205abb4

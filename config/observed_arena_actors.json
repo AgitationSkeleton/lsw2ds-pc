@@ -1,0 +1,503 @@
+{
+  "note": "Actor classes observed live in a Mos Eisley Bounty Hunter match. Every actor is a C++ object with its vtable pointer at +0x00, proven by the constructor at 0x02017b54. These vtables were read out of the running emulator and checked against the vtables enumerated from the ARM9.",
+  "IMPORTANT_retraction": "An earlier pass recorded 24 'static entity world positions' by reading +0xB0/+0xB4/+0xB8 for every actor the trace saw. That is wrong for most classes. Only classes flagged b0_b4_b8_is_position use that triple for position - their ticks read and write it. The 16-instance class and the four classes deriving from it never touch those offsets, so the numbers recorded for them are some other field and are not locations. They must not be used to place entities in the port.",
+  "hierarchy": "0x020fcfb8 is a base class with tick 0x02012744. Classes 0x020fd6d8, 0x020fdb50, 0x020fd468 and 0x020fd538 each call 0x02012744 from their own tick, so they derive from it. This settles the open question from the arena entity-logic analysis: derived classes do call the base implementation directly, which is why tracing 0x02017bcc sees actors of many different classes.",
+  "not_yet_known": "Which class is a turret, a dispenser, a grapple point, a lever or the elevator. The classes name no asset ids, and carry no RTTI or name strings, so identification needs either the level spawn records or a capture that ties a state change to a known interaction.",
+  "source": "out/work/gpudump/trace.csv plus live main RAM",
+  "classes": {
+    "0x020fd220": {
+      "instances": 2,
+      "tick": "0x0201d1e0",
+      "methods": [
+        "0x0201d0d4",
+        "0x0201d10c",
+        "0x02001ce8",
+        "0x0201d1e0",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": null,
+      "b0_b4_b8_is_position": true,
+      "actors": [
+        {
+          "actor": "0x02129b14",
+          "rows": 25325,
+          "fields_b0_b4_b8": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "span": [
+            12.0,
+            17.0,
+            159.0
+          ]
+        },
+        {
+          "actor": "0x02120f30",
+          "rows": 19626,
+          "fields_b0_b4_b8": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "span": [
+            112.0,
+            49.0,
+            142.0
+          ]
+        }
+      ]
+    },
+    "0x020fcc68": {
+      "instances": 3,
+      "tick": "0x00000000",
+      "methods": [
+        "0x020017d8",
+        "0x02001868",
+        "0x02001a70",
+        "0x00000000",
+        "0x00000000",
+        "0x02001a6c",
+        "0x00000000",
+        "0x00000000"
+      ],
+      "derives_from": null,
+      "b0_b4_b8_is_position": true,
+      "actors": [
+        {
+          "actor": "0x02128070",
+          "rows": 18304,
+          "fields_b0_b4_b8": [
+            -8.941,
+            -55.843,
+            70.048
+          ],
+          "span": [
+            172.825,
+            117.723,
+            3475.007
+          ]
+        },
+        {
+          "actor": "0x02124ff4",
+          "rows": 8797,
+          "fields_b0_b4_b8": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "span": [
+            112.0,
+            52.0,
+            692.0
+          ]
+        },
+        {
+          "actor": "0x023da468",
+          "rows": 951,
+          "fields_b0_b4_b8": [
+            -35.404,
+            14.625,
+            108.365
+          ],
+          "span": [
+            201.026,
+            56.424,
+            479.981
+          ]
+        }
+      ]
+    },
+    "0x020fcf28": {
+      "instances": 2,
+      "tick": "0x0200dafc",
+      "methods": [
+        "0x0200d954",
+        "0x0200da24",
+        "0x02001ce8",
+        "0x0200dafc",
+        "0x02004388",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02007eac"
+      ],
+      "derives_from": null,
+      "b0_b4_b8_is_position": true,
+      "actors": [
+        {
+          "actor": "0x02120158",
+          "rows": 37219,
+          "fields_b0_b4_b8": [
+            2.0,
+            -0.803,
+            0.0
+          ],
+          "span": [
+            187.645,
+            65.058,
+            3016.062
+          ]
+        },
+        {
+          "actor": "0x02128f5c",
+          "rows": 28010,
+          "fields_b0_b4_b8": [
+            24.0,
+            47.181,
+            -166.0
+          ],
+          "span": [
+            125.574,
+            48.007,
+            1920.0
+          ]
+        }
+      ]
+    },
+    "0x020fcfb8": {
+      "instances": 16,
+      "tick": "0x02012744",
+      "methods": [
+        "0x02011f64",
+        "0x02012004",
+        "0x02001ce8",
+        "0x02012744",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": null,
+      "b0_b4_b8_is_position": false,
+      "actors": [
+        {
+          "actor": "0x021276a8",
+          "rows": 47308,
+          "fields_b0_b4_b8": [
+            -31.0,
+            0.0,
+            163.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            1467.0
+          ]
+        },
+        {
+          "actor": "0x021257c4",
+          "rows": 47306,
+          "fields_b0_b4_b8": [
+            133.0,
+            17.0,
+            -78.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            702.0
+          ]
+        },
+        {
+          "actor": "0x02126d08",
+          "rows": 47303,
+          "fields_b0_b4_b8": [
+            70.0,
+            17.0,
+            -111.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            999.0
+          ]
+        },
+        {
+          "actor": "0x021271d8",
+          "rows": 47297,
+          "fields_b0_b4_b8": [
+            22.0,
+            52.0,
+            83.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            747.0
+          ]
+        },
+        {
+          "actor": "0x02125a94",
+          "rows": 47295,
+          "fields_b0_b4_b8": [
+            128.0,
+            46.0,
+            -78.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            702.0
+          ]
+        },
+        {
+          "actor": "0x02126f70",
+          "rows": 47289,
+          "fields_b0_b4_b8": [
+            6.0,
+            0.0,
+            -26.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            234.0
+          ]
+        },
+        {
+          "actor": "0x02126260",
+          "rows": 47275,
+          "fields_b0_b4_b8": [
+            49.0,
+            52.0,
+            91.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            819.0
+          ]
+        },
+        {
+          "actor": "0x02125ff8",
+          "rows": 47264,
+          "fields_b0_b4_b8": [
+            50.0,
+            30.0,
+            95.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            855.0
+          ]
+        }
+      ]
+    },
+    "0x020fd6d8": {
+      "instances": 3,
+      "tick": "0x020216e0",
+      "methods": [
+        "0x020216b0",
+        "0x020216c4",
+        "0x02001ce8",
+        "0x020216e0",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": "0x020fcfb8",
+      "b0_b4_b8_is_position": false,
+      "actors": [
+        {
+          "actor": "0x021245c4",
+          "rows": 47301,
+          "fields_b0_b4_b8": [
+            -13.0,
+            -4.0,
+            28.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            252.0
+          ]
+        },
+        {
+          "actor": "0x021242d8",
+          "rows": 47299,
+          "fields_b0_b4_b8": [
+            -13.0,
+            -4.0,
+            107.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            963.0
+          ]
+        },
+        {
+          "actor": "0x0212482c",
+          "rows": 47263,
+          "fields_b0_b4_b8": [
+            98.0,
+            47.0,
+            -78.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            702.0
+          ]
+        }
+      ]
+    },
+    "0x020fdb50": {
+      "instances": 3,
+      "tick": "0x020265e4",
+      "methods": [
+        "0x020265b4",
+        "0x020265c8",
+        "0x02001ce8",
+        "0x020265e4",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": "0x020fcfb8",
+      "b0_b4_b8_is_position": false,
+      "actors": [
+        {
+          "actor": "0x02124d78",
+          "rows": 47255,
+          "fields_b0_b4_b8": [
+            113.0,
+            33.0,
+            149.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            1341.0
+          ]
+        },
+        {
+          "actor": "0x02124a94",
+          "rows": 46079,
+          "fields_b0_b4_b8": [
+            112.0,
+            49.0,
+            -142.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            1278.0
+          ]
+        },
+        {
+          "actor": "0x02121c20",
+          "rows": 40075,
+          "fields_b0_b4_b8": [
+            103.0,
+            52.0,
+            55.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            495.0
+          ]
+        }
+      ]
+    },
+    "0x020fd538": {
+      "instances": 1,
+      "tick": "0x0202052c",
+      "methods": [
+        "0x0202028c",
+        "0x020202a0",
+        "0x02001ce8",
+        "0x0202052c",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": "0x020fcfb8",
+      "b0_b4_b8_is_position": false,
+      "actors": [
+        {
+          "actor": "0x02125cfc",
+          "rows": 47257,
+          "fields_b0_b4_b8": [
+            36.0,
+            0.0,
+            102.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            918.0
+          ]
+        }
+      ]
+    },
+    "0x020fd468": {
+      "instances": 3,
+      "tick": "0x0201f6f0",
+      "methods": [
+        "0x0201f664",
+        "0x0201f678",
+        "0x02001ce8",
+        "0x0201f6f0",
+        "0x02010644",
+        "0x02017e3c",
+        "0x02010aa4",
+        "0x02017e88"
+      ],
+      "derives_from": "0x020fcfb8",
+      "b0_b4_b8_is_position": false,
+      "actors": [
+        {
+          "actor": "0x02127994",
+          "rows": 47313,
+          "fields_b0_b4_b8": [
+            -39.0,
+            -1.0,
+            21.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            189.0
+          ]
+        },
+        {
+          "actor": "0x02127bfc",
+          "rows": 47304,
+          "fields_b0_b4_b8": [
+            21.0,
+            -1.0,
+            92.0
+          ],
+          "span": [
+            15.0,
+            4.028,
+            828.0
+          ]
+        },
+        {
+          "actor": "0x021264c8",
+          "rows": 47279,
+          "fields_b0_b4_b8": [
+            99.0,
+            49.0,
+            -69.0
+          ],
+          "span": [
+            0.0,
+            0.0,
+            621.0
+          ]
+        }
+      ]
+    }
+  }
+}

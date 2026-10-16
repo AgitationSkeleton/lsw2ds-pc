@@ -1,0 +1,13 @@
+{
+  "name": "lsw2ds-master-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js",
+    "conformance": "node ../../tools/run_worker_local.mjs 28556",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {"wrangler": "^4.29.1"}
+}

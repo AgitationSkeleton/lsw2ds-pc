@@ -1,0 +1,354 @@
+{
+ "schema_version": 1,
+ "purpose": "Bounty Hunter character select phase - the ten statues, their exact placement and identity.",
+ "how_obtained": "Actors 0x02121E4C..0x021236A0, stride 0x2B4, read from a dense melonDS capture (out/work/replay_scripts/select.bat, EVERY=3) during the select phase, which is identified on the MAIN engine by DISPCNT 0x00010158 - BG0 only, no 2D layer. Transform is the 4x3 20.12 matrix at actor+0x8C. Identity is the statue asset id held at actor+0xE8 AND +0x230; all ten hunters appear exactly once across the ten actors, which is what makes the mapping trustworthy rather than assumed.",
+ "phase_frames": [
+  5655,
+  6321
+ ],
+ "layout": "A ring at y=6, TWELVE positions 30 degrees apart with TEN occupied - the two empty ones fall between Dengar and IG-88 (58.77 deg) and between Jango and Greedo (60.45 deg). Eight gaps of ~30 plus two of ~60 sum to 360 exactly. An earlier note claimed a single wide gap and named only the Dengar/IG-88 one; there are two, so this is a 12-slot ring rather than a 10-slot one. RADIUS IS NOT CONSTANT either: it runs 58.00 (Leia) to 60.03 (Lando, Jango), a spread of 2.03 units, so '~59' is a centre rather than a value. Each statue faces the centre, but yaw is NOT simply -ring_angle: the deviation splits into two clusters, ~0.35-0.44 deg for slots 1/3/8/9 and ~4.6-5.15 deg for slots 0/2/4/5/6/7, which is too large and too structured to be fixed-point rounding. The captured yaw is applied directly rather than recomputed.",
+ "order_note": "The ring order is NOT roster order. Roster order is 4-LOM, Boba, Bossk, Dengar, Greedo, IG-88, Jango, Lando, Leia, Zuckuss; the ring runs Greedo, 4-LOM, Boba, Bossk, Dengar, [gap], IG-88, Lando, Leia, Zuckuss, Jango. Assuming roster order would have placed seven of ten wrongly.",
+ "countdown": "NOT located. A first scan found 0x02101DE8 counting down at an apparent 1/second, but a dense re-read showed a 15->0 sawtooth every ~32 frames that sparse sampling had aliased into a ramp. A dense monotonic scan over the phase produced no true per-second counter in main RAM. The sub engine holds DISPCNT 0x00011f50 (BG+OBJ) throughout the phase while the main engine has no 2D layer at all, so the countdown is drawn on the TOUCH screen and should be looked for in sub OAM/BG next.",
+ "statues": [
+  {
+   "slot": 0,
+   "actor": "0x02121E4C",
+   "type": "0x32",
+   "hunter": "Greedo",
+   "key": "greedo",
+   "asset": 2534,
+   "model": "statues/greedo/GreedoStatue.glb",
+   "position": [
+    -51.0,
+    6.0,
+    -30.0
+   ],
+   "yaw_deg": 54.93,
+   "basis": [
+    [
+     0.5745,
+     0.0,
+     -0.8184
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.8184,
+     0.0,
+     0.5745
+    ]
+   ],
+   "ring_angle_deg": -59.53,
+   "ring_radius": 59.169
+  },
+  {
+   "slot": 1,
+   "actor": "0x02122100",
+   "type": "0x33",
+   "hunter": "4-LOM",
+   "key": "4lom",
+   "asset": 38,
+   "model": "statues/4lom/4LOMStatue.glb",
+   "position": [
+    -29.0,
+    6.0,
+    -51.0
+   ],
+   "yaw_deg": 29.97,
+   "basis": [
+    [
+     0.8662,
+     0.0,
+     -0.4995
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.4995,
+     0.0,
+     0.8662
+    ]
+   ],
+   "ring_angle_deg": -29.62,
+   "ring_radius": 58.669
+  },
+  {
+   "slot": 2,
+   "actor": "0x021223B4",
+   "type": "0x34",
+   "hunter": "Boba Fett",
+   "key": "boba",
+   "asset": 614,
+   "model": "statues/boba/BobaFettStatue.glb",
+   "position": [
+    0.0,
+    6.0,
+    -59.0
+   ],
+   "yaw_deg": 4.92,
+   "basis": [
+    [
+     0.9963,
+     0.0,
+     -0.0857
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0857,
+     0.0,
+     0.9963
+    ]
+   ],
+   "ring_angle_deg": 0.0,
+   "ring_radius": 59.0
+  },
+  {
+   "slot": 3,
+   "actor": "0x02122668",
+   "type": "0x35",
+   "hunter": "Bossk",
+   "key": "bossk",
+   "asset": 677,
+   "model": "statues/bossk/BosskStatue.glb",
+   "position": [
+    29.0,
+    6.0,
+    -51.0
+   ],
+   "yaw_deg": -30.06,
+   "basis": [
+    [
+     0.8655,
+     0.0,
+     0.501
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.501,
+     0.0,
+     0.8655
+    ]
+   ],
+   "ring_angle_deg": 29.62,
+   "ring_radius": 58.669
+  },
+  {
+   "slot": 4,
+   "actor": "0x0212291C",
+   "type": "0x36",
+   "hunter": "Dengar",
+   "key": "dengar",
+   "asset": 1791,
+   "model": "statues/dengar/DengarStatue.glb",
+   "position": [
+    52.0,
+    6.0,
+    -29.0
+   ],
+   "yaw_deg": -66.0,
+   "basis": [
+    [
+     0.4067,
+     0.0,
+     0.9136
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.9136,
+     0.0,
+     0.4067
+    ]
+   ],
+   "ring_angle_deg": 60.85,
+   "ring_radius": 59.54
+  },
+  {
+   "slot": 5,
+   "actor": "0x02122BD0",
+   "type": "0x37",
+   "hunter": "IG-88",
+   "key": "ig88",
+   "asset": 2928,
+   "model": "statues/ig88/IG88Statue.glb",
+   "position": [
+    51.0,
+    6.0,
+    29.0
+   ],
+   "yaw_deg": -115.04,
+   "basis": [
+    [
+     -0.4233,
+     0.0,
+     0.906
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.906,
+     0.0,
+     -0.4233
+    ]
+   ],
+   "ring_angle_deg": 119.62,
+   "ring_radius": 58.669
+  },
+  {
+   "slot": 6,
+   "actor": "0x02122E84",
+   "type": "0x38",
+   "hunter": "Palace Lando",
+   "key": "lando",
+   "asset": 3369,
+   "model": "statues/lando/LandoBountyStatu.glb",
+   "position": [
+    30.0,
+    6.0,
+    52.0
+   ],
+   "yaw_deg": -155.03,
+   "basis": [
+    [
+     -0.9065,
+     0.0,
+     0.4221
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.4221,
+     0.0,
+     -0.9065
+    ]
+   ],
+   "ring_angle_deg": 150.02,
+   "ring_radius": 60.033
+  },
+  {
+   "slot": 7,
+   "actor": "0x02123138",
+   "type": "0x39",
+   "hunter": "Boushh Leia",
+   "key": "leia",
+   "asset": 3479,
+   "model": "statues/leia/LeiaBountyStatue.glb",
+   "position": [
+    0.0,
+    6.0,
+    58.0
+   ],
+   "yaw_deg": 174.99,
+   "basis": [
+    [
+     -0.9961,
+     0.0,
+     -0.0874
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0874,
+     0.0,
+     -0.9961
+    ]
+   ],
+   "ring_angle_deg": 180.0,
+   "ring_radius": 58.0
+  },
+  {
+   "slot": 8,
+   "actor": "0x021233EC",
+   "type": "0x3A",
+   "hunter": "Zuckuss",
+   "key": "zuckuss",
+   "asset": 5541,
+   "model": "statues/zuckuss/ZuckussStatue.glb",
+   "position": [
+    -29.0,
+    6.0,
+    51.0
+   ],
+   "yaw_deg": 149.94,
+   "basis": [
+    [
+     -0.8655,
+     0.0,
+     -0.501
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.501,
+     0.0,
+     -0.8655
+    ]
+   ],
+   "ring_angle_deg": -150.38,
+   "ring_radius": 58.669
+  },
+  {
+   "slot": 9,
+   "actor": "0x021236A0",
+   "type": "0x3B",
+   "hunter": "Jango Fett",
+   "key": "jango",
+   "asset": 3064,
+   "model": "statues/jango/JangoFettStatue.glb",
+   "position": [
+    -52.0,
+    6.0,
+    30.0
+   ],
+   "yaw_deg": 119.97,
+   "basis": [
+    [
+     -0.4995,
+     0.0,
+     -0.8662
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.8662,
+     0.0,
+     -0.4995
+    ]
+   ],
+   "ring_angle_deg": -119.98,
+   "ring_radius": 60.033
+  }
+ ]
+}

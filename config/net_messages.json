@@ -1,0 +1,768 @@
+{
+ "schema": 1,
+ "note": "The cartridge's own network protocol: 70 message types and their handlers.\n\nWHY THIS MATTERS FOR ONLINE PLAY. Networked play rests on the game's own\nmessage layer carrying the round start, the pick and the score screen. Until now\nthat layer was a black box - earlier analysis reasoned about what it must carry\nwithout ever having seen its vocabulary.\n\nIt is a jump table. `0x020B1248` is reached from inside the receive pump for\nevery pending message slot, and it opens:\n\n    020B1254  LDRB r3, [r4 + 1]        THE MESSAGE TYPE, byte 1\n    020B125C  CMP  r3, #0x45\n    020B1260  ADDLS pc, pc, r3, LSL #2\n    020B1264  B    <out of range>\n    020B1268  B    <type 0x00>  ... 70 entries\n\nSo the protocol has exactly **0x46 message types**, and each one's handler is a\nbranch target in that table. Six types share the same handler as the\nout-of-range case, which is what \"not implemented\" looks like.\n\nCROSS-CHECK, and the reason to trust the reading: the pause menu's wireless row\nsends `0x15` when hosting and `0x2D` when exiting (`0x0208EB10`, `0x0208EB6C`,\nboth through `0x020B04F0`). Both are valid types here with their own handlers.\nThe send side and the receive side agree.\n\n    python tools/export_net_messages.py\n",
+ "dispatcher": "0x020B1248",
+ "type_field": "byte 1 of the message",
+ "count": 70,
+ "implemented": 64,
+ "fallback_handler": "0x020B2F58",
+ "types": {
+  "0x00": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x01",
+    "0x26",
+    "0x27",
+    "0x28",
+    "0x29"
+   ],
+   "unimplemented": true
+  },
+  "0x01": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x00",
+    "0x26",
+    "0x27",
+    "0x28",
+    "0x29"
+   ],
+   "unimplemented": true
+  },
+  "0x02": {
+   "handler": "0x020B1400",
+   "shared_with": [
+    "0x03",
+    "0x04",
+    "0x06",
+    "0x09"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x0207376C"
+   ]
+  },
+  "0x03": {
+   "handler": "0x020B1400",
+   "shared_with": [
+    "0x02",
+    "0x04",
+    "0x06",
+    "0x09"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x0207376C"
+   ]
+  },
+  "0x04": {
+   "handler": "0x020B1400",
+   "shared_with": [
+    "0x02",
+    "0x03",
+    "0x06",
+    "0x09"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x0207376C"
+   ]
+  },
+  "0x05": {
+   "handler": "0x020B1380",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02073604",
+    "0x020B04F0"
+   ]
+  },
+  "0x06": {
+   "handler": "0x020B1400",
+   "shared_with": [
+    "0x02",
+    "0x03",
+    "0x04",
+    "0x09"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x0207376C"
+   ]
+  },
+  "0x07": {
+   "handler": "0x020B1524",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02004B78",
+    "0x020917C8"
+   ]
+  },
+  "0x08": {
+   "handler": "0x020B1560",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x09": {
+   "handler": "0x020B1400",
+   "shared_with": [
+    "0x02",
+    "0x03",
+    "0x04",
+    "0x06"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x0207376C"
+   ]
+  },
+  "0x0A": {
+   "handler": "0x020B15A8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02062A40",
+    "0x02072CF4"
+   ]
+  },
+  "0x0B": {
+   "handler": "0x020B15C0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205CE5C",
+    "0x0205ECC4",
+    "0x02072BC8"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x0C": {
+   "handler": "0x020B1614",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205CE5C",
+    "0x0205ECC4",
+    "0x02072BC8"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x0D": {
+   "handler": "0x020B1668",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x0209B6E4"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x0E": {
+   "handler": "0x020B16BC",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020B2F80"
+   ]
+  },
+  "0x0F": {
+   "handler": "0x020B16C8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02066FF0",
+    "0x020A3458",
+    "0x020AAEB4"
+   ]
+  },
+  "0x10": {
+   "handler": "0x020B193C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0200FDD8",
+    "0x0202C1A8",
+    "0x020363F4",
+    "0x020370EC",
+    "0x02037128",
+    "0x0205E80C"
+   ],
+   "does": [
+    "allocate"
+   ]
+  },
+  "0x11": {
+   "handler": "0x020B19E4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0200FDD8",
+    "0x0202C1A8",
+    "0x020363F4",
+    "0x0205E80C"
+   ],
+   "does": [
+    "allocate"
+   ]
+  },
+  "0x12": {
+   "handler": "0x020B1A48",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x0209D150"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x13": {
+   "handler": "0x020B1AE8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205CE5C",
+    "0x0205ECC4",
+    "0x02073054",
+    "0x020730D0",
+    "0x020CE938"
+   ],
+   "does": [
+    "state request",
+    "set the player count"
+   ]
+  },
+  "0x14": {
+   "handler": "0x020B1BF8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0209BCF8"
+   ]
+  },
+  "0x15": {
+   "handler": "0x020B1CF0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x02088B84",
+    "0x020917B4",
+    "0x02093C6C",
+    "0x020B111C"
+   ],
+   "does": [
+    "state request",
+    "announce character",
+    "read character id",
+    "pause/unpause",
+    "teardown"
+   ],
+   "note": "sent by the pause menu's wireless row when HOSTING (0x0208EB10)"
+  },
+  "0x16": {
+   "handler": "0x020B1DF0",
+   "shared_with": [
+    "0x17",
+    "0x18"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x02004B78",
+    "0x0200FDD8"
+   ]
+  },
+  "0x17": {
+   "handler": "0x020B1DF0",
+   "shared_with": [
+    "0x16",
+    "0x18"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x02004B78",
+    "0x0200FDD8"
+   ]
+  },
+  "0x18": {
+   "handler": "0x020B1DF0",
+   "shared_with": [
+    "0x16",
+    "0x17"
+   ],
+   "unimplemented": false,
+   "calls": [
+    "0x02004B78",
+    "0x0200FDD8"
+   ]
+  },
+  "0x19": {
+   "handler": "0x020B1EB4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02090124"
+   ]
+  },
+  "0x1A": {
+   "handler": "0x020B1EF8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020675D8",
+    "0x0206763C"
+   ]
+  },
+  "0x1B": {
+   "handler": "0x020B1ED0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0209678C",
+    "0x02096ADC"
+   ]
+  },
+  "0x1C": {
+   "handler": "0x020B1F4C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020029C4",
+    "0x0205E80C"
+   ],
+   "does": [
+    "dress an actor",
+    "allocate"
+   ]
+  },
+  "0x1D": {
+   "handler": "0x020B208C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02001688",
+    "0x020029C4",
+    "0x02006220",
+    "0x0205E80C"
+   ],
+   "does": [
+    "dress an actor",
+    "allocate"
+   ]
+  },
+  "0x1E": {
+   "handler": "0x020B2228",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020029C4",
+    "0x0205E80C"
+   ],
+   "does": [
+    "dress an actor",
+    "allocate"
+   ]
+  },
+  "0x1F": {
+   "handler": "0x020B24F8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0209B6D4"
+   ]
+  },
+  "0x20": {
+   "handler": "0x020B2528",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": []
+  },
+  "0x21": {
+   "handler": "0x020B253C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x0206DD60",
+    "0x02088B78",
+    "0x02088B84",
+    "0x020917B4",
+    "0x02093FD0"
+   ],
+   "does": [
+    "state request",
+    "announce character",
+    "read character id"
+   ]
+  },
+  "0x22": {
+   "handler": "0x020B25E0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": []
+  },
+  "0x23": {
+   "handler": "0x020B26D4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020AA890",
+    "0x020AAEB4"
+   ]
+  },
+  "0x24": {
+   "handler": "0x020B26F8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0206769C"
+   ]
+  },
+  "0x25": {
+   "handler": "0x020B271C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02048A54"
+   ]
+  },
+  "0x26": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x00",
+    "0x01",
+    "0x27",
+    "0x28",
+    "0x29"
+   ],
+   "unimplemented": true
+  },
+  "0x27": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x00",
+    "0x01",
+    "0x26",
+    "0x28",
+    "0x29"
+   ],
+   "unimplemented": true
+  },
+  "0x28": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x00",
+    "0x01",
+    "0x26",
+    "0x27",
+    "0x29"
+   ],
+   "unimplemented": true
+  },
+  "0x29": {
+   "handler": "0x020B2F58",
+   "shared_with": [
+    "0x00",
+    "0x01",
+    "0x26",
+    "0x27",
+    "0x28"
+   ],
+   "unimplemented": true
+  },
+  "0x2A": {
+   "handler": "0x020B2758",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020922F4"
+   ]
+  },
+  "0x2B": {
+   "handler": "0x020B2770",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0208CE8C"
+   ]
+  },
+  "0x2C": {
+   "handler": "0x020B2784",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x02093C6C"
+   ],
+   "does": [
+    "state request",
+    "pause/unpause"
+   ]
+  },
+  "0x2D": {
+   "handler": "0x020B27B4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x02093C6C",
+    "0x020B111C"
+   ],
+   "does": [
+    "state request",
+    "pause/unpause",
+    "teardown"
+   ],
+   "note": "sent by the pause menu's wireless row when EXITING (0x0208EB6C)"
+  },
+  "0x2E": {
+   "handler": "0x020B2864",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0207B370"
+   ],
+   "does": [
+    "set a slot"
+   ]
+  },
+  "0x2F": {
+   "handler": "0x020B2890",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0207B3BC"
+   ]
+  },
+  "0x30": {
+   "handler": "0x020B28B8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x020861BC"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x31": {
+   "handler": "0x020B2910",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x020861BC",
+    "0x02088B78"
+   ],
+   "does": [
+    "state request"
+   ]
+  },
+  "0x32": {
+   "handler": "0x020B29A0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02060158"
+   ]
+  },
+  "0x33": {
+   "handler": "0x020B29E4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02060158"
+   ]
+  },
+  "0x34": {
+   "handler": "0x020B2AD8",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020029C4",
+    "0x02004B78",
+    "0x0205E80C",
+    "0x02090668",
+    "0x02093690",
+    "0x020ACCAC"
+   ],
+   "does": [
+    "dress an actor",
+    "allocate"
+   ]
+  },
+  "0x35": {
+   "handler": "0x020B2BA4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02060198",
+    "0x020601AC"
+   ]
+  },
+  "0x36": {
+   "handler": "0x020B2BF0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02086810"
+   ]
+  },
+  "0x37": {
+   "handler": "0x020B2C08",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02097CB8"
+   ]
+  },
+  "0x38": {
+   "handler": "0x020B2C7C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0200FDD8"
+   ]
+  },
+  "0x39": {
+   "handler": "0x020B2CC4",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020A9A24",
+    "0x020AAEB4"
+   ]
+  },
+  "0x3A": {
+   "handler": "0x020B2CDC",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02015138",
+    "0x02015DCC",
+    "0x0208FEC8",
+    "0x020ACCAC"
+   ]
+  },
+  "0x3B": {
+   "handler": "0x020B2D64",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020871D8"
+   ]
+  },
+  "0x3C": {
+   "handler": "0x020B2D78",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x0208642C",
+    "0x02086534",
+    "0x0208896C",
+    "0x02093C6C"
+   ],
+   "does": [
+    "state request",
+    "pause/unpause"
+   ]
+  },
+  "0x3D": {
+   "handler": "0x020B1C14",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": []
+  },
+  "0x3E": {
+   "handler": "0x020B1CBC",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020A3458",
+    "0x020AAEB4"
+   ]
+  },
+  "0x3F": {
+   "handler": "0x020B1CD0",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0208FA1C"
+   ]
+  },
+  "0x40": {
+   "handler": "0x020B2E4C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0207D8F8"
+   ]
+  },
+  "0x41": {
+   "handler": "0x020B2E64",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0207DA48"
+   ]
+  },
+  "0x42": {
+   "handler": "0x020B2E7C",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x0205ECC4",
+    "0x02072BC8",
+    "0x02093C6C",
+    "0x020B111C"
+   ],
+   "does": [
+    "state request",
+    "pause/unpause",
+    "teardown"
+   ]
+  },
+  "0x43": {
+   "handler": "0x020B1C88",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x02086458"
+   ]
+  },
+  "0x44": {
+   "handler": "0x020B2F20",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020AAE08",
+    "0x020AAEB4"
+   ]
+  },
+  "0x45": {
+   "handler": "0x020B2F40",
+   "shared_with": [],
+   "unimplemented": false,
+   "calls": [
+    "0x020A9A24",
+    "0x020AAEB4"
+   ]
+  }
+ }
+}

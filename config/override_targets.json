@@ -1,0 +1,286 @@
+{
+ "schema": 1,
+ "note": "Every dispatch override REPLACES a function. Who else called it?\n\nWHY THIS EXISTS. An override does not wrap or defer - it replaces.\nSo the moment the port registers one, it has taken responsibility for every\ncaller that function ever had, not just the one the design was about.\n\nThat is easy to forget, and forgetting it cost three design passes:\n\n  - The first proposed overriding 0x020B111C because the pause menu's wireless\n    row calls it. It has EIGHT callers in four functions.\n  - The second kept the idea behind an `lr` gate. That does not help either, because\n    intercepting one call does not stop what the caller does next.\n  - The third settled it by counting callers on the whole path first - 8, 14 and\n    176 - which took one scan and should have come before either design.\n\nNone of the four test gates could catch that, because the code was never\nwritten: it was a plan, and plans are where this kind of error lives.\n\nWHAT THIS DOES. Reads the addresses out of dispatch_overrides.cpp's\nNdsDispatchEntry tables, counts each one's callers in the ROM, and compares\nagainst a baseline. A NEW override, or one whose caller count MOVED, fails.\n\n    python tools/sweep_override_targets.py\n    python tools/sweep_override_targets.py --update    rewrite the baseline\n\nWHAT A HIGH COUNT MEANS - and does not. It is not a failure. `0x02086204` is a\ngeneric flag test with many callers and the port reimplements it exactly, which\nis correct. The number is a QUESTION: does this override behave like the\noriginal for all of them? Answering \"yes, deliberately\" is fine. Never having\nasked is the problem.\n",
+ "targets": {
+  "0x020AD970": {
+   "handler": "wht_020ad970",
+   "callers": 1
+  },
+  "0x02055E98": {
+   "handler": "script_command",
+   "callers": 1
+  },
+  "0x0205CD20": {
+   "handler": "string_decode",
+   "callers": 1
+  },
+  "0x0207AEF4": {
+   "handler": "lsw2_customization_menu_commit",
+   "callers": 1
+  },
+  "0x02097BCC": {
+   "handler": "lsw2_doorseal_contact",
+   "callers": 1
+  },
+  "0x02050C44": {
+   "handler": "lsw2_lobby_spawn_as_last_hunter",
+   "callers": 1
+  },
+  "0x020897F8": {
+   "handler": "lsw2_sessionroster_arena_build",
+   "callers": 1
+  },
+  "0x02091B88": {
+   "handler": "lsw2_sessionroster_spawn",
+   "callers": 11
+  },
+  "0x02086534": {
+   "handler": "lsw2_freeplaypick_unlock_query",
+   "callers": 104
+  },
+  "0x02060158": {
+   "handler": "script_enqueue_wrapper",
+   "callers": 32
+  },
+  "0x0208CFEC": {
+   "handler": "state_message",
+   "callers": 1
+  },
+  "0x0205ECC4": {
+   "handler": "lsw2_statereq_override",
+   "callers": 176
+  },
+  "0x0204B450": {
+   "handler": "lsw2_behaviourhook_disable_override",
+   "callers": 1
+  },
+  "0x0204A938": {
+   "handler": "lsw2_behaviourhook_enable_override",
+   "callers": 1
+  },
+  "0x02057BC8": {
+   "handler": "lsw2_behaviourhook_setbyte_override",
+   "callers": 1
+  },
+  "0x0208C888": {
+   "handler": "lsw2_behaviourhook_matchstep_override",
+   "callers": 1
+  },
+  "0x02057A28": {
+   "handler": "lsw2_behaviourhook_enableplain_override",
+   "callers": 1
+  },
+  "0x0207641C": {
+   "handler": "lsw2_behaviourhook_enablearrive_override",
+   "callers": 1
+  },
+  "0x0209F640": {
+   "handler": "lsw2_markerhook_attach_override",
+   "callers": 1
+  },
+  "0x020063D4": {
+   "handler": "lsw2_headfix_gear_applier",
+   "callers": 80
+  },
+  "0x02086204": {
+   "handler": "flag_test_array_c",
+   "callers": 15
+  },
+  "0x020B0410": {
+   "handler": "netmsg_pump_probe",
+   "callers": 1
+  },
+  "0x020B07E8": {
+   "handler": "netgame_tick_probe",
+   "callers": 1
+  },
+  "0x0202C218": {
+   "handler": "frame_cand1_probe",
+   "callers": 1
+  },
+  "0x0204A620": {
+   "handler": "frame_cand2_probe",
+   "callers": 2
+  },
+  "0x02055530": {
+   "handler": "frame_cand3_probe",
+   "callers": 0
+  },
+  "0x02088014": {
+   "handler": "freeplay_message_probe",
+   "callers": 1
+  },
+  "0x020AD310": {
+   "handler": "wh_get_system_state",
+   "callers": 9
+  },
+  "0x020AD7F0": {
+   "handler": "wht_020ad7f0",
+   "callers": 1
+  },
+  "0x020AD884": {
+   "handler": "wht_020ad884",
+   "callers": 1
+  },
+  "0x020AD438": {
+   "handler": "lsw2_wh_ready_poll",
+   "callers": 1
+  },
+  "0x020AD5DC": {
+   "handler": "wht_020ad5dc",
+   "callers": 1
+  },
+  "0x020AD55C": {
+   "handler": "wht_020ad55c",
+   "callers": 1
+  },
+  "0x020ADBCC": {
+   "handler": "wht_020adbcc",
+   "callers": 1
+  },
+  "0x020ADC40": {
+   "handler": "wht_020adc40",
+   "callers": 1
+  },
+  "0x020AD8A4": {
+   "handler": "wht_020ad8a4",
+   "callers": 1
+  },
+  "0x020AD75C": {
+   "handler": "wht_020ad75c",
+   "callers": 1
+  },
+  "0x020AD8CC": {
+   "handler": "wht_020ad8cc",
+   "callers": 1
+  },
+  "0x020ADC78": {
+   "handler": "wht_020adc78",
+   "callers": 1
+  },
+  "0x020AD918": {
+   "handler": "wht_020ad918",
+   "callers": 1
+  },
+  "0x020AF204": {
+   "handler": "wht_020af204",
+   "callers": 1
+  },
+  "0x020AD954": {
+   "handler": "wht_020ad954",
+   "callers": 1
+  },
+  "0x020ADAF0": {
+   "handler": "wht_020adaf0",
+   "callers": 1
+  },
+  "0x020ADB5C": {
+   "handler": "wht_020adb5c",
+   "callers": 1
+  },
+  "0x020AD928": {
+   "handler": "wht_020ad928",
+   "callers": 1
+  },
+  "0x020ADDDC": {
+   "handler": "wht_020adddc",
+   "callers": 1
+  },
+  "0x020ADC88": {
+   "handler": "wht_020adc88",
+   "callers": 1
+  },
+  "0x020ADD78": {
+   "handler": "wht_020add78",
+   "callers": 1
+  },
+  "0x020AD3BC": {
+   "handler": "wht_020ad3bc",
+   "callers": 1
+  },
+  "0x020AD8DC": {
+   "handler": "wht_020ad8dc",
+   "callers": 1
+  },
+  "0x020AD8E8": {
+   "handler": "wht_020ad8e8",
+   "callers": 1
+  },
+  "0x020AD534": {
+   "handler": "wht_020ad534",
+   "callers": 1
+  },
+  "0x020AD540": {
+   "handler": "wht_020ad540",
+   "callers": 1
+  },
+  "0x020AF9A0": {
+   "handler": "wht_020af9a0",
+   "callers": 1
+  },
+  "0x02071B9C": {
+   "handler": "wht_02071b9c",
+   "callers": 1
+  },
+  "0x020719E0": {
+   "handler": "wht_020719e0",
+   "callers": 1
+  },
+  "0x02072620": {
+   "handler": "wht_02072620",
+   "callers": 1
+  },
+  "0x0207281C": {
+   "handler": "wht_0207281c",
+   "callers": 3
+  },
+  "0x02072AD8": {
+   "handler": "wht_02072ad8",
+   "callers": 1
+  },
+  "0x02072900": {
+   "handler": "wht_02072900",
+   "callers": 2
+  },
+  "0x02070248": {
+   "handler": "wht_02070248",
+   "callers": 1
+  },
+  "0x02072700": {
+   "handler": "wht_02072700",
+   "callers": 1
+  },
+  "0x0205E80C": {
+   "handler": "lsw2_hatstay_spawn_override",
+   "callers": 346
+  },
+  "0x02006220": {
+   "handler": "lsw2_carbonitekeep_override",
+   "callers": 7
+  },
+  "0x020B1248": {
+   "handler": "netmsg_dispatch_override",
+   "callers": 1
+  },
+  "0x0208E514": {
+   "handler": "pause_state_update_override",
+   "callers": 1
+  },
+  "0x020B8E40": {
+   "handler": "between_passes_override",
+   "callers": 1
+  },
+  "0x0206EF0C": {
+   "handler": "lsw2_commguard_consistency_check",
+   "callers": 1
+  },
+  "0x0208CDB0": {
+   "handler": "hud_step_hop_host",
+   "callers": 1
+  },
+  "0x0208E374": {
+   "handler": "lsw2_wh_probe_update",
+   "callers": 1
+  }
+ }
+}

@@ -1,0 +1,83 @@
+--- a/runner/src/runtime_arm.cpp	2026-09-05 09:00:19.660237300 -0700
++++ b/runner/src/runtime_arm.cpp	2026-09-05 09:00:19.709134000 -0700
+@@ -999,12 +999,80 @@
+     if (((a ^ b) & (a ^ r)) & 0x80000000u) c |= CPSR_V_BIT; g_cpu.cpsr = c;
+ }
+ 
++// ── Dispatch histogram (LSW2 patch 0010) ────────────────────────────────
++//
++// WHAT IT IS FOR. A port override can only hook an address the dispatch table
++// is actually consulted for. The LSW2 fork has now picked seven candidate hooks
++// by reading the game's code and had every one refuted by measurement - three
++// fire but rarely, four never fire at all. The branch-trace ring cannot settle
++// it either, because it records every branch and cannot say which ones reached
++// runtime_dispatch.
++//
++// This counts the dispatched PCs themselves, which is exactly the set an
++// override can hook. It is INERT until runtime_dispatch_hist_reset() is called,
++// so a normal run pays one predictable-false branch per dispatch and nothing
++// else.
++namespace {
++
++struct LswDispHistSlot { uint32_t pc; uint32_t count; };
++constexpr int kLswDispHistSlots = 8192;   // power of two; open addressing
++LswDispHistSlot g_lsw_disp_hist[kLswDispHistSlots];
++bool g_lsw_disp_hist_on = false;
++
++inline void lsw_disp_hist_tally(uint32_t pc) {
++    if (!g_lsw_disp_hist_on) return;
++    uint32_t h = (pc >> 2) & (kLswDispHistSlots - 1);
++    for (int probe = 0; probe < 64; ++probe) {
++        LswDispHistSlot& s = g_lsw_disp_hist[(h + probe) & (kLswDispHistSlots - 1)];
++        if (s.count == 0) { s.pc = pc; s.count = 1; return; }
++        if (s.pc == pc) { ++s.count; return; }
++    }
++    // Table full for this bucket - dropped rather than evicting, so a count is
++    // always a LOWER BOUND and never someone else's.
++}
++
++}  // namespace
++
++extern "C" void runtime_dispatch_hist_reset(void) {
++    for (int i = 0; i < kLswDispHistSlots; ++i) {
++        g_lsw_disp_hist[i].pc = 0;
++        g_lsw_disp_hist[i].count = 0;
++    }
++    g_lsw_disp_hist_on = true;
++    std::fprintf(stderr, "[dispatch-hist] armed\n");
++}
++
++extern "C" void runtime_dispatch_hist_dump(uint32_t top) {
++    g_lsw_disp_hist_on = false;
++    int used = 0;
++    unsigned long long total = 0;
++    for (int i = 0; i < kLswDispHistSlots; ++i)
++        if (g_lsw_disp_hist[i].count) { ++used; total += g_lsw_disp_hist[i].count; }
++    std::fprintf(stderr,
++                 "[dispatch-hist] %d distinct dispatched PCs, %llu dispatches "
++                 "total\n", used, total);
++    for (uint32_t slot = 0; slot < top; ++slot) {
++        int best = -1;
++        for (int i = int(slot); i < kLswDispHistSlots; ++i)
++            if (g_lsw_disp_hist[i].count &&
++                (best < 0 || g_lsw_disp_hist[i].count > g_lsw_disp_hist[best].count))
++                best = i;
++        if (best < 0) break;
++        LswDispHistSlot t = g_lsw_disp_hist[slot];
++        g_lsw_disp_hist[slot] = g_lsw_disp_hist[best];
++        g_lsw_disp_hist[best] = t;
++        std::fprintf(stderr, "[dispatch-hist]   %2u  pc=%08X  x%u\n",
++                     slot, g_lsw_disp_hist[slot].pc, g_lsw_disp_hist[slot].count);
++    }
++}
++
+ // ── Dispatch ────────────────────────────────────────────────────────────
+ extern "C" void runtime_dispatch(uint32_t target_pc) {
+     TailDispatchScope tail;
+     for (;;) {
+         tail.state.pending = false;
+         uint32_t pc = target_pc & ~1u;
++        lsw_disp_hist_tally(pc);
+         ++g_nds_dispatch_stats[g_nds_active].dispatch_total;
+         // Slice-preemption point. `pc` is a dispatch entry, so this is a safe
+         // place to yield to the scheduler — including for loops whose back-edge

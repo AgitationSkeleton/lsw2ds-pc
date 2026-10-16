@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "purpose": "Per-character weapon damage for the ten Bounty Hunter arena characters, joined from ROM tables.",
+  "join_path": {
+    "description": "Character runtime row -> action row -> primary action code -> common action subtype -> damage type -> damage table.",
+    "steps": [
+      "0x02006288 indexes 24-byte runtime descriptors by actor runtime ID at +0x6bb; 0x02006298 stores descriptor byte +0x05 at actor +0x6c3 as the action-row index",
+      "0x0200e404 loads action row +0x04, the primary action code",
+      "0x02011058 passes that code as the subtype to 0x020187d0",
+      "0x02018e04 indexes 12-byte subtype records at 0x020f4d0c and passes byte +0x07 to the target vtable +0x2c as the damage type",
+      "0x02004f9c indexes two-byte records at 0x020f0214 by damage type; byte +0x00 is the amount subtracted from HP"
+    ],
+    "corroboration": "0x02010e7c routes primary action code 0x0d down a separate path that passes damage type 9 directly. Bossk's primary action is 0x0d and the subtype table independently maps subtype 13 to damage type 9, so both routes agree."
+  },
+  "damage_table": {
+    "address": "0x020f0214",
+    "record_size": 2,
+    "fields": {
+      "+0x00": "damage in hearts",
+      "+0x01": "flags"
+    },
+    "note": "Actors initialise with 4 HP, so these values are whole hearts.",
+    "flag_reading": "Bit 0x02 appears on damage types 2, 7 and 8. Zuckuss is the only arena character whose damage type carries it and the only one described as stunning, so 0x02 is read as the stun/hitstun bit. Bits 0x01 and 0x04 are not yet identified.",
+    "types": [
+      {
+        "type": 0,
+        "damage": 1,
+        "flags": 4
+      },
+      {
+        "type": 1,
+        "damage": 2,
+        "flags": 0
+      },
+      {
+        "type": 2,
+        "damage": 2,
+        "flags": 2
+      },
+      {
+        "type": 3,
+        "damage": 3,
+        "flags": 4
+      },
+      {
+        "type": 4,
+        "damage": 4,
+        "flags": 4
+      },
+      {
+        "type": 5,
+        "damage": 1,
+        "flags": 4
+      },
+      {
+        "type": 6,
+        "damage": 2,
+        "flags": 4
+      },
+      {
+        "type": 7,
+        "damage": 3,
+        "flags": 6
+      },
+      {
+        "type": 8,
+        "damage": 0,
+        "flags": 2
+      },
+      {
+        "type": 9,
+        "damage": 4,
+        "flags": 1
+      },
+      {
+        "type": 10,
+        "damage": 2,
+        "flags": 5
+      },
+      {
+        "type": 11,
+        "damage": 100,
+        "flags": 1
+      },
+      {
+        "type": 12,
+        "damage": 0,
+        "flags": 8
+      }
+    ]
+  },
+  "characters": [
+    {
+      "runtime_id": 0,
+      "label": "4-LOM",
+      "action_row": 31,
+      "primary_action": 0,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 7,
+      "label": "Boba Fett",
+      "action_row": 4,
+      "primary_action": 10,
+      "damage_type": 1,
+      "damage": 2,
+      "flags": 0
+    },
+    {
+      "runtime_id": 8,
+      "label": "Bossk",
+      "action_row": 5,
+      "primary_action": 13,
+      "damage_type": 9,
+      "damage": 4,
+      "flags": 1,
+      "note": "grenade launcher; highest damage in the table and the only arena character on the 0x0d special path"
+    },
+    {
+      "runtime_id": 13,
+      "label": "Dengar",
+      "action_row": 4,
+      "primary_action": 10,
+      "damage_type": 1,
+      "damage": 2,
+      "flags": 0
+    },
+    {
+      "runtime_id": 20,
+      "label": "Greedo",
+      "action_row": 26,
+      "primary_action": 0,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 27,
+      "label": "IG-88",
+      "action_row": 31,
+      "primary_action": 0,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 29,
+      "label": "Jango Fett",
+      "action_row": 27,
+      "primary_action": 0,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 34,
+      "label": "Lando Calrissian (Jabba's Palace)",
+      "action_row": 16,
+      "primary_action": 15,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 36,
+      "label": "Princess Leia (Boushh)",
+      "action_row": 31,
+      "primary_action": 0,
+      "damage_type": 0,
+      "damage": 1,
+      "flags": 4
+    },
+    {
+      "runtime_id": 71,
+      "label": "Zuckuss",
+      "action_row": 34,
+      "primary_action": 11,
+      "damage_type": 2,
+      "damage": 2,
+      "flags": 2,
+      "note": "the only arena character whose damage type sets the stun bit"
+    }
+  ],
+  "third_party_video_claims": {
+    "source": "A YouTube walkthrough of the mode, transcript in docs/vid. Commentary, not evidence; recorded so agreements and conflicts are both visible.",
+    "agrees_with_rom": [
+      "Greedo deals one heart",
+      "Princess Leia (Boushh) deals one heart",
+      "Zuckuss deals two hearts and stuns",
+      "Bossk carries a grenade launcher"
+    ],
+    "conflicts_with_rom": [
+      "The video says 4-LOM, IG-88 and Lando deal two hearts. The ROM join gives one heart for all three. 4-LOM, IG-88 and Leia share action row 31 and primary action 0, so they cannot differ from each other; the video itself notes IG-88 and Leia carry the same blaster while claiming different damage, which is self-inconsistent. The ROM value is taken as authoritative."
+    ],
+    "not_yet_verified_against_rom": [
+      "Boba Fett and Jango Fett have jetpacks",
+      "4-LOM and Princess Leia have thermal detonators",
+      "Lando has a double jump; 4-LOM and IG-88 have a single jump",
+      "Greedo cannot jump properly and is the download-play character",
+      "IG-88 cannot pull levers but can build",
+      "Bossk moves more slowly than the others"
+    ]
+  },
+  "mode_facts_from_video": {
+    "status": "third-party commentary, useful for scoping, not decoded",
+    "max_players": 4,
+    "time_limit_minutes": {
+      "min": 1,
+      "max": 20
+    },
+    "modes": [
+      "deathmatch",
+      "capture"
+    ],
+    "capture_restriction": "Capture is playable only on Jabba's Tower because only it has the four capture hubs. This agrees with the decoded handler-18 corners and with the numbered corner tiles existing only in Jabba's texture bank.",
+    "controls": "The arena uses tank controls: up and down drive forward and back, left and right rotate. This conflicts with the eight-way heading table decoded at 0x0200DB00 and needs its own trace before being treated as decoded.",
+    "mos_eisley_features": [
+      "buildable turrets",
+      "automatic turrets",
+      "switches that extend quickly-retracting bridges",
+      "a central bottomless pit"
+    ]
+  },
+  "health_field": {
+    "offset": "+0x6B6",
+    "width": "byte",
+    "units": "hearts",
+    "max": 4,
+    "confidence": "high",
+    "evidence": [
+      "IG-88 actor 0x0212A808 held 4 for 367 snapshots, dropped to 2 at 1844.3s and to 0 at 1845.0s; the actor was destroyed at 1845.1s and a replacement appeared at 1846.3s.",
+      "The end-of-match scoreboard reported by the player gave IG-88 exactly 1 death, matching the single zero crossing.",
+      "The replacement actor 0x02121374 then held 4 for the remaining 1049 snapshots of the match, and no further IG-88 death was scored.",
+      "Found by isolating the only non-increasing byte in the actor while it stood completely still for 11.7s before dying - 334 of 1792 bytes changed in that window, one fell 4 -> 2 -> 0."
+    ],
+    "locality": "Five bytes before +0x6BB, the character index written by the playable-character constructor at 0x02001D9C, so both live in the same playable-character block of the actor.",
+    "damage_step_observed": 2,
+    "supersedes": "The 19 earlier health candidates, none of which survived. Those searches were unanchored; this one used a confirmed death time on a named, motionless actor."
+  },
+  "two_death_paths": {
+    "damage_death": "Health at +0x6B6 reaches 0, then the actor is destroyed and a new one is constructed about 1.2s later.",
+    "other_death": "UNIDENTIFIED. Dengar was scored with 2 deaths in the same match, yet +0x6B6 on his actor 0x0212B764 read 4 across all 1423 snapshots and his actor was never replaced. Some death path does not pass through the health field.",
+    "ruled_out": "A fall into a pit. Scanning for y dropping more than 40 units in 2s found only ordinary descents between tower floors (191->149, 128->54, 54->14), each followed by continued play at the lower floor, never by a respawn teleport.",
+    "next_step": "Log the death and scoring routines directly rather than inferring from actor state."
+  },
+  "scoreboard_search_FAILED": {
+    "goal": "Locate per-player score, kills and deaths in RAM, using a reported final scoreboard (IG-88 10/1/1, Dengar 5/1/2) as the anchor.",
+    "result": "NOT FOUND. Recorded so it is not retried the same way.",
+    "what_was_tried": [
+      "Value search for a 4-slot array [10,5,0,0] at u8, u16 and u32 with every stride up to 128 bytes, requiring all slots zero at match start. Zero survivors at u16 and u32.",
+      "The only structurally clean u8 candidates (0x0212114D, 0x02121C31, 0x02121C39) turned out to be bytes 1-3 of a recurring 32-bit constant 0x00050A3B sitting beside heap pointers, not a score array.",
+      "Anchoring on the one scoring event whose frame is known exactly - Dengar killing IG-88 at frame 110706 - produced 3071 bytes that were first written there and never changed again."
+    ],
+    "why_it_failed": "The death at frame 110706 simultaneously destroyed actor 0x0212A808 and constructed 0x02121374, writing thousands of bytes across 0x02120000-0x02122000. Every filter anchored on that frame is swamped by the allocation. The health field was findable only because the actor stood still; a score counter has no such quiet window.",
+    "next_step": "A memory write-watchpoint in melonDS, not another RAM-dump search. Watch writes to the byte that holds a death count and report the writing PC. This is the same instrumentation needed to recover the player actor on the ABILITY_* handlers, so one melonDS change unblocks both.",
+    "do_not_retry": "Value-and-stride searching over full RAM dumps. Small integers are far too common; 166 bytes went 0 -> 10 across the match by chance alone."
+  },
+  "in_match_text_is_NOT_string_decoded": {
+    "test": "Ran a full driven match with a 64-byte watchpoint on the Huffman decoder staging buffer at 0x02104918, the technique that recovered the entire menu vocabulary and the roster.",
+    "result": "780 strings decoded, all of them menu strings, and the LAST decode is at frame 6152 - before the match begins at 6315. Not one new string is produced once play starts.",
+    "conclusion": "The in-match HUD renders NO decoded text. Scores, names and timers on the arena screen are drawn as tiles and sprites, not as strings passed through the text system. That is consistent with the bottom screen being 19 hardware sprites over four BG layers.",
+    "consequence": "The scoreboard cannot be recovered the way the menus were. Score VALUES must be found as numbers in RAM, and the earlier value-and-stride search for them already failed because the one scoring event with a known frame also reallocated an actor and rewrote thousands of bytes.",
+    "what_is_left_to_try": [
+      "Watchpoint the tile or sprite data the HUD digits are drawn from - the digit that changes when a point is scored points back at the counter that drives it.",
+      "Drive a match to an actual KILL - the driver can script two players into contact - so a scoring event happens at a frame under script control rather than mid-session.",
+      "Watchpoint the health field at +0x6B6, which is known and confirmed: the write that zeroes it is adjacent to whatever increments the killer score."
+    ],
+    "best_of_those": "The third. +0x6B6 is already decoded and its zero-crossing IS the scoring moment, so a watchpoint on it captures the death and the PC that caused it, from which the scoring routine is one step away."
+  }
+}

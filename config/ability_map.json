@@ -1,0 +1,180 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "descriptors": "0x020EF57C",
+  "descriptor_stride": 24,
+  "base_mode_field": "+0x04 (u8), copied to controller+0x16",
+  "ability_table": "0x020ED2EC",
+  "ability_stride": 16,
+  "record": {
+   "+0x00": "u32 handler, 0 = none",
+   "+0x07": "u8 the mode the ability switches to, 0x1F = none",
+   "+0x08": "u8 read at 0x02046AD8 and 0x02046A60"
+  },
+  "no_ability_sentinel": "0x1F",
+  "dispatcher": "0x02046AE8 .. 0x02046B04",
+  "sentinel_compare": "0x02046E38",
+  "literal_checks": {
+   "0x02046B20": "0x020ED2EC",
+   "0x02046B0C": "0x020ED2F3",
+   "0x02046E7C": "0x020ED2F3",
+   "0x0208E258": "0x020EF580"
+  }
+ },
+ "note": "Which hunter has which special ability, read out of the ROM.\n\nWHY THIS EXISTS. The port knew the ARCHETYPES - config/character_stats.json has\nthem, and they are exactly the byte at descriptor +0x04 - but it did not know\nwhat each archetype's ability IS. Two of them were hand-annotated from a live\ncapture (Jango's jetpack, Dengar's dodge) and the rest were blank. This reads\nthe table instead, and it agrees with both capture findings from a completely\ndifferent direction.\n\nTHE CHAIN\n\n    0x020EF57C + 24*characterId + 0x04     the BASE MODE (u8)\n    -> written to controller+0x16 at 0x02046B34 (FUN_02046B24, via\n       FUN_0208E190 which returns descriptor +0x04 unchanged for every value\n       other than 0x20)\n    0x020ED2EC + 16*mode + 0x00            u32 ABILITY HANDLER, 0 = none\n    0x020ED2EC + 16*mode + 0x07            u8  the mode the ability SWITCHES TO\n\nThe dispatcher is explicit:\n\n    02046ae8  ldrb r1,[r4,#0x16]\n    02046aec  ldr  r0,[pc,#0x2c]        -> 0x020ED2EC\n    02046af0  ldr  r2,[r0,r1,lsl#4]     entry +0x00, a function pointer\n    02046af4  cmp  r2,#0 / popeq        null means NO ability\n    02046b04  blx  r2\n\nand so is the +0x07 read, which compares against a named sentinel:\n\n    02046e2c  ldrb r2,[r4,#0x16]\n    02046e30  ldr  r0,[pc,#0x44]        -> 0x020ED2F3 = 0x020ED2EC + 7\n    02046e34  ldrb r0,[r0,r2,lsl#4]\n    02046e38  cmp  r0,#0x1f             31 = NO ABILITY\n    02046e3c  bne  ...                  otherwise take it\n\nWHAT IT SAYS\n\n    mode 2  Lando                       -> 13, handler 0x02047008 (jump family)\n    mode 3  Greedo                      -> 18, handler 0x020473A8 (dive)\n    mode 5  Dengar                      -> 16, handler 0x020473A8 (dive)\n    mode 6  4-LOM Bossk IG-88 Leia\n            Zuckuss                     -> 31, NO ABILITY\n    mode 9  Boba Fett, Jango Fett       -> 11, handler 0x02046E80 (jetpack)\n\nFive of the ten hunters carry the 0x1F sentinel, so in this system they have no\nspecial move at all. 4-LOM, IG-88 and Leia are in fact mechanically identical:\nsame action row 31, same weapon 487 -> 4706 StTrprBlstr, same base mode 6, same\nabsent ability.\n\nUsage:  python tools/export_ability_map.py",
+ "modes": {
+  "2": {
+   "base_mode": 2,
+   "base_entry": "0x020ED30C",
+   "base_handler": null,
+   "ability_mode": 13,
+   "has_ability": true,
+   "ability_handler": "0x02047008",
+   "ability": "jump",
+   "note": "the jump impulse routine; modes 8, 13 and 14 share it",
+   "members": [
+    "Lando Calrissian"
+   ]
+  },
+  "3": {
+   "base_mode": 3,
+   "base_entry": "0x020ED31C",
+   "base_handler": null,
+   "ability_mode": 18,
+   "has_ability": true,
+   "ability_handler": "0x020473A8",
+   "ability": "dive",
+   "note": "tops vy at 0.6 (double 0x3FE33333_33333333 at 0x020473CC, skipped for modes 0x16/0x17 at 0x020473F4) and writes the horizontal velocity DIRECTLY to actor+0x60/+0x68 as speed*(sin,cos) of the heading, with no blend. The speed is requested for state 0xF5, which 0x02004B98 treats as a sentinel meaning the actor's CURRENT state at +0x182, so the dive carries the speed you already had.",
+   "members": [
+    "Greedo"
+   ]
+  },
+  "5": {
+   "base_mode": 5,
+   "base_entry": "0x020ED33C",
+   "base_handler": null,
+   "ability_mode": 16,
+   "has_ability": true,
+   "ability_handler": "0x020473A8",
+   "ability": "dive",
+   "note": "tops vy at 0.6 (double 0x3FE33333_33333333 at 0x020473CC, skipped for modes 0x16/0x17 at 0x020473F4) and writes the horizontal velocity DIRECTLY to actor+0x60/+0x68 as speed*(sin,cos) of the heading, with no blend. The speed is requested for state 0xF5, which 0x02004B98 treats as a sentinel meaning the actor's CURRENT state at +0x182, so the dive carries the speed you already had.",
+   "members": [
+    "Dengar"
+   ]
+  },
+  "6": {
+   "base_mode": 6,
+   "base_entry": "0x020ED34C",
+   "base_handler": null,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability_handler": null,
+   "ability": null,
+   "note": null,
+   "members": [
+    "4-LOM",
+    "Bossk",
+    "IG-88",
+    "Princess Leia (Boushh)",
+    "Zuckuss"
+   ]
+  },
+  "9": {
+   "base_mode": 9,
+   "base_entry": "0x020ED37C",
+   "base_handler": null,
+   "ability_mode": 11,
+   "has_ability": true,
+   "ability_handler": "0x02046E80",
+   "ability": "jetpack",
+   "note": "hold counter at ability+0x14 capped at 0x28 = 40 ticks (0x02046FD0)",
+   "members": [
+    "Boba Fett",
+    "Jango Fett"
+   ]
+  }
+ },
+ "characters": [
+  {
+   "runtime_id": 0,
+   "label": "4-LOM",
+   "base_mode": 6,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability": null
+  },
+  {
+   "runtime_id": 7,
+   "label": "Boba Fett",
+   "base_mode": 9,
+   "ability_mode": 11,
+   "has_ability": true,
+   "ability": "jetpack"
+  },
+  {
+   "runtime_id": 8,
+   "label": "Bossk",
+   "base_mode": 6,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability": null
+  },
+  {
+   "runtime_id": 13,
+   "label": "Dengar",
+   "base_mode": 5,
+   "ability_mode": 16,
+   "has_ability": true,
+   "ability": "dive"
+  },
+  {
+   "runtime_id": 20,
+   "label": "Greedo",
+   "base_mode": 3,
+   "ability_mode": 18,
+   "has_ability": true,
+   "ability": "dive"
+  },
+  {
+   "runtime_id": 27,
+   "label": "IG-88",
+   "base_mode": 6,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability": null
+  },
+  {
+   "runtime_id": 29,
+   "label": "Jango Fett",
+   "base_mode": 9,
+   "ability_mode": 11,
+   "has_ability": true,
+   "ability": "jetpack"
+  },
+  {
+   "runtime_id": 34,
+   "label": "Lando Calrissian",
+   "base_mode": 2,
+   "ability_mode": 13,
+   "has_ability": true,
+   "ability": "jump"
+  },
+  {
+   "runtime_id": 36,
+   "label": "Princess Leia (Boushh)",
+   "base_mode": 6,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability": null
+  },
+  {
+   "runtime_id": 71,
+   "label": "Zuckuss",
+   "base_mode": 6,
+   "ability_mode": 31,
+   "has_ability": false,
+   "ability": null
+  }
+ ]
+}

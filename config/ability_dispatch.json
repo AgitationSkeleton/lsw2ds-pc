@@ -1,0 +1,296 @@
+{
+ "table_base": "0x020ED2EC",
+ "stride": 16,
+ "dispatch": "0x02046AE8 ldrb r1,[r4,#0x16]; 0x02046AF0 ldr r2,[r0,r1,lsl#4]; 0x02046AF8 popeq (null=no call); 0x02046B04 blx r2",
+ "ability_index_field": "actor+0x16 (byte)",
+ "entries": [
+  {
+   "index": 0,
+   "entry": "0x020ED2EC",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F010001",
+   "w2": "0x0000131F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 1,
+   "entry": "0x020ED2FC",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000001",
+   "w2": "0x00001F1F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 2,
+   "entry": "0x020ED30C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x0D010001",
+   "w2": "0x0000140A",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 3,
+   "entry": "0x020ED31C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x12010001",
+   "w2": "0x0000131F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 4,
+   "entry": "0x020ED32C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x11010001",
+   "w2": "0x0000131F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 5,
+   "entry": "0x020ED33C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x10010001",
+   "w2": "0x0000131F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 6,
+   "entry": "0x020ED34C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F010001",
+   "w2": "0x0000131F",
+   "w3": "0x04030203"
+  },
+  {
+   "index": 7,
+   "entry": "0x020ED35C",
+   "handler": "0x020470D0",
+   "known_as": "D",
+   "w1": "0x1F010000",
+   "w2": "0x00001A1F",
+   "w3": "0x2A2A2902"
+  },
+  {
+   "index": 8,
+   "entry": "0x020ED36C",
+   "handler": "0x02047008",
+   "known_as": "C",
+   "w1": "0x1F010001",
+   "w2": "0x0000190F",
+   "w3": "0x04030200"
+  },
+  {
+   "index": 9,
+   "entry": "0x020ED37C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x0B010001",
+   "w2": "0x0000131F",
+   "w3": "0xF5F52D03"
+  },
+  {
+   "index": 10,
+   "entry": "0x020ED38C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F010000",
+   "w2": "0x0000151F",
+   "w3": "0x04696800"
+  },
+  {
+   "index": 11,
+   "entry": "0x020ED39C",
+   "handler": "0x02046E80",
+   "known_as": "B",
+   "w1": "0x1F010001",
+   "w2": "0x0000131F",
+   "w3": "0x04696903"
+  },
+  {
+   "index": 12,
+   "entry": "0x020ED3AC",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F010001",
+   "w2": "0x0000131F",
+   "w3": "0x04032700"
+  },
+  {
+   "index": 13,
+   "entry": "0x020ED3BC",
+   "handler": "0x02047008",
+   "known_as": "C",
+   "w1": "0x1F010001",
+   "w2": "0x0000130F",
+   "w3": "0x04032700"
+  },
+  {
+   "index": 14,
+   "entry": "0x020ED3CC",
+   "handler": "0x02047008",
+   "known_as": "C",
+   "w1": "0x1F010001",
+   "w2": "0x0000130F",
+   "w3": "0xF5F52803"
+  },
+  {
+   "index": 15,
+   "entry": "0x020ED3DC",
+   "handler": "0x020470E4",
+   "known_as": "E",
+   "w1": "0x1F010000",
+   "w2": "0x00001D1F",
+   "w3": "0xF5F54B01"
+  },
+  {
+   "index": 16,
+   "entry": "0x020ED3EC",
+   "handler": "0x020473A8",
+   "known_as": "F",
+   "w1": "0x1F010000",
+   "w2": "0x0000161F",
+   "w3": "0xF5F54B01"
+  },
+  {
+   "index": 17,
+   "entry": "0x020ED3FC",
+   "handler": "0x020473A8",
+   "known_as": "F",
+   "w1": "0x1F010000",
+   "w2": "0x0000171F",
+   "w3": "0xF5F54901"
+  },
+  {
+   "index": 18,
+   "entry": "0x020ED40C",
+   "handler": "0x020473A8",
+   "known_as": "F",
+   "w1": "0x1F010001",
+   "w2": "0x0000181F",
+   "w3": "0xF5F50500"
+  },
+  {
+   "index": 19,
+   "entry": "0x020ED41C",
+   "handler": "0x02046D84",
+   "known_as": "A",
+   "w1": "0x1F000001",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F50500"
+  },
+  {
+   "index": 20,
+   "entry": "0x020ED42C",
+   "handler": "0x02046D84",
+   "known_as": "A",
+   "w1": "0x0E000001",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F52E03"
+  },
+  {
+   "index": 21,
+   "entry": "0x020ED43C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F54D01"
+  },
+  {
+   "index": 22,
+   "entry": "0x020ED44C",
+   "handler": "0x020473A8",
+   "known_as": "F",
+   "w1": "0x1F000100",
+   "w2": "0x00001F1E",
+   "w3": "0xF5F54F01"
+  },
+  {
+   "index": 23,
+   "entry": "0x020ED45C",
+   "handler": "0x020473A8",
+   "known_as": "F",
+   "w1": "0x1F000100",
+   "w2": "0x00001F1E",
+   "w3": "0xF5F54A03"
+  },
+  {
+   "index": 24,
+   "entry": "0x020ED46C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F52B00"
+  },
+  {
+   "index": 25,
+   "entry": "0x020ED47C",
+   "handler": "0x02046D84",
+   "known_as": "A",
+   "w1": "0x1F000001",
+   "w2": "0x00001F1F",
+   "w3": "0x04F50203"
+  },
+  {
+   "index": 26,
+   "entry": "0x020ED48C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0x04F50400"
+  },
+  {
+   "index": 27,
+   "entry": "0x020ED49C",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F010000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F50503"
+  },
+  {
+   "index": 28,
+   "entry": "0x020ED4AC",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F54C03"
+  },
+  {
+   "index": 29,
+   "entry": "0x020ED4BC",
+   "handler": "0x020470E4",
+   "known_as": "E",
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F5F503"
+  },
+  {
+   "index": 30,
+   "entry": "0x020ED4CC",
+   "handler": "0x02047540",
+   "known_as": null,
+   "w1": "0x1F000000",
+   "w2": "0x00001F1F",
+   "w3": "0xF5F5F500"
+  },
+  {
+   "index": 31,
+   "entry": "0x020ED4DC",
+   "handler": null,
+   "known_as": null,
+   "w1": "0x1F000001",
+   "w2": "0x00001F1F",
+   "w3": "0x03020100"
+  }
+ ]
+}

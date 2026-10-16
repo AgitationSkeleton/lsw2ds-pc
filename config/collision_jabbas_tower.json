@@ -1,0 +1,117 @@
+{
+  "asset": 319,
+  "source": "BSP leaf convex volumes, axis-aligned subset",
+  "note": "Each entry is one BSP leaf whose bounding planes are all axis-aligned, so the volume is an AABB. Leaves using the general plane form are SKIPPED, not approximated - the branch at 0x0204C9C4 that decodes them has not been read.",
+  "boxes": [
+    {
+      "centre": [
+        -18.0,
+        -1.1088,
+        -8.9998
+      ],
+      "size": [
+        126.0,
+        105.7224,
+        251.9995
+      ]
+    },
+    {
+      "centre": [
+        -1.1241,
+        14.625,
+        -1.1248
+      ],
+      "size": [
+        195.7517,
+        411.75,
+        245.2495
+      ]
+    },
+    {
+      "centre": [
+        -1.1241,
+        14.625,
+        -1.1248
+      ],
+      "size": [
+        195.7517,
+        411.75,
+        222.7495
+      ]
+    },
+    {
+      "centre": [
+        -1.1248,
+        14.625,
+        -1.1246
+      ],
+      "size": [
+        222.7505,
+        411.75,
+        272.2493
+      ]
+    },
+    {
+      "centre": [
+        -95.1104,
+        -11.2493,
+        66.0214
+      ],
+      "size": [
+        57.2793,
+        360.0015,
+        110.9573
+      ]
+    },
+    {
+      "centre": [
+        -1.1245,
+        14.625,
+        -1.1246
+      ],
+      "size": [
+        272.25,
+        411.75,
+        245.2493
+      ]
+    },
+    {
+      "centre": [
+        -1.1246,
+        13.5,
+        -1.1248
+      ],
+      "size": [
+        272.2493,
+        414.0,
+        222.7495
+      ]
+    },
+    {
+      "centre": [
+        -1.1246,
+        14.625,
+        -1.125
+      ],
+      "size": [
+        245.2493,
+        411.75,
+        195.75
+      ]
+    },
+    {
+      "centre": [
+        -1.1244,
+        14.625,
+        -1.125
+      ],
+      "size": [
+        222.7498,
+        411.75,
+        195.75
+      ]
+    }
+  ],
+  "skipped_general_form": 418,
+  "skipped_not_closed": 111
+}

@@ -1,0 +1,456 @@
+{
+ "schema": 1,
+ "note": "Every game state, and the class its factory arm constructs.\n\nWHY. `0x0205ECC4` is how the whole game changes screens - 176 call sites - and\n`0x0205F574` is the factory that builds the object for a requested state. Two\nlines of work run through it: the pause menu's wireless row requests a state,\nand the co-op screens are states rather than entities. Both were stuck on not knowing which state is which.\n\nThe factory dispatches on a jump table:\n\n    0205F58C  CMP  r9, #0x39            the state id\n    0205F594  ADDLS pc, pc, r9, LSL #2\n    0205F598  B <state 0> ... 58 entries\n\nso the states are enumerable, and each arm's first `BL` is the constructor for\nwhatever that state is. That is not a NAME, and this file does not invent one -\nit records the arm, the constructor, and whether the state is implemented at\nall. Naming them needs either the constructors read one by one or a run with\nthe requests logged.\n\n    python tools/export_game_states.py\n",
+ "factory": "0x0205F574",
+ "requester": "0x0205ECC4 - 176 call sites",
+ "table": "0x0205F598",
+ "count": 58,
+ "implemented": 35,
+ "default_arm": "0x0205FE30",
+ "caveat": "An arm is not a NAME. What is recorded is the object size the arm allocates and the last BL that is not the allocator, which is the constructor in every arm read by hand so far and an inference in the rest.",
+ "shared_arms": {
+  "0x0205F8F8": [
+   12,
+   13
+  ]
+ },
+ "states": {
+  "0": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "1": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "2": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "3": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "4": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "5": {
+   "arm": "0x0205F7F4",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0208A938"
+   ],
+   "object_size": "0x0",
+   "constructor": "0x0208A938"
+  },
+  "6": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "7": {
+   "arm": "0x0205F6D4",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02069DB8"
+   ],
+   "object_size": "0x90",
+   "constructor": "0x02069DB8"
+  },
+  "8": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "9": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "10": {
+   "arm": "0x0205F890",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0207FCD4"
+   ],
+   "object_size": "0x2C",
+   "constructor": "0x0207FCD4"
+  },
+  "11": {
+   "arm": "0x0205F8C4",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x020801D8"
+   ],
+   "object_size": "0xF59",
+   "constructor": "0x020801D8"
+  },
+  "12": {
+   "arm": "0x0205F8F8",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0207B71C"
+   ],
+   "object_size": "0xE4",
+   "constructor": "0x0207B71C"
+  },
+  "13": {
+   "arm": "0x0205F8F8",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0207B71C"
+   ],
+   "object_size": "0xE4",
+   "constructor": "0x0207B71C"
+  },
+  "14": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "15": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "16": {
+   "arm": "0x0205F684",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C"
+   ],
+   "object_size": "0x28"
+  },
+  "17": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "18": {
+   "arm": "0x0205F708",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02073A00"
+   ],
+   "object_size": "0xAC",
+   "constructor": "0x02073A00"
+  },
+  "19": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "20": {
+   "arm": "0x0205F73C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206D13C"
+   ],
+   "object_size": "0x90",
+   "constructor": "0x0206D13C"
+  },
+  "21": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "22": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "23": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "24": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "25": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "26": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "27": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "28": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "29": {
+   "arm": "0x0205FA58",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02083D08"
+   ],
+   "constructor": "0x02083D08"
+  },
+  "30": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "31": {
+   "arm": "0x0205F92C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02067BC0"
+   ],
+   "object_size": "0x0",
+   "constructor": "0x02067BC0"
+  },
+  "32": {
+   "arm": "0x0205F7C0",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206D88C"
+   ],
+   "object_size": "0x54",
+   "constructor": "0x0206D88C"
+  },
+  "33": {
+   "arm": "0x0205FA8C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02070DFC"
+   ],
+   "object_size": "0x94",
+   "constructor": "0x02070DFC"
+  },
+  "34": {
+   "arm": "0x0205FAC0",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206F354"
+   ],
+   "object_size": "0xA4",
+   "constructor": "0x0206F354"
+  },
+  "35": {
+   "arm": "0x0205FBC4",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206FD30"
+   ],
+   "object_size": "0xA4",
+   "constructor": "0x0206FD30"
+  },
+  "36": {
+   "arm": "0x0205FAF4",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206ECBC"
+   ],
+   "object_size": "0x94",
+   "constructor": "0x0206ECBC"
+  },
+  "37": {
+   "arm": "0x0205FB28",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x020714BC"
+   ],
+   "object_size": "0xF9E",
+   "constructor": "0x020714BC"
+  },
+  "38": {
+   "arm": "0x0205FC60",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02072560"
+   ],
+   "object_size": "0x34",
+   "constructor": "0x02072560"
+  },
+  "39": {
+   "arm": "0x0205FC2C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0206E8C0"
+   ],
+   "object_size": "0x9C",
+   "constructor": "0x0206E8C0"
+  },
+  "40": {
+   "arm": "0x0205FB90",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02070A38"
+   ],
+   "object_size": "0x8C",
+   "constructor": "0x02070A38"
+  },
+  "41": {
+   "arm": "0x0205FB5C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x020730E0"
+   ],
+   "constructor": "0x020730E0"
+  },
+  "42": {
+   "arm": "0x0205FBF8",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02098790"
+   ],
+   "constructor": "0x02098790"
+  },
+  "43": {
+   "arm": "0x0205FCC8",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02099DB4"
+   ],
+   "object_size": "0xF0",
+   "constructor": "0x02099DB4"
+  },
+  "44": {
+   "arm": "0x0205FCFC",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0209BD78"
+   ],
+   "object_size": "0xB8",
+   "constructor": "0x0209BD78"
+  },
+  "45": {
+   "arm": "0x0205FD30",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0209C720"
+   ],
+   "object_size": "0x90",
+   "constructor": "0x0209C720"
+  },
+  "46": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "47": {
+   "arm": "0x0205FDCC",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0209EE58"
+   ],
+   "object_size": "0x78",
+   "constructor": "0x0209EE58"
+  },
+  "48": {
+   "arm": "0x0205FE30",
+   "implemented": false
+  },
+  "49": {
+   "arm": "0x0205F85C",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x020872B4"
+   ],
+   "object_size": "0xC01",
+   "constructor": "0x020872B4"
+  },
+  "50": {
+   "arm": "0x0205F988",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02076D2C"
+   ],
+   "object_size": "0xF53",
+   "constructor": "0x02076D2C"
+  },
+  "51": {
+   "arm": "0x0205F9BC",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02076008"
+   ],
+   "object_size": "0x88",
+   "constructor": "0x02076008"
+  },
+  "52": {
+   "arm": "0x0205F9F0",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0207C49C"
+   ],
+   "object_size": "0xB4",
+   "constructor": "0x0207C49C"
+  },
+  "53": {
+   "arm": "0x0205FA24",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0207D168"
+   ],
+   "object_size": "0xE0",
+   "constructor": "0x0207D168"
+  },
+  "54": {
+   "arm": "0x0205FE00",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0208E260"
+   ],
+   "object_size": "0xF4",
+   "constructor": "0x0208E260"
+  },
+  "55": {
+   "arm": "0x0205FC94",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x0209D948"
+   ],
+   "object_size": "0xBC",
+   "constructor": "0x0209D948"
+  },
+  "56": {
+   "arm": "0x0205FD64",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02074A3C"
+   ],
+   "object_size": "0x68",
+   "constructor": "0x02074A3C"
+  },
+  "57": {
+   "arm": "0x0205FD98",
+   "implemented": true,
+   "calls": [
+    "0x0205E80C",
+    "0x02067D3C"
+   ],
+   "object_size": "0x90",
+   "constructor": "0x02067D3C"
+  }
+ }
+}

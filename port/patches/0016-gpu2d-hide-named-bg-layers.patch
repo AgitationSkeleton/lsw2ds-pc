@@ -1,0 +1,57 @@
+--- a/runner/src/gpu2d.h
++++ b/runner/src/gpu2d.h
+@@ -114,6 +114,14 @@
+ bool nds_gpu2d_direct_frame(NdsGpu2dDirectFrame* out);
+ bool nds_gpu2d_requires_3d_readback();
+ void nds_gpu2d_force_cpu_frames(uint32_t frames);
++// LSW2 PORT PATCH: leave these text/affine BGs of one engine (bit n = BGn,
++// engine 0 = A, 1 = B) out of the picture that engine renders. PRESENTATION
++// ONLY: the guest's registers are untouched and nothing it can read changes -
++// an engine's composed lines are not visible to the game (display capture
++// takes engine A's, and a title that hides an engine B layer is untouched by
++// it). For a screen whose layer a title wants unseen while the state that
++// owns it still runs.
++void nds_gpu2d_set_hidden_bgs(int engine, uint8_t bg_mask);
+ 
+ enum NdsGpu2dDirectClass : uint8_t {
+     NDS_GPU2D_DIRECT_SUPPORTED = 0,
+--- a/runner/src/gpu2d.cpp
++++ b/runner/src/gpu2d.cpp
+@@ -81,6 +81,9 @@
+ // Internal-resolution (HD) emit. Two native-width surfaces describing the 2D
+ // stack with the 3D layer removed; see NdsGpu2dHdFrame in gpu2d.h.
+ bool g_hd_emit_enabled = false;
++// LSW2 PORT PATCH: BGs each engine leaves out of its picture - see
++// nds_gpu2d_set_hidden_bgs.
++uint8_t g_hidden_bgs[2] = {0, 0};
+ bool g_hd_frame_valid = false;
+ std::vector<uint32_t> g_hd_top_pixels;
+ std::vector<uint32_t> g_hd_below_pixels;
+@@ -1016,6 +1019,7 @@
+     int active_bgs[4];
+     for (int bg = 0; bg < 4; ++bg) {
+         if (!(u.dispcnt & (0x100u << bg))) continue;
++        if ((g_hidden_bgs[engine & 1] >> bg) & 1u) continue;   // LSW2 PORT PATCH
+         if (bg == 0 && bg0_3d) continue;   // BG0's slot is the 3D layer
+         if (bg_kind(u, bg) != BgKind::None)
+             active_bgs[bg_count++] = bg;
+@@ -1270,6 +1274,7 @@
+     int active_bgs[4];
+     for (int bg = 0; bg < 4; ++bg) {
+         if (!(u.dispcnt & (0x100u << bg))) continue;
++        if ((g_hidden_bgs[engine & 1] >> bg) & 1u) continue;   // LSW2 PORT PATCH
+         if (bg_kind(u, bg) != BgKind::None)
+             active_bgs[bg_count++] = bg;
+     }
+@@ -1750,6 +1755,11 @@
+         std::max(g_direct_force_cpu_frames, frames);
+ }
+ 
++// LSW2 PORT PATCH: see g_hidden_bgs.
++void nds_gpu2d_set_hidden_bgs(int engine, uint8_t bg_mask) {
++    g_hidden_bgs[engine & 1] = static_cast<uint8_t>(bg_mask & 0x0Fu);
++}
++
+ bool nds_gpu2d_direct_frame(NdsGpu2dDirectFrame* out) {
+     if (!out || !g_direct_present_frame_active ||
+         !g_direct_present_frame.object_pixels) return false;

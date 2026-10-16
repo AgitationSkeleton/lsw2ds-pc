@@ -1,0 +1,449 @@
+{
+ "schema": 1,
+ "source": {
+  "capture": "gpudump_walk_mos",
+  "frame": 12000,
+  "manager": "0x0211F54C",
+  "command_list": "0x0211F574",
+  "command_count": 9,
+  "command_array": "0x0211F75C",
+  "group_table": "0x0211F5C4",
+  "counter_base": "0x021DD0A4",
+  "opcode_jump_table": "0x020ED928",
+  "operand_widths": "0x020F716C",
+  "dispatch": "FUN_020675D8 -> FUN_02067A98 -> FUN_02055E98",
+  "counter": "FUN_0209075C decrements; follow-ons fire only at zero"
+ },
+ "note": "Export the Mos Eisley lever -> bridge command graph, decoded end to end.\n\nTHE CHAIN\n---------\n1. A player uses a lever. FUN_0201F694 (vtable +0x38) plays animation 0x56, sets\n   the lever state to 2 and fires sound event 0x32.\n\n2. The lever tick FUN_0201F6F0 case 2, on the anim-done bit, dispatches the\n   lever's own command id - the byte at entity+0x1D9 - through\n\n       FUN_020675d8(<manager> + 0x28, id)\n\n   which is a 1-based index into a stride-8 command list:\n\n       index = id - 1;\n       if (index < *(u16 *)(list + 0x1A))\n           FUN_02067a98(list[2] + index * 8, list[0], ...);\n\n3. FUN_02067A98 runs the entry as BYTECODE: {opcode stream, operand data}, the\n   stream's first byte being the opcode count, dispatched through the jump table\n   at 0x020ED928 with per-opcode operand widths from 0x020F716C.\n\nTHE THREE LEVERS\n----------------\n    lever (99, 49, -69)   id 7\n    lever (-39, -1, 21)   id 9\n    lever (21, -1, 92)    id 9\n\nCOMMAND 7 - the lone lever - is `0x96, 0x61`:\n\n    0x96  operand 00 09   resolve (group 0, index 9) and call its vtable +0x40\n                          -> 0x0212482C, a type-0xE3 BRIDGE at (98, 47, -78),\n                             9.3 units from the lever that fires it\n    0x61  operand 08 01 02   a timed call, the last byte * 0x1E = 60 ticks\n\nCOMMAND 9 - both shared levers - is a single `0x74`, and this is the interesting\none. FUN_0209075C does NOT actuate anything directly:\n\n    entry = param_1 + 1000 + slot * 8;\n    if (--*(int *)entry == 0) {\n        if (entry[6]) FUN_0206763c(<list>);\n        if (entry[7]) FUN_020675d8(<list>, ...);\n    }\n    if (entry[5]) FUN_020675d8(<list>, ...);\n\nIT IS A COUNTER. Each pull decrements it, and the follow-on commands fire only\nwhen it reaches ZERO. Read from the capture at slot 0: counter 1, +5 = 0,\n+6 = 1, +7 = 5 - stable across frames 12000 and 18000.\n\nSo +7 dispatches COMMAND 5, which is `0x97, 0x97, 0x96, 0x96, 0x61`:\n\n    0x97  operand 02 02   (group 2, index 2)  - one of the two shared levers\n    0x97  operand 02 01   (group 2, index 1)  - the other\n    0x96  operand 00 07   -> BRIDGE at (-13, -4, 107)\n    0x96  operand 00 08   -> BRIDGE at (-13, -4, 28)\n    0x61  operand 06 01 05   a timed call, 5 * 0x1E = 150 ticks\n\nGroup 2 of the entity registry holds EXACTLY those two levers, which is what\nconfirms the reading rather than pattern-matching it.\n\nWHAT \"ONE BRIDGE SHARED BY TWO LEVERS\" REALLY IS\n------------------------------------------------\nThe two levers do not each drive a bridge. They share a COUNTER, and only when\nBOTH have been pulled does command 5 fire and raise the two street-level\nbridges together. The counter is an AND gate.\n\nUsage:  python tools/export_lever_graph.py",
+ "commands": [
+  {
+   "id": 1,
+   "opcode_count": 5,
+   "opcodes": [
+    {
+     "opcode": "0x2D",
+     "handler": "0x02057150",
+     "meaning": "undecoded",
+     "operand": [
+      2,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0x2D",
+     "handler": "0x02057150",
+     "meaning": "undecoded",
+     "operand": [
+      3,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0x73",
+     "handler": "0x0205874C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      5,
+      0
+     ]
+    },
+    {
+     "opcode": "0x4E",
+     "handler": "0x02057BC8",
+     "meaning": "undecoded",
+     "operand": [
+      9,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0x33",
+     "handler": "0x02057670",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      0,
+      10,
+      0,
+      40,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "opcode_count": 1,
+   "opcodes": [
+    {
+     "opcode": "0x61",
+     "handler": "0x0205831C",
+     "meaning": "timed call, operand[2] * 0x1E ticks",
+     "operand": [
+      3,
+      1,
+      5,
+      0
+     ],
+     "ticks": 150
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "opcode_count": 2,
+   "opcodes": [
+    {
+     "opcode": "0x00",
+     "handler": "0x02055EC0",
+     "meaning": "undecoded",
+     "operand": [
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0x5E",
+     "handler": "0x020582F8",
+     "meaning": "undecoded",
+     "operand": [
+      4,
+      1,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "opcode_count": 1,
+   "opcodes": [
+    {
+     "opcode": "0x2D",
+     "handler": "0x02057150",
+     "meaning": "undecoded",
+     "operand": [
+      2,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "opcode_count": 5,
+   "opcodes": [
+    {
+     "opcode": "0x97",
+     "handler": "0x02059360",
+     "meaning": "act on entity (group, index)",
+     "operand": [
+      2,
+      2,
+      0,
+      0
+     ],
+     "target": {
+      "address": "0x02127BFC",
+      "type": 220,
+      "name": "lever",
+      "position": [
+       21.0,
+       -1.0,
+       92.0
+      ]
+     },
+     "handle": [
+      2,
+      2
+     ]
+    },
+    {
+     "opcode": "0x97",
+     "handler": "0x02059360",
+     "meaning": "act on entity (group, index)",
+     "operand": [
+      2,
+      1,
+      0,
+      0
+     ],
+     "target": {
+      "address": "0x02127994",
+      "type": 220,
+      "name": "lever",
+      "position": [
+       -39.0,
+       -1.0,
+       21.0
+      ]
+     },
+     "handle": [
+      2,
+      1
+     ]
+    },
+    {
+     "opcode": "0x96",
+     "handler": "0x02059334",
+     "meaning": "actuate entity (group, index) via vtable +0x40",
+     "operand": [
+      0,
+      7,
+      0,
+      0
+     ],
+     "target": {
+      "address": "0x021242D8",
+      "type": 227,
+      "name": "bridge",
+      "position": [
+       -13.0,
+       -4.0,
+       107.0
+      ]
+     },
+     "handle": [
+      0,
+      7
+     ]
+    },
+    {
+     "opcode": "0x96",
+     "handler": "0x02059334",
+     "meaning": "actuate entity (group, index) via vtable +0x40",
+     "operand": [
+      0,
+      8,
+      0,
+      0
+     ],
+     "target": {
+      "address": "0x021245C4",
+      "type": 227,
+      "name": "bridge",
+      "position": [
+       -13.0,
+       -4.0,
+       28.0
+      ]
+     },
+     "handle": [
+      0,
+      8
+     ]
+    },
+    {
+     "opcode": "0x61",
+     "handler": "0x0205831C",
+     "meaning": "timed call, operand[2] * 0x1E ticks",
+     "operand": [
+      6,
+      1,
+      5,
+      0
+     ],
+     "ticks": 150
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "opcode_count": 5,
+   "opcodes": [
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      7,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      8,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      2,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      2,
+      2,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0x73",
+     "handler": "0x0205874C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      5,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "opcode_count": 2,
+   "opcodes": [
+    {
+     "opcode": "0x96",
+     "handler": "0x02059334",
+     "meaning": "actuate entity (group, index) via vtable +0x40",
+     "operand": [
+      0,
+      9,
+      0,
+      0
+     ],
+     "target": {
+      "address": "0x0212482C",
+      "type": 227,
+      "name": "bridge",
+      "position": [
+       98.0,
+       47.0,
+       -78.0
+      ]
+     },
+     "handle": [
+      0,
+      9
+     ]
+    },
+    {
+     "opcode": "0x61",
+     "handler": "0x0205831C",
+     "meaning": "timed call, operand[2] * 0x1E ticks",
+     "operand": [
+      8,
+      1,
+      2,
+      0
+     ],
+     "ticks": 60
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "opcode_count": 2,
+   "opcodes": [
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      9,
+      0,
+      0
+     ]
+    },
+    {
+     "opcode": "0xA3",
+     "handler": "0x0205965C",
+     "meaning": "undecoded",
+     "operand": [
+      0,
+      20,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "opcode_count": 1,
+   "opcodes": [
+    {
+     "opcode": "0x74",
+     "handler": "0x02058788",
+     "meaning": "decrement the shared counter; dispatch on zero",
+     "operand": [
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  }
+ ],
+ "counters": [
+  {
+   "slot": 0,
+   "address": "0x021DD0A4",
+   "counter": 1,
+   "on_zero_a": 1,
+   "on_zero_dispatch": 5,
+   "always": 0
+  },
+  {
+   "slot": 1,
+   "address": "0x021DD0AC",
+   "counter": -1091578337,
+   "on_zero_a": 239,
+   "on_zero_dispatch": 233,
+   "always": 80
+  }
+ ]
+}

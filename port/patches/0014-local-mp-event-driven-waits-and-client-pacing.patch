@@ -1,0 +1,334 @@
+Local-MP lockstep: event-driven waits, a client-pacing hook, and the profilers
+that found the connected-play frame cost.
+
+The two linked consoles run melonDS's MP lockstep over the loopback bridge: the
+host blocks in RecvReplies for each client's reply to its CMD frame, and a client
+blocks in RecvHostPacket for the host's next frame (its NextSync gate). Both
+waits polled with sleep_for(1ms), so every hand-off - several a frame, on both
+sides - cost a sleep tick, more under load. WaitReadable() select()s the socket
+with the same deadline instead, and returns the moment the datagram lands.
+
+nds_wifi_is_mp_client() (and Wifi::IsMultiplayerClient) tells a frontend that
+this console is an associated MP client whose emulated time the host already
+paces, so it can skip its own audio-clock throttle - a client asleep in that
+throttle when the host's CMD lands made the host wait out the sleep, and on one
+PC that phase-locked the pair into taking turns (~24 fps each).
+
+RecvHostPacket now accepts only the parent's frames once the parent is known
+(host_only): with a second child present, SendGeneric broadcasts that child's
+frames too, and handing them to a client as host data corrupted its MP stream
+This was a direct edit to the framework and is captured here.
+
+Removed: the unconditional "[local_mp] DIAG ... 3rd sender" line in
+DrainSocket, a probe that logged every frame from a third instance -
+several lines a frame in a 3-4 player session.
+
+Diagnostics, all OFF unless their env var is set:
+  LSW2_MP_PROF=1   once a second, per blocking wait: calls, total blocked ms,
+                   max, timeouts; and (Wifi.cpp MPSyncProf) the client's
+                   runahead after each ACK vs where the next CMD landed.
+  LSW2_MP_TRACE=1  one line per bridge event on a steady-clock microsecond base
+                   shared by all instances, so two consoles' logs merge.
+
+--- a/runner/src/wifi_net.cpp	2026-09-23 04:14:23.627962800 -0700
++++ b/runner/src/wifi_net.cpp	2026-09-23 04:14:47.198742300 -0700
+@@ -761,7 +761,7 @@
+     }
+ 
+     int RecvPacket(uint8_t* data, uint64_t* timestamp) {
+-        return RecvPacketGeneric(data, timestamp, false);
++        return RecvPacketGeneric(data, timestamp, false, false);
+     }
+ 
+     int SendCmd(uint8_t* data, int len, uint64_t timestamp) {
+@@ -778,20 +778,22 @@
+     }
+ 
+     int RecvHostPacket(uint8_t* data, uint64_t* timestamp) {
+-        (void)last_host_id_;
+-        return RecvPacketGeneric(data, timestamp, true);
++        return RecvPacketGeneric(data, timestamp, true, /*host_only=*/true);
+     }
+ 
+     uint16_t RecvReplies(uint8_t* data, uint64_t timestamp, uint16_t aidmask) {
+         uint16_t received = 0;
+-        const auto deadline =
+-            std::chrono::steady_clock::now() + std::chrono::milliseconds(25);
++        const auto t_start = std::chrono::steady_clock::now();
++        const auto deadline = t_start + std::chrono::milliseconds(25);
+         for (;;) {
+             DrainSocket();
+             LocalMpFrame frame;
+             if (!reply_queue_.TryPop(&frame)) {
+-                if (std::chrono::steady_clock::now() >= deadline) break;
+-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
++                if (std::chrono::steady_clock::now() >= deadline) {
++                    MpProf(kProfReplies, t_start, /*timeout=*/true);
++                    break;
++                }
++                WaitReadable(deadline);
+                 continue;
+             }
+             if (frame.timestamp + 32u < timestamp) continue;
+@@ -803,11 +805,92 @@
+                             frame.payload.data(), frame.payload.size());
+             }
+             received |= static_cast<uint16_t>(1u << aid);
+-            if ((received & aidmask) == aidmask) break;
++            if ((received & aidmask) == aidmask) {
++                MpProf(kProfReplies, t_start, false);
++                break;
++            }
+         }
++        MpTrace("replies", received, timestamp,
++                std::chrono::duration_cast<std::chrono::microseconds>(
++                    std::chrono::steady_clock::now() - t_start).count());
+         return received;
+     }
+ 
++    /* Block until the socket has a datagram or `deadline` passes. The MP exchange
++     * is a lockstep: the host blocks for its clients' replies, a client blocks for
++     * the host's next frame. Polling that with sleep_for(1ms) added a sleep tick
++     * (more under load) to every hand-off, several times a frame, on both sides;
++     * select() returns the moment the peer's datagram lands. */
++    void WaitReadable(std::chrono::steady_clock::time_point deadline) {
++#ifdef _WIN32
++        if (socket_ == INVALID_SOCKET) return;
++        const auto now = std::chrono::steady_clock::now();
++        if (now >= deadline) return;
++        const long long us = std::chrono::duration_cast<std::chrono::microseconds>(
++            deadline - now).count();
++        fd_set readable;
++        FD_ZERO(&readable);
++        FD_SET(socket_, &readable);
++        timeval tv{};
++        tv.tv_sec = static_cast<long>(us / 1000000);
++        tv.tv_usec = static_cast<long>(us % 1000000);
++        ::select(0, &readable, nullptr, nullptr, &tv);
++#else
++        (void)deadline;
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++#endif
++    }
++
++    /* MP event trace (LSW2_MP_TRACE=1, off by default): one line per bridge event
++     * with a steady-clock microsecond stamp shared by every process on the machine,
++     * so two consoles' logs merge into one timeline. */
++    static void MpTrace(const char* what, uint32_t a, uint64_t ts, long long waited) {
++        static const bool on = [] {
++            const char* e = std::getenv("LSW2_MP_TRACE");
++            return e && *e == '1';
++        }();
++        if (!on) return;
++        const long long now = std::chrono::duration_cast<std::chrono::microseconds>(
++            std::chrono::steady_clock::now().time_since_epoch()).count();
++        std::fprintf(stderr, "[mp-trace] %lld %s %u %llu %lld\n", now, what, a,
++                     static_cast<unsigned long long>(ts), waited);
++    }
++
++    /* MP-exchange profiler (LSW2_MP_PROF=1, off by default). Once per wall-clock
++     * second, per blocking wait (the parent's RecvReplies, the child's
++     * RecvHostPacket): how many calls, how much wall time they blocked in total,
++     * the longest single wait, and how many hit the 25ms deadline. Read against
++     * the fps line this says whether a connected frame is spent emulating or
++     * waiting on the other console, and how many exchanges one frame makes. */
++    enum { kProfReplies = 0, kProfHost = 1 };
++    static void MpProf(int kind, std::chrono::steady_clock::time_point t_start,
++                       bool timeout) {
++        static const bool on = [] {
++            const char* e = std::getenv("LSW2_MP_PROF");
++            return e && *e == '1';
++        }();
++        if (!on) return;
++        const auto now = std::chrono::steady_clock::now();
++        const double us =
++            std::chrono::duration<double, std::micro>(now - t_start).count();
++        static double sum[2] = {}; static double mx[2] = {};
++        static int n[2] = {}; static int to[2] = {};
++        static auto window = now;
++        sum[kind] += us; if (us > mx[kind]) mx[kind] = us; ++n[kind];
++        if (timeout) ++to[kind];
++        if (now - window < std::chrono::seconds(1)) return;
++        static const char* const kNames[2] = {"replies", "hostpkt"};
++        for (int k = 0; k < 2; ++k) {
++            if (!n[k]) continue;
++            std::fprintf(stderr,
++                         "[mp-prof] %s: %d calls/s, blocked %.1fms/s, max %.1fms, "
++                         "timeouts %d\n",
++                         kNames[k], n[k], sum[k] / 1000.0, mx[k] / 1000.0, to[k]);
++            sum[k] = 0.0; mx[k] = 0.0; n[k] = 0; to[k] = 0;
++        }
++        window = now;
++    }
++
+ private:
+     static constexpr uint32_t kMagic = 0x4946494Eu;
+     static constexpr uint32_t kMaxInstances = 16;
+@@ -815,20 +898,38 @@
+     static constexpr size_t kMaxFrameBytes = 0x948;
+     static constexpr size_t kQueueCapacity = 1024;
+ 
+-    int RecvPacketGeneric(uint8_t* data, uint64_t* timestamp, bool block) {
+-        const auto deadline =
+-            std::chrono::steady_clock::now() + std::chrono::milliseconds(25);
++    int RecvPacketGeneric(uint8_t* data, uint64_t* timestamp, bool block,
++                          bool host_only) {
++        const auto t_start = std::chrono::steady_clock::now();
++        const auto deadline = t_start + std::chrono::milliseconds(25);
+         for (;;) {
+             DrainSocket();
+             LocalMpFrame frame;
+             if (!packet_queue_.TryPop(&frame)) {
+-                if (!block || std::chrono::steady_clock::now() >= deadline)
++                if (!block) return 0;
++                if (std::chrono::steady_clock::now() >= deadline) {
++                    MpProf(kProfHost, t_start, /*timeout=*/true);
+                     return 0;
+-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
++                }
++                WaitReadable(deadline);
+                 continue;
+             }
+-            if (timestamp) *timestamp = frame.timestamp;
+             if (frame.type == 1u) last_host_id_ = static_cast<int>(frame.sender);
++            // A client must accept only the PARENT's frames. With a single child
++            // this queue held only the host's; but once a 2nd child instance is
++            // present, SendGeneric broadcasts ITS frames here too, and returning
++            // them as host data corrupts the client's MP stream and tears down the
++            // established session (the third instance coming online collapsed the
++            // host<->child link). Once the host is known, drop frames
++            // from any other sender on the host-only path.
++            if (host_only && last_host_id_ >= 0 &&
++                static_cast<int>(frame.sender) != last_host_id_)
++                continue;
++            if (block) MpProf(kProfHost, t_start, /*timeout=*/false);
++            MpTrace(block ? "recvB" : "recv", frame.type & 0xFFFFu, frame.timestamp,
++                    std::chrono::duration_cast<std::chrono::microseconds>(
++                        std::chrono::steady_clock::now() - t_start).count());
++            if (timestamp) *timestamp = frame.timestamp;
+             if (!frame.payload.empty())
+                 std::memcpy(data, frame.payload.data(), frame.payload.size());
+             return static_cast<int>(frame.payload.size());
+@@ -842,6 +943,7 @@
+         if (socket_ == INVALID_SOCKET) return 0;
+         if (len < 0 || static_cast<size_t>(len) > kMaxFrameBytes) return 0;
+         if (len > 0 && !data) return 0;
++        MpTrace("send", type & 0xFFFFu, timestamp, 0);
+ 
+         std::vector<uint8_t> datagram;
+         datagram.reserve(kHeaderBytes + static_cast<size_t>(len));
+@@ -1616,6 +1718,10 @@
+ 
+ // ── device-model attach seam ────────────────────────────────────────────
+ 
++bool nds_wifi_is_mp_client() {
++    return g_bridge && g_bridge->wifi && g_bridge->wifi->IsMultiplayerClient();
++}
++
+ melonDS::Wifi* nds_wifi3d_attach() {
+     if (g_bridge) return g_bridge->wifi.get();
+ 
+--- a/runner/src/wifi_net.h	2026-08-17 00:06:26.000000000 -0700
++++ b/runner/src/wifi_net.h	2026-09-23 04:14:47.374390600 -0700
+@@ -201,6 +201,13 @@
+ // Idempotent: safe to call from every nds_wifi_* entry point.
+ melonDS::Wifi* nds_wifi3d_attach();
+ 
++// True while this console is a local-wireless MP CLIENT: associated to a host
++// and with its emulated time gated by the host's frames. A frontend uses it to
++// stop pacing a client on its own audio clock, because the host already paces
++// it and a client asleep in its own throttle makes the host wait on it. False
++// when no Wifi model is attached.
++bool nds_wifi_is_mp_client();
++
+ // Tears the above down (unused by the current boot/reset path -- Wifi and
+ // Net_Slirp both persist across nds_wifi_reset(), matching real melonDS's
+ // NDS::Reset(), which does not reconstruct its Wifi/Net members either).
+--- a/runner/vendor/melonds/Wifi.cpp	2026-09-23 04:14:23.752976800 -0700
++++ b/runner/vendor/melonds/Wifi.cpp	2026-09-23 04:14:47.530524700 -0700
+@@ -17,6 +17,7 @@
+ */
+ 
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include "NDS.h"
+ #include "SPI.h"
+@@ -1589,6 +1590,40 @@
+     StartRX();
+ }
+ 
++// ndsrecomp: MP-client sync profiler (LSW2_MP_PROF=1, off by default). For each
++// host ACK, how far past it the client may run (runahead) before it must block
++// for the host's next frame; for each host CMD, how far (emulated us) that CMD
++// lay beyond the point the client was allowed to reach. A large gap means the
++// client idles blocked while the host emulates, then emulates while the host
++// idles blocked on its reply: the two consoles take turns instead of running
++// side by side.
++void Wifi::MPSyncProf(bool ack, u64 timestamp, u32 runahead)
++{
++    static const bool on = [] {
++        const char* e = getenv("LSW2_MP_PROF");
++        return e && *e == '1';
++    }();
++    if (!on) return;
++    static u64 allowed_until = 0;
++    static double run_sum = 0.0, gap_sum = 0.0;
++    static int acks = 0, cmds = 0;
++    if (ack)
++    {
++        allowed_until = timestamp + runahead;
++        run_sum += runahead;
++        ++acks;
++        return;
++    }
++    if (allowed_until && timestamp > allowed_until)
++        gap_sum += double(timestamp - allowed_until);
++    if (++cmds < 120) return;
++    Log(LogLevel::Info,
++        "[mp-prof] client: avg runahead %.0fus, avg CMD beyond allowed %.0fus (%d cmds, %d acks)\n",
++        acks ? run_sum / acks : 0.0, gap_sum / cmds, cmds, acks);
++    run_sum = gap_sum = 0.0;
++    acks = cmds = 0;
++}
++
+ bool Wifi::CheckRX(int type) // 0=regular 1=MP replies 2=MP host frames
+ {
+     if (IOPORT(W_PowerState) & (1<<9))
+@@ -1749,12 +1784,14 @@
+ 
+             // include the MP reply time window
+             NextSync += 112 + ((clienttime + 10) * NumClients(clientmask));
++            MPSyncProf(false, timestamp, 0);
+         }
+         else if (MACEqual(&RXBuffer[12 + 4], MPAckMAC))
+         {
+             u32 runahead = *(u32*)&RXBuffer[0];
+ 
+             NextSync += runahead;
++            MPSyncProf(true, timestamp, runahead);
+         }
+     }
+     else
+--- a/runner/vendor/melonds/Wifi.h	2026-08-17 00:06:26.000000000 -0700
++++ b/runner/vendor/melonds/Wifi.h	2026-09-23 04:14:47.699240600 -0700
+@@ -173,6 +173,10 @@
+     const u8* GetMAC() const;
+     const u8* GetBSSID() const;
+ 
++    // ndsrecomp: true while associated as a local-MP client, i.e. while this
++    // console's emulated time is gated by the host's frames (NextSync).
++    bool IsMultiplayerClient() const { return IsMPClient; }
++
+ private:
+     melonDS::NDS& NDS;
+     u8 RAM[0x2000];
+@@ -251,6 +255,8 @@
+ 
+     class WifiAP* WifiAP;
+ 
++    void MPSyncProf(bool ack, u64 timestamp, u32 runahead);
++
+     void ScheduleTimer(bool first);
+     void UpdatePowerOn();
+ 

@@ -1,0 +1,3248 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "dispatch": "0x020B8F70",
+  "body": "0x020B8FA4",
+  "event_table": "0x02100A74",
+  "variant_table": "0x02100D98",
+  "event_count": 201,
+  "variant_count": 232,
+  "no_sound_sentinel": 201
+ },
+ "note": "Export the DS sound-effect event table.\n\nWHERE THIS LIVES IN THE ROM\n---------------------------\nThe game has ONE sound-effect dispatch and it resolves an event id through two\ntables.\n\n    0x020B8ECC   the default parameter block: memset(sp,0,0xC) then\n                 `mov r1,#7 / strb r1,[sp]`, so byte 0 is 7 and the rest zero\n    0x020B8F70   the wrapper - 100 BL callers. Builds that block, forwards the\n                 owner tag, and tail-calls the body\n    0x020B8FA4   the body\n\n    0x02100A74   table 1, stride 4, one row per event id:\n                     +0x00 u16 variant count\n                     +0x02 u16 base index into table 2\n                 loaded by 0x020B8FB0 (lit 0x020B905C) and 0x020B8FBC\n                 (lit 0x020B9060 = 0x02100A76)\n\n    0x02100D98   table 2, stride 4, one row per variant:\n                     +0x00 u16 sample-descriptor index\n                     +0x02 u16 playback rate in Hz, 0 meaning \"use the\n                           descriptor's own\"\n                 loaded by 0x020B8FE0 (lit 0x020B9064). BOTH halves are read -\n                 0x020B9030 `ldrh r0,[r4]` and 0x020B9034 `ldrh r1,[r4,#2]`\n\n    index math:  `lsl r2,r0,#2` / `ldrh r0,[r1,r2]` / `ldrh r4,[r1,r2]` then\n                 `add r0,r4,r0` / `add r4,r1,r0,lsl #2`\n                 so entry = 0x02100D98 + (base + variant) * 4\n\n    0x020B8FC0   `cmp r0,#1 / movls r0,#0 / bls` - a single-variant event\n                 short-circuits and draws NO random number\n    0x02062B10   otherwise, uniform on [0, count-1]\n\n    descriptor:  *(0x0210DB84 + 0x7C) + index * 0x24, unpacked at 0x020BAAAC\n\nTHE 201 BOUND, three independent ways\n-------------------------------------\n1. Geometry. 0x02100A74 + 201*4 = 0x02100D98 exactly - table 1 ends where\n   table 2 begins.\n2. Run-length closure. base[i+1] == base[i] + count[i] holds for every i, and\n   closes at 232 total variants, which is table 2's own row count. Reading a\n   202nd row breaks the invariant.\n3. There is NO id guard in the dispatch: no `cmp` on r0 exists anywhere between\n   0x020B8FA4 and the `ldrh` at 0x020B8FB8. An out-of-range id reads out of\n   bounds on hardware.\n\n0xC9 (201) is therefore a CALLER-side sentinel, not a dispatch check. A scan for\n`cmp Rn,#0xC9` finds exactly eleven sites - 0x02004130, 0x02005680, 0x0200B0B4,\n0x02014F84, 0x02018CC8, 0x02019574, 0x0202FB6C, 0x02037B84, 0x02068274,\n0x0209FAEC, 0x0209FB04 - and only the last two are range tests (BHS); the rest\nare equality tests that skip the call.\n\nUsage:  python tools/export_sound_events.py",
+ "events": [
+  {
+   "id": 0,
+   "count": 1,
+   "base": 0,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 138,
+     "sample_id": 122,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_122.wav"
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "count": 1,
+   "base": 1,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 136,
+     "sample_id": 120,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_120.wav"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "count": 4,
+   "base": 2,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 128,
+     "sample_id": 112,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_112.wav"
+    },
+    {
+     "descriptor_index": 129,
+     "sample_id": 113,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_113.wav"
+    },
+    {
+     "descriptor_index": 130,
+     "sample_id": 114,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_114.wav"
+    },
+    {
+     "descriptor_index": 131,
+     "sample_id": 115,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_115.wav"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "count": 4,
+   "base": 6,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 132,
+     "sample_id": 116,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_116.wav"
+    },
+    {
+     "descriptor_index": 133,
+     "sample_id": 117,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_117.wav"
+    },
+    {
+     "descriptor_index": 134,
+     "sample_id": 118,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_118.wav"
+    },
+    {
+     "descriptor_index": 135,
+     "sample_id": 119,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_119.wav"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "count": 1,
+   "base": 10,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 137,
+     "sample_id": 121,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_121.wav"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "count": 1,
+   "base": 11,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 139,
+     "sample_id": 123,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_123.wav"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "count": 1,
+   "base": 12,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 140,
+     "sample_id": 124,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_124.wav"
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "count": 1,
+   "base": 13,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 141,
+     "sample_id": 125,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_125.wav"
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "count": 1,
+   "base": 14,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 142,
+     "sample_id": 126,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_126.wav"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "count": 1,
+   "base": 15,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 143,
+     "sample_id": 127,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_127.wav"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "count": 1,
+   "base": 16,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 144,
+     "sample_id": 128,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_128.wav"
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "count": 1,
+   "base": 17,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 145,
+     "sample_id": 129,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_129.wav"
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "count": 1,
+   "base": 18,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 146,
+     "sample_id": 130,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_130.wav"
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "count": 1,
+   "base": 19,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 147,
+     "sample_id": 131,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_131.wav"
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "count": 1,
+   "base": 20,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 148,
+     "sample_id": 132,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_132.wav"
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "count": 1,
+   "base": 21,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 149,
+     "sample_id": 133,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_133.wav"
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "count": 1,
+   "base": 22,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 150,
+     "sample_id": 134,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_134.wav"
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "count": 1,
+   "base": 23,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 151,
+     "sample_id": 135,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_135.wav"
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "count": 1,
+   "base": 24,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 152,
+     "sample_id": 136,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_136.wav"
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "count": 1,
+   "base": 25,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 153,
+     "sample_id": 137,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_137.wav"
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "count": 1,
+   "base": 26,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 154,
+     "sample_id": 138,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_138.wav"
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "count": 1,
+   "base": 27,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 155,
+     "sample_id": 139,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_139.wav"
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "count": 1,
+   "base": 28,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 157,
+     "sample_id": 141,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_141.wav"
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "count": 1,
+   "base": 29,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 158,
+     "sample_id": 142,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_142.wav"
+    }
+   ]
+  },
+  {
+   "id": 24,
+   "count": 1,
+   "base": 30,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 159,
+     "sample_id": 143,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_143.wav"
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "count": 1,
+   "base": 31,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 160,
+     "sample_id": 144,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_144.wav"
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "count": 3,
+   "base": 32,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 161,
+     "sample_id": 145,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_145.wav"
+    },
+    {
+     "descriptor_index": 162,
+     "sample_id": 146,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_146.wav"
+    },
+    {
+     "descriptor_index": 163,
+     "sample_id": 147,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_147.wav"
+    }
+   ]
+  },
+  {
+   "id": 27,
+   "count": 1,
+   "base": 35,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 164,
+     "sample_id": 148,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_148.wav"
+    }
+   ]
+  },
+  {
+   "id": 28,
+   "count": 1,
+   "base": 36,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 165,
+     "sample_id": 149,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_149.wav"
+    }
+   ]
+  },
+  {
+   "id": 29,
+   "count": 1,
+   "base": 37,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 166,
+     "sample_id": 150,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_150.wav"
+    }
+   ]
+  },
+  {
+   "id": 30,
+   "count": 1,
+   "base": 38,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 167,
+     "sample_id": 151,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_151.wav"
+    }
+   ]
+  },
+  {
+   "id": 31,
+   "count": 1,
+   "base": 39,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 168,
+     "sample_id": 152,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_152.wav"
+    }
+   ]
+  },
+  {
+   "id": 32,
+   "count": 1,
+   "base": 40,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 169,
+     "sample_id": 153,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_153.wav"
+    }
+   ]
+  },
+  {
+   "id": 33,
+   "count": 1,
+   "base": 41,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 170,
+     "sample_id": 154,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_154.wav"
+    }
+   ]
+  },
+  {
+   "id": 34,
+   "count": 1,
+   "base": 42,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 171,
+     "sample_id": 155,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_155.wav"
+    }
+   ]
+  },
+  {
+   "id": 35,
+   "count": 1,
+   "base": 43,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 172,
+     "sample_id": 156,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_156.wav"
+    }
+   ]
+  },
+  {
+   "id": 36,
+   "count": 1,
+   "base": 44,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 173,
+     "sample_id": 157,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_157.wav"
+    }
+   ]
+  },
+  {
+   "id": 37,
+   "count": 1,
+   "base": 45,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 174,
+     "sample_id": 158,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_158.wav"
+    }
+   ]
+  },
+  {
+   "id": 38,
+   "count": 1,
+   "base": 46,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 175,
+     "sample_id": 159,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_159.wav"
+    }
+   ]
+  },
+  {
+   "id": 39,
+   "count": 1,
+   "base": 47,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 176,
+     "sample_id": 160,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_160.wav"
+    }
+   ]
+  },
+  {
+   "id": 40,
+   "count": 1,
+   "base": 48,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 177,
+     "sample_id": 161,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_161.wav"
+    }
+   ]
+  },
+  {
+   "id": 41,
+   "count": 1,
+   "base": 49,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 178,
+     "sample_id": 162,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_162.wav"
+    }
+   ]
+  },
+  {
+   "id": 42,
+   "count": 1,
+   "base": 50,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 179,
+     "sample_id": 163,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_163.wav"
+    }
+   ]
+  },
+  {
+   "id": 43,
+   "count": 3,
+   "base": 51,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 180,
+     "sample_id": 164,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_164.wav"
+    },
+    {
+     "descriptor_index": 181,
+     "sample_id": 165,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_165.wav"
+    },
+    {
+     "descriptor_index": 182,
+     "sample_id": 166,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_166.wav"
+    }
+   ]
+  },
+  {
+   "id": 44,
+   "count": 1,
+   "base": 54,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 183,
+     "sample_id": 167,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_167.wav"
+    }
+   ]
+  },
+  {
+   "id": 45,
+   "count": 1,
+   "base": 55,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 184,
+     "sample_id": 168,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_168.wav"
+    }
+   ]
+  },
+  {
+   "id": 46,
+   "count": 1,
+   "base": 56,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 185,
+     "sample_id": 169,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_169.wav"
+    }
+   ]
+  },
+  {
+   "id": 47,
+   "count": 1,
+   "base": 57,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 186,
+     "sample_id": 170,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_170.wav"
+    }
+   ]
+  },
+  {
+   "id": 48,
+   "count": 1,
+   "base": 58,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 187,
+     "sample_id": 171,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_171.wav"
+    }
+   ]
+  },
+  {
+   "id": 49,
+   "count": 1,
+   "base": 59,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 188,
+     "sample_id": 172,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_172.wav"
+    }
+   ]
+  },
+  {
+   "id": 50,
+   "count": 1,
+   "base": 60,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 189,
+     "sample_id": 173,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_173.wav"
+    }
+   ]
+  },
+  {
+   "id": 51,
+   "count": 1,
+   "base": 61,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 193,
+     "sample_id": 177,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_177.wav"
+    }
+   ]
+  },
+  {
+   "id": 52,
+   "count": 1,
+   "base": 62,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 194,
+     "sample_id": 178,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_178.wav"
+    }
+   ]
+  },
+  {
+   "id": 53,
+   "count": 1,
+   "base": 63,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 195,
+     "sample_id": 179,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_179.wav"
+    }
+   ]
+  },
+  {
+   "id": 54,
+   "count": 1,
+   "base": 64,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 196,
+     "sample_id": 180,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_180.wav"
+    }
+   ]
+  },
+  {
+   "id": 55,
+   "count": 1,
+   "base": 65,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 197,
+     "sample_id": 181,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_181.wav"
+    }
+   ]
+  },
+  {
+   "id": 56,
+   "count": 1,
+   "base": 66,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 190,
+     "sample_id": 174,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_174.wav"
+    }
+   ]
+  },
+  {
+   "id": 57,
+   "count": 1,
+   "base": 67,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 191,
+     "sample_id": 175,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_175.wav"
+    }
+   ]
+  },
+  {
+   "id": 58,
+   "count": 1,
+   "base": 68,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 192,
+     "sample_id": 176,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_176.wav"
+    }
+   ]
+  },
+  {
+   "id": 59,
+   "count": 1,
+   "base": 69,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 198,
+     "sample_id": 182,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_182.wav"
+    }
+   ]
+  },
+  {
+   "id": 60,
+   "count": 1,
+   "base": 70,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 199,
+     "sample_id": 183,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_183.wav"
+    }
+   ]
+  },
+  {
+   "id": 61,
+   "count": 1,
+   "base": 71,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 200,
+     "sample_id": 184,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_184.wav"
+    }
+   ]
+  },
+  {
+   "id": 62,
+   "count": 1,
+   "base": 72,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 201,
+     "sample_id": 185,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_185.wav"
+    }
+   ]
+  },
+  {
+   "id": 63,
+   "count": 1,
+   "base": 73,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 202,
+     "sample_id": 186,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_186.wav"
+    }
+   ]
+  },
+  {
+   "id": 64,
+   "count": 1,
+   "base": 74,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 203,
+     "sample_id": 187,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_187.wav"
+    }
+   ]
+  },
+  {
+   "id": 65,
+   "count": 1,
+   "base": 75,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 204,
+     "sample_id": 188,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_188.wav"
+    }
+   ]
+  },
+  {
+   "id": 66,
+   "count": 1,
+   "base": 76,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 205,
+     "sample_id": 189,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_189.wav"
+    }
+   ]
+  },
+  {
+   "id": 67,
+   "count": 1,
+   "base": 77,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 206,
+     "sample_id": 190,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_190.wav"
+    }
+   ]
+  },
+  {
+   "id": 68,
+   "count": 1,
+   "base": 78,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 207,
+     "sample_id": 191,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_191.wav"
+    }
+   ]
+  },
+  {
+   "id": 69,
+   "count": 1,
+   "base": 79,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 208,
+     "sample_id": 192,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_192.wav"
+    }
+   ]
+  },
+  {
+   "id": 70,
+   "count": 1,
+   "base": 80,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 209,
+     "sample_id": 193,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_193.wav"
+    }
+   ]
+  },
+  {
+   "id": 71,
+   "count": 1,
+   "base": 81,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 210,
+     "sample_id": 194,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_194.wav"
+    }
+   ]
+  },
+  {
+   "id": 72,
+   "count": 1,
+   "base": 82,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 211,
+     "sample_id": 195,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_195.wav"
+    }
+   ]
+  },
+  {
+   "id": 73,
+   "count": 1,
+   "base": 83,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 213,
+     "sample_id": 197,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_197.wav"
+    }
+   ]
+  },
+  {
+   "id": 74,
+   "count": 1,
+   "base": 84,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 216,
+     "sample_id": 200,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_200.wav"
+    }
+   ]
+  },
+  {
+   "id": 75,
+   "count": 1,
+   "base": 85,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 217,
+     "sample_id": 201,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_201.wav"
+    }
+   ]
+  },
+  {
+   "id": 76,
+   "count": 1,
+   "base": 86,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 218,
+     "sample_id": 202,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_202.wav"
+    }
+   ]
+  },
+  {
+   "id": 77,
+   "count": 1,
+   "base": 87,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 220,
+     "sample_id": 204,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_204.wav"
+    }
+   ]
+  },
+  {
+   "id": 78,
+   "count": 3,
+   "base": 88,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 221,
+     "sample_id": 205,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_205.wav"
+    },
+    {
+     "descriptor_index": 222,
+     "sample_id": 206,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_206.wav"
+    },
+    {
+     "descriptor_index": 223,
+     "sample_id": 207,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_207.wav"
+    }
+   ]
+  },
+  {
+   "id": 79,
+   "count": 1,
+   "base": 91,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 224,
+     "sample_id": 208,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_208.wav"
+    }
+   ]
+  },
+  {
+   "id": 80,
+   "count": 2,
+   "base": 92,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 227,
+     "sample_id": 211,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_211.wav"
+    },
+    {
+     "descriptor_index": 228,
+     "sample_id": 212,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_212.wav"
+    }
+   ]
+  },
+  {
+   "id": 81,
+   "count": 1,
+   "base": 94,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 229,
+     "sample_id": 213,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_213.wav"
+    }
+   ]
+  },
+  {
+   "id": 82,
+   "count": 1,
+   "base": 95,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 230,
+     "sample_id": 214,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_214.wav"
+    }
+   ]
+  },
+  {
+   "id": 83,
+   "count": 1,
+   "base": 96,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 231,
+     "sample_id": 215,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_215.wav"
+    }
+   ]
+  },
+  {
+   "id": 84,
+   "count": 1,
+   "base": 97,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 232,
+     "sample_id": 216,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_216.wav"
+    }
+   ]
+  },
+  {
+   "id": 85,
+   "count": 1,
+   "base": 98,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 225,
+     "sample_id": 209,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_209.wav"
+    }
+   ]
+  },
+  {
+   "id": 86,
+   "count": 1,
+   "base": 99,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 226,
+     "sample_id": 210,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_210.wav"
+    }
+   ]
+  },
+  {
+   "id": 87,
+   "count": 1,
+   "base": 100,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 233,
+     "sample_id": 217,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_217.wav"
+    }
+   ]
+  },
+  {
+   "id": 88,
+   "count": 3,
+   "base": 101,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 234,
+     "sample_id": 218,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_218.wav"
+    },
+    {
+     "descriptor_index": 235,
+     "sample_id": 219,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_219.wav"
+    },
+    {
+     "descriptor_index": 236,
+     "sample_id": 220,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_220.wav"
+    }
+   ]
+  },
+  {
+   "id": 89,
+   "count": 3,
+   "base": 104,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 237,
+     "sample_id": 221,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_221.wav"
+    },
+    {
+     "descriptor_index": 238,
+     "sample_id": 222,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_222.wav"
+    },
+    {
+     "descriptor_index": 239,
+     "sample_id": 223,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_223.wav"
+    }
+   ]
+  },
+  {
+   "id": 90,
+   "count": 1,
+   "base": 107,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 240,
+     "sample_id": 224,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_224.wav"
+    }
+   ]
+  },
+  {
+   "id": 91,
+   "count": 1,
+   "base": 108,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 241,
+     "sample_id": 225,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_225.wav"
+    }
+   ]
+  },
+  {
+   "id": 92,
+   "count": 1,
+   "base": 109,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 242,
+     "sample_id": 226,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_226.wav"
+    }
+   ]
+  },
+  {
+   "id": 93,
+   "count": 1,
+   "base": 110,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 249,
+     "sample_id": 233,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_233.wav"
+    }
+   ]
+  },
+  {
+   "id": 94,
+   "count": 1,
+   "base": 111,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 243,
+     "sample_id": 227,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_227.wav"
+    }
+   ]
+  },
+  {
+   "id": 95,
+   "count": 1,
+   "base": 112,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 244,
+     "sample_id": 228,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_228.wav"
+    }
+   ]
+  },
+  {
+   "id": 96,
+   "count": 1,
+   "base": 113,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 245,
+     "sample_id": 229,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_229.wav"
+    }
+   ]
+  },
+  {
+   "id": 97,
+   "count": 1,
+   "base": 114,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 246,
+     "sample_id": 230,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_230.wav"
+    }
+   ]
+  },
+  {
+   "id": 98,
+   "count": 1,
+   "base": 115,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 247,
+     "sample_id": 231,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_231.wav"
+    }
+   ]
+  },
+  {
+   "id": 99,
+   "count": 1,
+   "base": 116,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 248,
+     "sample_id": 232,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_232.wav"
+    }
+   ]
+  },
+  {
+   "id": 100,
+   "count": 1,
+   "base": 117,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 250,
+     "sample_id": 234,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_234.wav"
+    }
+   ]
+  },
+  {
+   "id": 101,
+   "count": 1,
+   "base": 118,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 251,
+     "sample_id": 235,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_235.wav"
+    }
+   ]
+  },
+  {
+   "id": 102,
+   "count": 2,
+   "base": 119,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 252,
+     "sample_id": 236,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_236.wav"
+    },
+    {
+     "descriptor_index": 253,
+     "sample_id": 237,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_237.wav"
+    }
+   ]
+  },
+  {
+   "id": 103,
+   "count": 1,
+   "base": 121,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 254,
+     "sample_id": 238,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_238.wav"
+    }
+   ]
+  },
+  {
+   "id": 104,
+   "count": 1,
+   "base": 122,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 255,
+     "sample_id": 239,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_239.wav"
+    }
+   ]
+  },
+  {
+   "id": 105,
+   "count": 1,
+   "base": 123,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 256,
+     "sample_id": 240,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_240.wav"
+    }
+   ]
+  },
+  {
+   "id": 106,
+   "count": 1,
+   "base": 124,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 257,
+     "sample_id": 241,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_241.wav"
+    }
+   ]
+  },
+  {
+   "id": 107,
+   "count": 1,
+   "base": 125,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 258,
+     "sample_id": 242,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_242.wav"
+    }
+   ]
+  },
+  {
+   "id": 108,
+   "count": 1,
+   "base": 126,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 259,
+     "sample_id": 243,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_243.wav"
+    }
+   ]
+  },
+  {
+   "id": 109,
+   "count": 1,
+   "base": 127,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 260,
+     "sample_id": 244,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_244.wav"
+    }
+   ]
+  },
+  {
+   "id": 110,
+   "count": 1,
+   "base": 128,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 261,
+     "sample_id": 245,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_245.wav"
+    }
+   ]
+  },
+  {
+   "id": 111,
+   "count": 1,
+   "base": 129,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 262,
+     "sample_id": 246,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_246.wav"
+    }
+   ]
+  },
+  {
+   "id": 112,
+   "count": 1,
+   "base": 130,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 263,
+     "sample_id": 247,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_247.wav"
+    }
+   ]
+  },
+  {
+   "id": 113,
+   "count": 1,
+   "base": 131,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 264,
+     "sample_id": 248,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_248.wav"
+    }
+   ]
+  },
+  {
+   "id": 114,
+   "count": 1,
+   "base": 132,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 265,
+     "sample_id": 249,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_249.wav"
+    }
+   ]
+  },
+  {
+   "id": 115,
+   "count": 1,
+   "base": 133,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 266,
+     "sample_id": 250,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_250.wav"
+    }
+   ]
+  },
+  {
+   "id": 116,
+   "count": 1,
+   "base": 134,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 267,
+     "sample_id": 251,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_251.wav"
+    }
+   ]
+  },
+  {
+   "id": 117,
+   "count": 1,
+   "base": 135,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 268,
+     "sample_id": 252,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_252.wav"
+    }
+   ]
+  },
+  {
+   "id": 118,
+   "count": 1,
+   "base": 136,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 269,
+     "sample_id": 253,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_253.wav"
+    }
+   ]
+  },
+  {
+   "id": 119,
+   "count": 1,
+   "base": 137,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 270,
+     "sample_id": 254,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_254.wav"
+    }
+   ]
+  },
+  {
+   "id": 120,
+   "count": 1,
+   "base": 138,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 271,
+     "sample_id": 255,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_255.wav"
+    }
+   ]
+  },
+  {
+   "id": 121,
+   "count": 1,
+   "base": 139,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 272,
+     "sample_id": 256,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_256.wav"
+    }
+   ]
+  },
+  {
+   "id": 122,
+   "count": 1,
+   "base": 140,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 273,
+     "sample_id": 257,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_257.wav"
+    }
+   ]
+  },
+  {
+   "id": 123,
+   "count": 2,
+   "base": 141,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 274,
+     "sample_id": 258,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_258.wav"
+    },
+    {
+     "descriptor_index": 275,
+     "sample_id": 259,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_259.wav"
+    }
+   ]
+  },
+  {
+   "id": 124,
+   "count": 1,
+   "base": 143,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 278,
+     "sample_id": 262,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_262.wav"
+    }
+   ]
+  },
+  {
+   "id": 125,
+   "count": 1,
+   "base": 144,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 276,
+     "sample_id": 260,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_260.wav"
+    }
+   ]
+  },
+  {
+   "id": 126,
+   "count": 1,
+   "base": 145,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 279,
+     "sample_id": 263,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_263.wav"
+    }
+   ]
+  },
+  {
+   "id": 127,
+   "count": 1,
+   "base": 146,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 280,
+     "sample_id": 264,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_264.wav"
+    }
+   ]
+  },
+  {
+   "id": 128,
+   "count": 1,
+   "base": 147,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 281,
+     "sample_id": 265,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_265.wav"
+    }
+   ]
+  },
+  {
+   "id": 129,
+   "count": 1,
+   "base": 148,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 277,
+     "sample_id": 261,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_261.wav"
+    }
+   ]
+  },
+  {
+   "id": 130,
+   "count": 1,
+   "base": 149,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 282,
+     "sample_id": 266,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_266.wav"
+    }
+   ]
+  },
+  {
+   "id": 131,
+   "count": 1,
+   "base": 150,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 283,
+     "sample_id": 267,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_267.wav"
+    }
+   ]
+  },
+  {
+   "id": 132,
+   "count": 1,
+   "base": 151,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 284,
+     "sample_id": 268,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_268.wav"
+    }
+   ]
+  },
+  {
+   "id": 133,
+   "count": 1,
+   "base": 152,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 285,
+     "sample_id": 269,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_269.wav"
+    }
+   ]
+  },
+  {
+   "id": 134,
+   "count": 4,
+   "base": 153,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 286,
+     "sample_id": 270,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_270.wav"
+    },
+    {
+     "descriptor_index": 287,
+     "sample_id": 271,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_271.wav"
+    },
+    {
+     "descriptor_index": 288,
+     "sample_id": 272,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_272.wav"
+    },
+    {
+     "descriptor_index": 289,
+     "sample_id": 273,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_273.wav"
+    }
+   ]
+  },
+  {
+   "id": 135,
+   "count": 1,
+   "base": 157,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 290,
+     "sample_id": 274,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_274.wav"
+    }
+   ]
+  },
+  {
+   "id": 136,
+   "count": 3,
+   "base": 158,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 291,
+     "sample_id": 275,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_275.wav"
+    },
+    {
+     "descriptor_index": 292,
+     "sample_id": 276,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_276.wav"
+    },
+    {
+     "descriptor_index": 293,
+     "sample_id": 277,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_277.wav"
+    }
+   ]
+  },
+  {
+   "id": 137,
+   "count": 1,
+   "base": 161,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 294,
+     "sample_id": 278,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_278.wav"
+    }
+   ]
+  },
+  {
+   "id": 138,
+   "count": 1,
+   "base": 162,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 295,
+     "sample_id": 279,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_279.wav"
+    }
+   ]
+  },
+  {
+   "id": 139,
+   "count": 1,
+   "base": 163,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 296,
+     "sample_id": 280,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_280.wav"
+    }
+   ]
+  },
+  {
+   "id": 140,
+   "count": 1,
+   "base": 164,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 297,
+     "sample_id": 281,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_281.wav"
+    }
+   ]
+  },
+  {
+   "id": 141,
+   "count": 1,
+   "base": 165,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 298,
+     "sample_id": 282,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_282.wav"
+    }
+   ]
+  },
+  {
+   "id": 142,
+   "count": 1,
+   "base": 166,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 299,
+     "sample_id": 283,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_283.wav"
+    }
+   ]
+  },
+  {
+   "id": 143,
+   "count": 1,
+   "base": 167,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 300,
+     "sample_id": 284,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_284.wav"
+    }
+   ]
+  },
+  {
+   "id": 144,
+   "count": 1,
+   "base": 168,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 301,
+     "sample_id": 285,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_285.wav"
+    }
+   ]
+  },
+  {
+   "id": 145,
+   "count": 3,
+   "base": 169,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 302,
+     "sample_id": 286,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_286.wav"
+    },
+    {
+     "descriptor_index": 303,
+     "sample_id": 287,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_287.wav"
+    },
+    {
+     "descriptor_index": 304,
+     "sample_id": 288,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_288.wav"
+    }
+   ]
+  },
+  {
+   "id": 146,
+   "count": 1,
+   "base": 172,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 305,
+     "sample_id": 289,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_289.wav"
+    }
+   ]
+  },
+  {
+   "id": 147,
+   "count": 1,
+   "base": 173,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 306,
+     "sample_id": 290,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_290.wav"
+    }
+   ]
+  },
+  {
+   "id": 148,
+   "count": 1,
+   "base": 174,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 307,
+     "sample_id": 291,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_291.wav"
+    }
+   ]
+  },
+  {
+   "id": 149,
+   "count": 1,
+   "base": 175,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 308,
+     "sample_id": 292,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_292.wav"
+    }
+   ]
+  },
+  {
+   "id": 150,
+   "count": 1,
+   "base": 176,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 309,
+     "sample_id": 293,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_293.wav"
+    }
+   ]
+  },
+  {
+   "id": 151,
+   "count": 1,
+   "base": 177,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 310,
+     "sample_id": 294,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_294.wav"
+    }
+   ]
+  },
+  {
+   "id": 152,
+   "count": 1,
+   "base": 178,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 311,
+     "sample_id": 295,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_295.wav"
+    }
+   ]
+  },
+  {
+   "id": 153,
+   "count": 1,
+   "base": 179,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 312,
+     "sample_id": 296,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_296.wav"
+    }
+   ]
+  },
+  {
+   "id": 154,
+   "count": 1,
+   "base": 180,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 313,
+     "sample_id": 297,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_297.wav"
+    }
+   ]
+  },
+  {
+   "id": 155,
+   "count": 1,
+   "base": 181,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 314,
+     "sample_id": 298,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_298.wav"
+    }
+   ]
+  },
+  {
+   "id": 156,
+   "count": 2,
+   "base": 182,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 315,
+     "sample_id": 299,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_299.wav"
+    },
+    {
+     "descriptor_index": 316,
+     "sample_id": 300,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_300.wav"
+    }
+   ]
+  },
+  {
+   "id": 157,
+   "count": 1,
+   "base": 184,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 317,
+     "sample_id": 301,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_301.wav"
+    }
+   ]
+  },
+  {
+   "id": 158,
+   "count": 1,
+   "base": 185,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 318,
+     "sample_id": 302,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_302.wav"
+    }
+   ]
+  },
+  {
+   "id": 159,
+   "count": 1,
+   "base": 186,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 319,
+     "sample_id": 303,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_303.wav"
+    }
+   ]
+  },
+  {
+   "id": 160,
+   "count": 1,
+   "base": 187,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 320,
+     "sample_id": 304,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_304.wav"
+    }
+   ]
+  },
+  {
+   "id": 161,
+   "count": 1,
+   "base": 188,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 321,
+     "sample_id": 305,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_305.wav"
+    }
+   ]
+  },
+  {
+   "id": 162,
+   "count": 1,
+   "base": 189,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 322,
+     "sample_id": 306,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_306.wav"
+    }
+   ]
+  },
+  {
+   "id": 163,
+   "count": 1,
+   "base": 190,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 323,
+     "sample_id": 307,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_307.wav"
+    }
+   ]
+  },
+  {
+   "id": 164,
+   "count": 2,
+   "base": 191,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 324,
+     "sample_id": 308,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_308.wav"
+    },
+    {
+     "descriptor_index": 325,
+     "sample_id": 309,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_309.wav"
+    }
+   ]
+  },
+  {
+   "id": 165,
+   "count": 3,
+   "base": 193,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 326,
+     "sample_id": 310,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_310.wav"
+    },
+    {
+     "descriptor_index": 327,
+     "sample_id": 311,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_311.wav"
+    },
+    {
+     "descriptor_index": 328,
+     "sample_id": 312,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_312.wav"
+    }
+   ]
+  },
+  {
+   "id": 166,
+   "count": 1,
+   "base": 196,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 329,
+     "sample_id": 313,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_313.wav"
+    }
+   ]
+  },
+  {
+   "id": 167,
+   "count": 1,
+   "base": 197,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 330,
+     "sample_id": 314,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_314.wav"
+    }
+   ]
+  },
+  {
+   "id": 168,
+   "count": 1,
+   "base": 198,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 331,
+     "sample_id": 315,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_315.wav"
+    }
+   ]
+  },
+  {
+   "id": 169,
+   "count": 1,
+   "base": 199,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 332,
+     "sample_id": 316,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_316.wav"
+    }
+   ]
+  },
+  {
+   "id": 170,
+   "count": 1,
+   "base": 200,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 333,
+     "sample_id": 317,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_317.wav"
+    }
+   ]
+  },
+  {
+   "id": 171,
+   "count": 1,
+   "base": 201,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 334,
+     "sample_id": 318,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_318.wav"
+    }
+   ]
+  },
+  {
+   "id": 172,
+   "count": 1,
+   "base": 202,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 335,
+     "sample_id": 319,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_319.wav"
+    }
+   ]
+  },
+  {
+   "id": 173,
+   "count": 1,
+   "base": 203,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 336,
+     "sample_id": 320,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_320.wav"
+    }
+   ]
+  },
+  {
+   "id": 174,
+   "count": 1,
+   "base": 204,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 337,
+     "sample_id": 321,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_321.wav"
+    }
+   ]
+  },
+  {
+   "id": 175,
+   "count": 1,
+   "base": 205,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 338,
+     "sample_id": 322,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_322.wav"
+    }
+   ]
+  },
+  {
+   "id": 176,
+   "count": 1,
+   "base": 206,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 339,
+     "sample_id": 323,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_323.wav"
+    }
+   ]
+  },
+  {
+   "id": 177,
+   "count": 1,
+   "base": 207,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 340,
+     "sample_id": 324,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_324.wav"
+    }
+   ]
+  },
+  {
+   "id": 178,
+   "count": 1,
+   "base": 208,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 343,
+     "sample_id": 327,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_327.wav"
+    }
+   ]
+  },
+  {
+   "id": 179,
+   "count": 1,
+   "base": 209,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 344,
+     "sample_id": 328,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_328.wav"
+    }
+   ]
+  },
+  {
+   "id": 180,
+   "count": 1,
+   "base": 210,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 345,
+     "sample_id": 329,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_329.wav"
+    }
+   ]
+  },
+  {
+   "id": 181,
+   "count": 1,
+   "base": 211,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 346,
+     "sample_id": 330,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_330.wav"
+    }
+   ]
+  },
+  {
+   "id": 182,
+   "count": 1,
+   "base": 212,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 347,
+     "sample_id": 331,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_331.wav"
+    }
+   ]
+  },
+  {
+   "id": 183,
+   "count": 1,
+   "base": 213,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 348,
+     "sample_id": 332,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_332.wav"
+    }
+   ]
+  },
+  {
+   "id": 184,
+   "count": 1,
+   "base": 214,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 349,
+     "sample_id": 333,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_333.wav"
+    }
+   ]
+  },
+  {
+   "id": 185,
+   "count": 1,
+   "base": 215,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 350,
+     "sample_id": 334,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_334.wav"
+    }
+   ]
+  },
+  {
+   "id": 186,
+   "count": 1,
+   "base": 216,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 351,
+     "sample_id": 335,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_335.wav"
+    }
+   ]
+  },
+  {
+   "id": 187,
+   "count": 1,
+   "base": 217,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 353,
+     "sample_id": 337,
+     "looping": true,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_337.wav"
+    }
+   ]
+  },
+  {
+   "id": 188,
+   "count": 1,
+   "base": 218,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 354,
+     "sample_id": 338,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_338.wav"
+    }
+   ]
+  },
+  {
+   "id": 189,
+   "count": 1,
+   "base": 219,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 355,
+     "sample_id": 339,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_339.wav"
+    }
+   ]
+  },
+  {
+   "id": 190,
+   "count": 1,
+   "base": 220,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 356,
+     "sample_id": 340,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_340.wav"
+    }
+   ]
+  },
+  {
+   "id": 191,
+   "count": 1,
+   "base": 221,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 357,
+     "sample_id": 341,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_341.wav"
+    }
+   ]
+  },
+  {
+   "id": 192,
+   "count": 1,
+   "base": 222,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 358,
+     "sample_id": 342,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_342.wav"
+    }
+   ]
+  },
+  {
+   "id": 193,
+   "count": 1,
+   "base": 223,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 359,
+     "sample_id": 343,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_343.wav"
+    }
+   ]
+  },
+  {
+   "id": 194,
+   "count": 1,
+   "base": 224,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 156,
+     "sample_id": 140,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_140.wav"
+    }
+   ]
+  },
+  {
+   "id": 195,
+   "count": 1,
+   "base": 225,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 212,
+     "sample_id": 196,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_196.wav"
+    }
+   ]
+  },
+  {
+   "id": 196,
+   "count": 1,
+   "base": 226,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 214,
+     "sample_id": 198,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_198.wav"
+    }
+   ]
+  },
+  {
+   "id": 197,
+   "count": 1,
+   "base": 227,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 215,
+     "sample_id": 199,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_199.wav"
+    }
+   ]
+  },
+  {
+   "id": 198,
+   "count": 1,
+   "base": 228,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 219,
+     "sample_id": 203,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_203.wav"
+    }
+   ]
+  },
+  {
+   "id": 199,
+   "count": 2,
+   "base": 229,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 341,
+     "sample_id": 325,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_325.wav"
+    },
+    {
+     "descriptor_index": 342,
+     "sample_id": 326,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_326.wav"
+    }
+   ]
+  },
+  {
+   "id": 200,
+   "count": 1,
+   "base": 231,
+   "playback_rate": 32768,
+   "variants": [
+    {
+     "descriptor_index": 352,
+     "sample_id": 336,
+     "looping": false,
+     "sample_rate": 32768,
+     "wav": "out/snd/samples/sample_336.wav"
+    }
+   ]
+  }
+ ]
+}

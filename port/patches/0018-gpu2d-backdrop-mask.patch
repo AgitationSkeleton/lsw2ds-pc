@@ -1,0 +1,120 @@
+--- a/runner/src/gpu2d.h
++++ b/runner/src/gpu2d.h
+@@ -17,6 +17,15 @@
+ // StartScanline order.
+ void nds_gpu2d_vblank();
+ const uint32_t* nds_gpu2d_framebuffer(int screen);
++// LSW2 PORT PATCH: record, for one engine, which pixels of its picture are the
++// BACKDROP - no BG, OBJ or 3D pixel won the priority contest (a hidden BG does
++// not count as a winner). One byte a pixel, 1 = backdrop, published with the
++// frame it describes. nds_gpu2d_backdrop_mask(screen) returns the published
++// frame's mask, or null when that screen's lines were not all recorded. For a
++// title that copies pieces of a screen elsewhere and wants their art without
++// the panel behind it - a colour key cannot tell backdrop black from art black.
++void nds_gpu2d_set_backdrop_mask(int engine, bool on);
++const uint8_t* nds_gpu2d_backdrop_mask(int screen);
+ // Host-only adaptive presentation surface. Returns the native framebuffer
+ // with width=256 when no enhanced surface is active for this physical LCD.
+ const uint32_t* nds_gpu2d_adaptive_framebuffer(int screen, uint16_t* width);
+--- a/runner/src/gpu2d.cpp
++++ b/runner/src/gpu2d.cpp
+@@ -116,6 +116,11 @@
+ uint64_t g_render_ns = 0;
+ uint64_t g_obj_ns = 0;
+ uint64_t g_engine_ns[2] = {};
++// LSW2 PORT PATCH: backdrop masks, [buffer][screen] like g_fb - see
++// nds_gpu2d_set_backdrop_mask. Written only for an engine that asked.
++bool g_backdrop_on[2] = {false, false};
++std::array<std::array<std::array<uint8_t, 256 * 192>, 2>, 2> g_backdrop{};
++bool g_backdrop_whole[2][2] = {};
+ uint64_t g_text_lines[2][5] = {};
+ uint64_t g_no_effect_lines[2] = {};
+ uint64_t g_render_scanlines = 0;
+@@ -1002,7 +1007,8 @@
+ // skip the 3D layer and the 6-bit intermediate.
+ void compose_line6(int engine, int y, Unit& u, const uint8_t* palette,
+                    const uint8_t* oam, const NdsVramRendererView& vram,
+-                   const uint32_t* line3d, bool bg0_3d, uint32_t* out) {
++                   const uint32_t* line3d, bool bg0_3d, uint32_t* out,
++                   uint8_t* backdrop_out = nullptr) {
+     std::array<Pixel,256> obj{};
+     const auto obj_start = profiling() ? std::chrono::steady_clock::now()
+                                        : std::chrono::steady_clock::time_point{};
+@@ -1054,6 +1060,8 @@
+         }
+         if (obj[x].valid) push(obj[x]);
+         out[x] = compose(u, top, below);
++        // LSW2 PORT PATCH: order 5 is the backdrop's alone.
++        if (backdrop_out) backdrop_out[x] = top.order == 5 ? 1u : 0u;
+     }
+ }
+ 
+@@ -1167,10 +1175,18 @@
+     const int screen = engine_a_on_top ? engine : (engine ^ 1);
+     Frame& fb = g_fb[g_front ^ 1][screen];
+     uint32_t* const dst = fb.data() + y * 256;
++    // LSW2 PORT PATCH: this line's backdrop mask, when the engine asked.
++    uint8_t* const bd = g_backdrop_on[engine & 1]
++        ? g_backdrop[g_front ^ 1][screen].data() + y * 256 : nullptr;
++    {
++        bool& whole = g_backdrop_whole[g_front ^ 1][screen];
++        whole = (y == 0 || whole) && bd != nullptr;
++    }
+     const uint8_t* const palette = nds_vram_renderer_palette(engine);
+     const uint8_t* const oam = nds_vram_renderer_oam(engine);
+     const NdsVramRendererView& vram = *nds_vram_renderer_view(engine);
+     const bool forceblank = !palette || !oam || (u.dispcnt & 0x80u);
++    if (bd) std::fill_n(bd, 256, uint8_t{0});
+     // DISPCAPCNT latches at the top of the frame; setting the enable bit
+     // mid-frame does not capture until the next frame. melonDS's arm skips
+     // only its own force-blank cases (VCount>192, engine-B power-off),
+@@ -1226,7 +1242,7 @@
+             mode == 1u || (cap && !(u.capture & 0x01000000u));
+         if (need_comp)
+             compose_line6(engine, y, u, palette, oam, vram, line3d,
+-                          bg0_3d, comp6.data());
++                          bg0_3d, comp6.data(), mode == 1u ? bd : nullptr);
+         const uint32_t mbmode = u.master_bright >> 14;
+         const uint32_t mb = std::min<uint32_t>(16, u.master_bright & 0x1Fu);
+         auto bright = [&](uint32_t c6) {
+@@ -1312,6 +1328,8 @@
+         for (int x = 0; x < 256; ++x)
+             dst[x] = obj[x].valid ? to_rgb32(obj[x].color)
+                                   : lut[backdrop15];
++        if (bd)   // LSW2 PORT PATCH
++            for (int x = 0; x < 256; ++x) bd[x] = obj[x].valid ? 0u : 1u;
+         return;
+     }
+     auto ahead = [](const Pixel& a, const Pixel& b) {
+@@ -1344,6 +1362,8 @@
+                 dst[x] = to_rgb32(obj[x].color);
+             } else {
+                 dst[x] = lut[top15 & 0x7FFFu];
++                // LSW2 PORT PATCH: no BG was opaque and no OBJ won.
++                if (bd && top_prio == 4) bd[x] = 1u;
+             }
+         }
+         return;
+@@ -1377,6 +1397,7 @@
+         uint32_t c=compose(u,top,below);
+         if(mbmode==1)c=brighten(c,mb,0u);else if(mbmode==2)c=darken(c,mb,15u);
+         dst[x]=to_rgb32(c);
++        if (bd && top.order == 5) bd[x] = 1u;   // LSW2 PORT PATCH: backdrop
+     }
+ }
+ 
+@@ -1721,6 +1742,14 @@
+         }
+     }
+ }
++// LSW2 PORT PATCH: see g_backdrop.
++void nds_gpu2d_set_backdrop_mask(int engine, bool on) {
++    g_backdrop_on[engine & 1] = on;
++}
++const uint8_t* nds_gpu2d_backdrop_mask(int screen) {
++    return g_backdrop_whole[g_front][screen & 1]
++               ? g_backdrop[g_front][screen & 1].data() : nullptr;
++}
+ const uint32_t* nds_gpu2d_framebuffer(int screen){
+     return g_fb[g_front][screen & 1].data();
+ }

@@ -1,0 +1,975 @@
+{
+  "source": {
+    "table": "0x020EEBB8",
+    "stride": 5,
+    "empty_sentinel": 250,
+    "applier": "0x02006220(actor, transform)",
+    "gear_applier": "0x020063D4(actor, part, transform)",
+    "slot_ranges_from": "0x0208DA74, the part resolver's classifier"
+  },
+  "slots": [
+    {
+      "slot": 0,
+      "name": "head",
+      "first": 0,
+      "last": 44
+    },
+    {
+      "slot": 1,
+      "name": "torso",
+      "first": 45,
+      "last": 106
+    },
+    {
+      "slot": 2,
+      "name": "legs",
+      "first": 107,
+      "last": 176
+    },
+    {
+      "slot": 3,
+      "name": "headgear",
+      "first": 177,
+      "last": 231
+    },
+    {
+      "slot": 4,
+      "name": "accessory",
+      "first": 232,
+      "last": 249
+    }
+  ],
+  "characters": [
+    {
+      "id": 0,
+      "class": 6,
+      "parts": {
+        "head": 0,
+        "torso": 45,
+        "legs": 107,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 1,
+      "class": 2,
+      "parts": {
+        "head": 13,
+        "torso": 61,
+        "legs": 124,
+        "headgear": 194,
+        "accessory": 236
+      }
+    },
+    {
+      "id": 2,
+      "class": 6,
+      "parts": {
+        "head": 1,
+        "torso": 46,
+        "legs": 108,
+        "headgear": 179,
+        "accessory": null
+      }
+    },
+    {
+      "id": 3,
+      "class": 6,
+      "parts": {
+        "head": 2,
+        "torso": 57,
+        "legs": 109,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 4,
+      "class": 6,
+      "parts": {
+        "head": 2,
+        "torso": 57,
+        "legs": 109,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 5,
+      "class": 6,
+      "parts": {
+        "head": 2,
+        "torso": 57,
+        "legs": 109,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 6,
+      "class": 6,
+      "parts": {
+        "head": 2,
+        "torso": 57,
+        "legs": 109,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 7,
+      "class": 9,
+      "parts": {
+        "head": 24,
+        "torso": 47,
+        "legs": 110,
+        "headgear": 180,
+        "accessory": 232
+      }
+    },
+    {
+      "id": 8,
+      "class": 6,
+      "parts": {
+        "head": 3,
+        "torso": 48,
+        "legs": 111,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 9,
+      "class": 1,
+      "parts": {
+        "head": 4,
+        "torso": 49,
+        "legs": 112,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 10,
+      "class": 6,
+      "parts": {
+        "head": 5,
+        "torso": 52,
+        "legs": 114,
+        "headgear": 182,
+        "accessory": null
+      }
+    },
+    {
+      "id": 11,
+      "class": 2,
+      "parts": {
+        "head": 7,
+        "torso": 55,
+        "legs": 117,
+        "headgear": 189,
+        "accessory": 248
+      }
+    },
+    {
+      "id": 12,
+      "class": 3,
+      "parts": {
+        "head": 8,
+        "torso": 57,
+        "legs": 119,
+        "headgear": 191,
+        "accessory": null
+      }
+    },
+    {
+      "id": 13,
+      "class": 5,
+      "parts": {
+        "head": 24,
+        "torso": 56,
+        "legs": 118,
+        "headgear": 190,
+        "accessory": null
+      }
+    },
+    {
+      "id": 14,
+      "class": 2,
+      "parts": {
+        "head": 9,
+        "torso": 55,
+        "legs": 120,
+        "headgear": 192,
+        "accessory": 248
+      }
+    },
+    {
+      "id": 15,
+      "class": 2,
+      "parts": {
+        "head": 24,
+        "torso": 58,
+        "legs": 121,
+        "headgear": 193,
+        "accessory": 235
+      }
+    },
+    {
+      "id": 16,
+      "class": 6,
+      "parts": {
+        "head": 11,
+        "torso": 59,
+        "legs": 122,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 17,
+      "class": 6,
+      "parts": {
+        "head": 12,
+        "torso": 60,
+        "legs": 123,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 18,
+      "class": 1,
+      "parts": {
+        "head": null,
+        "torso": 64,
+        "legs": 127,
+        "headgear": 196,
+        "accessory": null
+      }
+    },
+    {
+      "id": 19,
+      "class": 6,
+      "parts": {
+        "head": 42,
+        "torso": 71,
+        "legs": 112,
+        "headgear": 178,
+        "accessory": 235
+      }
+    },
+    {
+      "id": 20,
+      "class": 3,
+      "parts": {
+        "head": 16,
+        "torso": 65,
+        "legs": 128,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 21,
+      "class": 4,
+      "parts": {
+        "head": 17,
+        "torso": 67,
+        "legs": 132,
+        "headgear": 197,
+        "accessory": null
+      }
+    },
+    {
+      "id": 22,
+      "class": 4,
+      "parts": {
+        "head": 17,
+        "torso": 66,
+        "legs": 129,
+        "headgear": 197,
+        "accessory": null
+      }
+    },
+    {
+      "id": 23,
+      "class": 7,
+      "parts": {
+        "head": 181,
+        "torso": 51,
+        "legs": 113,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 24,
+      "class": 4,
+      "parts": {
+        "head": 17,
+        "torso": 68,
+        "legs": 130,
+        "headgear": 197,
+        "accessory": null
+      }
+    },
+    {
+      "id": 25,
+      "class": 4,
+      "parts": {
+        "head": 17,
+        "torso": 69,
+        "legs": 131,
+        "headgear": 197,
+        "accessory": null
+      }
+    },
+    {
+      "id": 26,
+      "class": 4,
+      "parts": {
+        "head": 17,
+        "torso": 100,
+        "legs": 169,
+        "headgear": 197,
+        "accessory": null
+      }
+    },
+    {
+      "id": 27,
+      "class": 6,
+      "parts": {
+        "head": 19,
+        "torso": 71,
+        "legs": 135,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 28,
+      "class": 3,
+      "parts": {
+        "head": 24,
+        "torso": 57,
+        "legs": 119,
+        "headgear": 199,
+        "accessory": null
+      }
+    },
+    {
+      "id": 29,
+      "class": 9,
+      "parts": {
+        "head": 24,
+        "torso": 72,
+        "legs": 136,
+        "headgear": 201,
+        "accessory": 239
+      }
+    },
+    {
+      "id": 30,
+      "class": 6,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 31,
+      "class": 6,
+      "parts": {
+        "head": 20,
+        "torso": 73,
+        "legs": 137,
+        "headgear": 200,
+        "accessory": 244
+      }
+    },
+    {
+      "id": 32,
+      "class": 1,
+      "parts": {
+        "head": 21,
+        "torso": 74,
+        "legs": 138,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 33,
+      "class": 6,
+      "parts": {
+        "head": 22,
+        "torso": 98,
+        "legs": 140,
+        "headgear": 204,
+        "accessory": 240
+      }
+    },
+    {
+      "id": 34,
+      "class": 2,
+      "parts": {
+        "head": 22,
+        "torso": 76,
+        "legs": 139,
+        "headgear": 203,
+        "accessory": null
+      }
+    },
+    {
+      "id": 35,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 79,
+        "legs": 144,
+        "headgear": 209,
+        "accessory": null
+      }
+    },
+    {
+      "id": 36,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 77,
+        "legs": 141,
+        "headgear": 206,
+        "accessory": null
+      }
+    },
+    {
+      "id": 37,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 54,
+        "legs": 116,
+        "headgear": 183,
+        "accessory": null
+      }
+    },
+    {
+      "id": 38,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 78,
+        "legs": 142,
+        "headgear": 207,
+        "accessory": null
+      }
+    },
+    {
+      "id": 39,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 79,
+        "legs": 134,
+        "headgear": 209,
+        "accessory": null
+      }
+    },
+    {
+      "id": 40,
+      "class": 6,
+      "parts": {
+        "head": 23,
+        "torso": 80,
+        "legs": 143,
+        "headgear": 210,
+        "accessory": null
+      }
+    },
+    {
+      "id": 41,
+      "class": 5,
+      "parts": {
+        "head": 24,
+        "torso": 82,
+        "legs": 149,
+        "headgear": 211,
+        "accessory": null
+      }
+    },
+    {
+      "id": 42,
+      "class": 2,
+      "parts": {
+        "head": 24,
+        "torso": 81,
+        "legs": 145,
+        "headgear": 211,
+        "accessory": null
+      }
+    },
+    {
+      "id": 43,
+      "class": 5,
+      "parts": {
+        "head": 24,
+        "torso": 57,
+        "legs": 146,
+        "headgear": 211,
+        "accessory": null
+      }
+    },
+    {
+      "id": 44,
+      "class": 2,
+      "parts": {
+        "head": 24,
+        "torso": 55,
+        "legs": 147,
+        "headgear": 207,
+        "accessory": null
+      }
+    },
+    {
+      "id": 45,
+      "class": 5,
+      "parts": {
+        "head": 42,
+        "torso": 71,
+        "legs": 112,
+        "headgear": 178,
+        "accessory": 235
+      }
+    },
+    {
+      "id": 46,
+      "class": 2,
+      "parts": {
+        "head": 24,
+        "torso": 55,
+        "legs": 148,
+        "headgear": 211,
+        "accessory": 248
+      }
+    },
+    {
+      "id": 47,
+      "class": 5,
+      "parts": {
+        "head": 24,
+        "torso": 100,
+        "legs": 169,
+        "headgear": 211,
+        "accessory": null
+      }
+    },
+    {
+      "id": 48,
+      "class": 2,
+      "parts": {
+        "head": 25,
+        "torso": 83,
+        "legs": 150,
+        "headgear": 177,
+        "accessory": 233
+      }
+    },
+    {
+      "id": 49,
+      "class": 6,
+      "parts": {
+        "head": 42,
+        "torso": 71,
+        "legs": 112,
+        "headgear": 178,
+        "accessory": 235
+      }
+    },
+    {
+      "id": 50,
+      "class": 1,
+      "parts": {
+        "head": null,
+        "torso": 88,
+        "legs": 155,
+        "headgear": 231,
+        "accessory": null
+      }
+    },
+    {
+      "id": 51,
+      "class": 2,
+      "parts": {
+        "head": 31,
+        "torso": 89,
+        "legs": 156,
+        "headgear": 213,
+        "accessory": 233
+      }
+    },
+    {
+      "id": 52,
+      "class": 2,
+      "parts": {
+        "head": 14,
+        "torso": 62,
+        "legs": 125,
+        "headgear": 195,
+        "accessory": 236
+      }
+    },
+    {
+      "id": 53,
+      "class": 1,
+      "parts": {
+        "head": 32,
+        "torso": 91,
+        "legs": 158,
+        "headgear": 218,
+        "accessory": null
+      }
+    },
+    {
+      "id": 54,
+      "class": 1,
+      "parts": {
+        "head": 33,
+        "torso": 92,
+        "legs": 159,
+        "headgear": 219,
+        "accessory": null
+      }
+    },
+    {
+      "id": 55,
+      "class": 6,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 56,
+      "class": 6,
+      "parts": {
+        "head": 8,
+        "torso": 57,
+        "legs": 160,
+        "headgear": 220,
+        "accessory": null
+      }
+    },
+    {
+      "id": 57,
+      "class": 6,
+      "parts": {
+        "head": 42,
+        "torso": 71,
+        "legs": 112,
+        "headgear": 178,
+        "accessory": 235
+      }
+    },
+    {
+      "id": 58,
+      "class": 6,
+      "parts": {
+        "head": 18,
+        "torso": 70,
+        "legs": 133,
+        "headgear": 198,
+        "accessory": 238
+      }
+    },
+    {
+      "id": 59,
+      "class": 6,
+      "parts": {
+        "head": null,
+        "torso": 93,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 60,
+      "class": 6,
+      "parts": {
+        "head": 24,
+        "torso": 100,
+        "legs": 169,
+        "headgear": 225,
+        "accessory": 242
+      }
+    },
+    {
+      "id": 61,
+      "class": 6,
+      "parts": {
+        "head": 24,
+        "torso": 100,
+        "legs": 161,
+        "headgear": 222,
+        "accessory": null
+      }
+    },
+    {
+      "id": 62,
+      "class": 3,
+      "parts": {
+        "head": 24,
+        "torso": 98,
+        "legs": 162,
+        "headgear": 223,
+        "accessory": null
+      }
+    },
+    {
+      "id": 63,
+      "class": 3,
+      "parts": {
+        "head": 24,
+        "torso": 99,
+        "legs": 168,
+        "headgear": 224,
+        "accessory": 247
+      }
+    },
+    {
+      "id": 64,
+      "class": 3,
+      "parts": {
+        "head": 24,
+        "torso": 100,
+        "legs": 169,
+        "headgear": 225,
+        "accessory": null
+      }
+    },
+    {
+      "id": 65,
+      "class": 3,
+      "parts": {
+        "head": 24,
+        "torso": 98,
+        "legs": 171,
+        "headgear": 227,
+        "accessory": null
+      }
+    },
+    {
+      "id": 66,
+      "class": 6,
+      "parts": {
+        "head": 39,
+        "torso": 102,
+        "legs": 172,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 67,
+      "class": 6,
+      "parts": {
+        "head": 41,
+        "torso": 103,
+        "legs": 122,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 68,
+      "class": 1,
+      "parts": {
+        "head": 42,
+        "torso": 104,
+        "legs": 174,
+        "headgear": 230,
+        "accessory": null
+      }
+    },
+    {
+      "id": 69,
+      "class": 2,
+      "parts": {
+        "head": 43,
+        "torso": 105,
+        "legs": 175,
+        "headgear": null,
+        "accessory": 249
+      }
+    },
+    {
+      "id": 70,
+      "class": 2,
+      "parts": {
+        "head": 15,
+        "torso": 63,
+        "legs": 126,
+        "headgear": null,
+        "accessory": 237
+      }
+    },
+    {
+      "id": 71,
+      "class": 6,
+      "parts": {
+        "head": 44,
+        "torso": 106,
+        "legs": 176,
+        "headgear": null,
+        "accessory": 233
+      }
+    },
+    {
+      "id": 72,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 73,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 74,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 75,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 76,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 77,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 78,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 79,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 80,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 81,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 82,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    },
+    {
+      "id": 83,
+      "class": 32,
+      "parts": {
+        "head": null,
+        "torso": null,
+        "legs": null,
+        "headgear": null,
+        "accessory": null
+      }
+    }
+  ],
+  "out_of_range": [
+    {
+      "character": 23,
+      "slot": "head",
+      "part": 181
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schema_version": 3,
+  "purpose": "Primary visible weapons and safe audit poses for the ten Bounty Hunter arena characters.",
+  "action_row_source": "Runtime descriptor byte +0x05 in the 24-byte table at ARM9 0x020EF57C; copied to actor +0x6c3 by 0x02006288..0x020062A0.",
+  "characters": {
+    "4lom": {
+      "label": "4-LOM",
+      "runtime_id": 0,
+      "action_row": 31,
+      "weapon_asset": 4706,
+      "hands": ["right"],
+      "idle_animation": 44,
+      "idle_name": "LOM_IdleGun",
+      "evidence": "ROM, not the MiniKit. Action row 31 at 0x020F7004 holds weapon id 487 at +0x00; 0x020EB7BC + 8*487 gives model asset 4706 StTrprBlstr - the same weapon IG-88 and Leia carry. This entry previously read 618 BobaRifle because LOMMiniKit asset 2 names BobaRifle, which is what the collectable statue is built from and not what the character carries in play. See config/weapon_models.json and tools/export_weapon_models.py."
+    },
+    "boba_fett": {
+      "label": "Boba Fett",
+      "runtime_id": 7,
+      "action_row": 4,
+      "weapon_asset": 618,
+      "hands": ["right"],
+      "idle_animation": 561,
+      "idle_name": "BobaFettIdleGun",
+      "evidence": "BobaFettMiniKit 568 and BobaFettStatue 614 name BobaRifle; standalone model is asset 618."
+    },
+    "bossk": {
+      "label": "Bossk",
+      "runtime_id": 8,
+      "action_row": 5,
+      "weapon_asset": 672,
+      "hands": ["right"],
+      "secondary_asset": 625,
+      "idle_animation": 634,
+      "idle_name": "BosskIdleGun",
+      "evidence": "Bossk gameplay cluster contains BosskRifle 672 and BosskGrenade 625; rifle is the idle primary."
+    },
+    "dengar": {
+      "label": "Dengar",
+      "runtime_id": 13,
+      "action_row": 4,
+      "weapon_asset": 618,
+      "hands": ["right"],
+      "idle_animation": 561,
+      "idle_name": "BobaFettIdleGun",
+      "evidence": "DengarMiniKit 1756 and DengarStatue 1791 name the BobaRifle family. Runtime metadata byte 0 is 4 for both Boba Fett row 7 and Dengar row 13; Dengar has no separate idle-gun animation."
+    },
+    "greedo": {
+      "label": "Greedo",
+      "runtime_id": 20,
+      "action_row": 26,
+      "weapon_asset": 3865,
+      "hands": ["right"],
+      "idle_animation": 494,
+      "idle_name": "BlstrIdlePistol",
+      "evidence": "Playable Greedo proof case; standalone grey Pistol asset 3865 and recovered Human_Model RWeapon transform."
+    },
+    "ig88": {
+      "label": "IG-88",
+      "runtime_id": 27,
+      "action_row": 31,
+      "weapon_asset": 4706,
+      "hands": ["right"],
+      "idle_animation": 2874,
+      "idle_name": "IG88IdleGun",
+      "weapon_roll_degrees": 90,
+      "evidence": "IG88MiniKit 2887 and IG88Statue 2928 name StTrprBlstr; standalone model is asset 4706."
+    },
+    "jango_fett": {
+      "label": "Jango Fett",
+      "runtime_id": 29,
+      "action_row": 27,
+      "weapon_asset": 3865,
+      "hands": ["left", "right"],
+      "idle_animation": 3024,
+      "idle_name": "JangoFettIdleGunJ",
+      "evidence": "JangoFettMiniKit 3026 contains PistolBlaster and PistolBlaster1; standalone matching grey pistol is asset 3865."
+    },
+    "princess_leia_boushh": {
+      "label": "Princess Leia (Boushh)",
+      "runtime_id": 36,
+      "action_row": 31,
+      "weapon_asset": 4706,
+      "hands": ["right"],
+      "idle_animation": 493,
+      "idle_name": "BlstrIdleGun",
+      "evidence": "Runtime row 36 selects LeiaBountyHelmet 3474 with Boushh legs 3478 and torso 3480. BousshMiniKit 693 names StTrprBlstr. Animation 493 is the generic rifle-idle candidate pending direct gameplay capture comparison."
+    },
+    "lando_calrissian_jabbas_palace": {
+      "label": "Lando Calrissian (Jabba's Palace)",
+      "runtime_id": 34,
+      "action_row": 16,
+      "weapon_asset": 3377,
+      "hands": ["right"],
+      "idle_animation": 491,
+      "idle_name": "BlstrIdle",
+      "evidence": "Runtime row 34 selects LandoBountyHelmet 3364 with Palace Lando legs 3368 and torso 3370. PLandoMiniKit 3870 includes LandosAxe; standalone model is asset 3377. Animation 491 is a safe neutral weapon-idle candidate pending direct gameplay capture comparison."
+    },
+    "zuckuss": {
+      "label": "Zuckuss",
+      "runtime_id": 71,
+      "action_row": 34,
+      "weapon_asset": 5538,
+      "hands": ["right"],
+      "idle_animation": 491,
+      "idle_name": "BlstrIdle",
+      "evidence": "Dedicated ZuckussRifle gameplay model 5538. Animation 491 is a safe fallback: ZuckussIdleGun 5529 currently reproduces the known collapsed-limb conversion regression."
+    }
+  }
+}

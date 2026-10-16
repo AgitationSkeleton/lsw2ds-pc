@@ -1,0 +1,74 @@
+{
+  "source": {
+    "covers_flag": "0x020F2B1C + (part-177)*0x2C + 0x28",
+    "read_by": "the gear applier's headgear arm at 0x020065C8",
+    "stock_parts": "0x020EEBB8, five bytes per character"
+  },
+  "covering_hats": [
+    180,
+    189,
+    193,
+    201,
+    222,
+    224,
+    225,
+    226,
+    227
+  ],
+  "affected_characters": [
+    {
+      "character": 7,
+      "head": 24,
+      "stock_hat": 180,
+      "class": 9
+    },
+    {
+      "character": 11,
+      "head": 7,
+      "stock_hat": 189,
+      "class": 2
+    },
+    {
+      "character": 15,
+      "head": 24,
+      "stock_hat": 193,
+      "class": 2
+    },
+    {
+      "character": 29,
+      "head": 24,
+      "stock_hat": 201,
+      "class": 9
+    },
+    {
+      "character": 60,
+      "head": 24,
+      "stock_hat": 225,
+      "class": 6
+    },
+    {
+      "character": 61,
+      "head": 24,
+      "stock_hat": 222,
+      "class": 6
+    },
+    {
+      "character": 63,
+      "head": 24,
+      "stock_hat": 224,
+      "class": 3
+    },
+    {
+      "character": 64,
+      "head": 24,
+      "stock_hat": 225,
+      "class": 3
+    },
+    {
+      "character": 65,
+      "head": 24,
+      "stock_hat": 227,
+      "class": 3
+    }
+  ]
+}

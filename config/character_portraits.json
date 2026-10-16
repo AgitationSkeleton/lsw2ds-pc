@@ -1,0 +1,451 @@
+{
+  "schema_version": 1,
+  "purpose": "Character-select portraits and their roster join.",
+  "evidence": {
+    "format": "adjacent triple: pixels at n-1 (512 bytes, 8x8-tiled 4bpp, 32x32), header at n (bytes 0..1 display size 34x34, bytes 8..9 pixel byte count), RGB555 palette at n+1 (32 bytes, index 0 transparent)",
+    "join": "word +0x08 of the 24-byte runtime descriptor table at 0x020ef57c; populated for all 72 rows",
+    "confirmation": "4-LOM 35, Boba Fett 606, Bossk 669, C-3PO 925",
+    "supersedes": "the earlier finding that the archive holds no authored portrait sprite, which made the HUD portrait a live 3D render"
+  },
+  "portrait_count": 88,
+  "directory": "out/exported/godot_ui/portraits",
+  "directory_3d": "out/exported/godot_ui/portraits_3d",
+  "palette_expansion": {
+    "directory": "2D engine: v6 = v5 * 2. Use for the bottom-screen slot column, which draws the portrait as a hardware OBJ sprite. Verified 452/452 against Boba Fett at (8,8) in out/work/menu_shots/ds_inmatch_touch.png.",
+    "directory_3d": "3D engine: v6 = v5 * 2 + 1 for v5 > 0. Use for the top-screen HUD, where the portrait is a textured quad. Verified 452/452 against Boba Fett at (10,8) in out/work/_ds_match.png; the 2D set scores 39/452 there."
+  },
+  "characters": [
+    {
+      "runtime_id": 0,
+      "label": "4-LOM",
+      "portrait_asset": 35,
+      "png": "portrait_0035.png"
+    },
+    {
+      "runtime_id": 1,
+      "label": "Anakin Skywalker (Force Ghost)",
+      "portrait_asset": 2458,
+      "png": "portrait_2458.png"
+    },
+    {
+      "runtime_id": 2,
+      "label": "Biggs Darklighter",
+      "portrait_asset": 356,
+      "png": "portrait_0356.png"
+    },
+    {
+      "runtime_id": 3,
+      "label": "Bith 1",
+      "portrait_asset": 369,
+      "png": "portrait_0369.png"
+    },
+    {
+      "runtime_id": 4,
+      "label": "Bith 2",
+      "portrait_asset": 374,
+      "png": "portrait_0374.png"
+    },
+    {
+      "runtime_id": 5,
+      "label": "Bith 3",
+      "portrait_asset": 379,
+      "png": "portrait_0379.png"
+    },
+    {
+      "runtime_id": 6,
+      "label": "Bith 4",
+      "portrait_asset": 384,
+      "png": "portrait_0384.png"
+    },
+    {
+      "runtime_id": 7,
+      "label": "Boba Fett",
+      "portrait_asset": 606,
+      "png": "portrait_0606.png"
+    },
+    {
+      "runtime_id": 8,
+      "label": "Bossk",
+      "portrait_asset": 669,
+      "png": "portrait_0669.png"
+    },
+    {
+      "runtime_id": 9,
+      "label": "C-3PO",
+      "portrait_asset": 925,
+      "png": "portrait_0925.png"
+    },
+    {
+      "runtime_id": 10,
+      "label": "Chewbacca",
+      "portrait_asset": 1463,
+      "png": "portrait_1463.png"
+    },
+    {
+      "runtime_id": 11,
+      "label": "Darth Vader",
+      "portrait_asset": 1596,
+      "png": "portrait_1596.png"
+    },
+    {
+      "runtime_id": 12,
+      "label": "Death Star Trooper",
+      "portrait_asset": 1722,
+      "png": "portrait_1722.png"
+    },
+    {
+      "runtime_id": 13,
+      "label": "Dengar",
+      "portrait_asset": 1788,
+      "png": "portrait_1788.png"
+    },
+    {
+      "runtime_id": 14,
+      "label": "Emperor Palpatine",
+      "portrait_asset": 2119,
+      "png": "portrait_2119.png"
+    },
+    {
+      "runtime_id": 15,
+      "label": "Emperor's Guard",
+      "portrait_asset": 2103,
+      "png": "portrait_2103.png"
+    },
+    {
+      "runtime_id": 16,
+      "label": "Ewok",
+      "portrait_asset": 2200,
+      "png": "portrait_2200.png"
+    },
+    {
+      "runtime_id": 17,
+      "label": "Gamorrean Guard",
+      "portrait_asset": 2417,
+      "png": "portrait_2417.png"
+    },
+    {
+      "runtime_id": 18,
+      "label": "Custom Character 1",
+      "portrait_asset": 2519,
+      "png": "portrait_2519.png"
+    },
+    {
+      "runtime_id": 19,
+      "label": "",
+      "portrait_asset": 3867,
+      "png": "portrait_3867.png"
+    },
+    {
+      "runtime_id": 20,
+      "label": "Greedo",
+      "portrait_asset": 2530,
+      "png": "portrait_2530.png"
+    },
+    {
+      "runtime_id": 21,
+      "label": "Han Solo (variant 1)",
+      "portrait_asset": 2605,
+      "png": "portrait_2605.png"
+    },
+    {
+      "runtime_id": 22,
+      "label": "Han Solo (variant 2)",
+      "portrait_asset": 2573,
+      "png": "portrait_2573.png"
+    },
+    {
+      "runtime_id": 23,
+      "label": "Han Solo (in Carbonite)",
+      "portrait_asset": 2570,
+      "png": "portrait_2570.png"
+    },
+    {
+      "runtime_id": 24,
+      "label": "Han Solo (variant 3)",
+      "portrait_asset": 2584,
+      "png": "portrait_2584.png"
+    },
+    {
+      "runtime_id": 25,
+      "label": "Han Solo (variant 4)",
+      "portrait_asset": 2595,
+      "png": "portrait_2595.png"
+    },
+    {
+      "runtime_id": 26,
+      "label": "Han Solo (Stormtrooper)",
+      "portrait_asset": 2609,
+      "png": "portrait_2609.png"
+    },
+    {
+      "runtime_id": 27,
+      "label": "IG-88",
+      "portrait_asset": 2920,
+      "png": "portrait_2920.png"
+    },
+    {
+      "runtime_id": 28,
+      "label": "Imperial Officer",
+      "portrait_asset": 2936,
+      "png": "portrait_2936.png"
+    },
+    {
+      "runtime_id": 29,
+      "label": "Jango Fett",
+      "portrait_asset": 3058,
+      "png": "portrait_3058.png"
+    },
+    {
+      "runtime_id": 30,
+      "label": "",
+      "portrait_asset": 3867,
+      "png": "portrait_3867.png"
+    },
+    {
+      "runtime_id": 31,
+      "label": "Jawa",
+      "portrait_asset": 3070,
+      "png": "portrait_3070.png"
+    },
+    {
+      "runtime_id": 32,
+      "label": "K-3PO",
+      "portrait_asset": 3351,
+      "png": "portrait_3351.png"
+    },
+    {
+      "runtime_id": 33,
+      "label": "Lando Calrissian",
+      "portrait_asset": 3374,
+      "png": "portrait_3374.png"
+    },
+    {
+      "runtime_id": 34,
+      "label": "Lando Calrissian (Jabba's Palace)",
+      "portrait_asset": 3365,
+      "png": "portrait_3365.png"
+    },
+    {
+      "runtime_id": 35,
+      "label": "Princess Leia",
+      "portrait_asset": 3512,
+      "png": "portrait_3512.png"
+    },
+    {
+      "runtime_id": 36,
+      "label": "Princess Leia (Boushh)",
+      "portrait_asset": 3475,
+      "png": "portrait_3475.png"
+    },
+    {
+      "runtime_id": 37,
+      "label": "Princess Leia (Cloud City)",
+      "portrait_asset": 1362,
+      "png": "portrait_1362.png"
+    },
+    {
+      "runtime_id": 38,
+      "label": "Princess Leia (Endor)",
+      "portrait_asset": 3485,
+      "png": "portrait_3485.png"
+    },
+    {
+      "runtime_id": 39,
+      "label": "Princess Leia (Hoth)",
+      "portrait_asset": 3502,
+      "png": "portrait_3502.png"
+    },
+    {
+      "runtime_id": 40,
+      "label": "Princess Leia (Jabba's Prisoner)",
+      "portrait_asset": 3526,
+      "png": "portrait_3526.png"
+    },
+    {
+      "runtime_id": 41,
+      "label": "Luke Skywalker (variant 1)",
+      "portrait_asset": 3647,
+      "png": "portrait_3647.png"
+    },
+    {
+      "runtime_id": 42,
+      "label": "Luke Skywalker (variant 2)",
+      "portrait_asset": 3619,
+      "png": "portrait_3619.png"
+    },
+    {
+      "runtime_id": 43,
+      "label": "Luke Skywalker (variant 3)",
+      "portrait_asset": 3623,
+      "png": "portrait_3623.png"
+    },
+    {
+      "runtime_id": 44,
+      "label": "Luke Skywalker (Endor)",
+      "portrait_asset": 3627,
+      "png": "portrait_3627.png"
+    },
+    {
+      "runtime_id": 45,
+      "label": "",
+      "portrait_asset": 3867,
+      "png": "portrait_3867.png"
+    },
+    {
+      "runtime_id": 46,
+      "label": "Luke Skywalker (Jabba's Palace)",
+      "portrait_asset": 3639,
+      "png": "portrait_3639.png"
+    },
+    {
+      "runtime_id": 47,
+      "label": "Luke Skywalker (Stormtrooper)",
+      "portrait_asset": 3651,
+      "png": "portrait_3651.png"
+    },
+    {
+      "runtime_id": 48,
+      "label": "Mace Windu",
+      "portrait_asset": 3656,
+      "png": "portrait_3656.png"
+    },
+    {
+      "runtime_id": 49,
+      "label": "",
+      "portrait_asset": 3867,
+      "png": "portrait_3867.png"
+    },
+    {
+      "runtime_id": 50,
+      "label": "MSE-6",
+      "portrait_asset": 3790,
+      "png": "portrait_3790.png"
+    },
+    {
+      "runtime_id": 51,
+      "label": "Obi-Wan Kenobi",
+      "portrait_asset": 3804,
+      "png": "portrait_3804.png"
+    },
+    {
+      "runtime_id": 52,
+      "label": "Obi-Wan Kenobi (Force Ghost)",
+      "portrait_asset": 2470,
+      "png": "portrait_2470.png"
+    },
+    {
+      "runtime_id": 53,
+      "label": "R2-D2",
+      "portrait_asset": 4024,
+      "png": "portrait_4024.png"
+    },
+    {
+      "runtime_id": 54,
+      "label": "R5-D4",
+      "portrait_asset": 4036,
+      "png": "portrait_4036.png"
+    },
+    {
+      "runtime_id": 55,
+      "label": "Gonk Droid",
+      "portrait_asset": 4093,
+      "png": "portrait_4093.png"
+    },
+    {
+      "runtime_id": 56,
+      "label": "Rebel Trooper",
+      "portrait_asset": 4151,
+      "png": "portrait_4151.png"
+    },
+    {
+      "runtime_id": 57,
+      "label": "",
+      "portrait_asset": 3867,
+      "png": "portrait_3867.png"
+    },
+    {
+      "runtime_id": 58,
+      "label": "Rebel Trooper (Hoth)",
+      "portrait_asset": 2793,
+      "png": "portrait_2793.png"
+    },
+    {
+      "runtime_id": 59,
+      "label": "Salacious Crumb",
+      "portrait_asset": 4221,
+      "png": "portrait_4221.png"
+    },
+    {
+      "runtime_id": 60,
+      "label": "Sandtrooper",
+      "portrait_asset": 4239,
+      "png": "portrait_4239.png"
+    },
+    {
+      "runtime_id": 61,
+      "label": "Scout Trooper",
+      "portrait_asset": 4277,
+      "png": "portrait_4277.png"
+    },
+    {
+      "runtime_id": 62,
+      "label": "Shuttle Pilot",
+      "portrait_asset": 4306,
+      "png": "portrait_4306.png"
+    },
+    {
+      "runtime_id": 63,
+      "label": "Snowtrooper",
+      "portrait_asset": 4483,
+      "png": "portrait_4483.png"
+    },
+    {
+      "runtime_id": 64,
+      "label": "Stormtrooper",
+      "portrait_asset": 4703,
+      "png": "portrait_4703.png"
+    },
+    {
+      "runtime_id": 65,
+      "label": "TIE Fighter Pilot",
+      "portrait_asset": 4946,
+      "png": "portrait_4946.png"
+    },
+    {
+      "runtime_id": 66,
+      "label": "Tusken Raider",
+      "portrait_asset": 5119,
+      "png": "portrait_5119.png"
+    },
+    {
+      "runtime_id": 67,
+      "label": "Wicket",
+      "portrait_asset": 5217,
+      "png": "portrait_5217.png"
+    },
+    {
+      "runtime_id": 68,
+      "label": "Wuher",
+      "portrait_asset": 5325,
+      "png": "portrait_5325.png"
+    },
+    {
+      "runtime_id": 69,
+      "label": "Yoda",
+      "portrait_asset": 5492,
+      "png": "portrait_5492.png"
+    },
+    {
+      "runtime_id": 70,
+      "label": "Yoda (Force Ghost)",
+      "portrait_asset": 2479,
+      "png": "portrait_2479.png"
+    },
+    {
+      "runtime_id": 71,
+      "label": "Zuckuss",
+      "portrait_asset": 5535,
+      "png": "portrait_5535.png"
+    }
+  ]
+}

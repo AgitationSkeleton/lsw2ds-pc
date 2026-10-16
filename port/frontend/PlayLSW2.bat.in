@@ -1,0 +1,64 @@
+@echo off
+rem Optional launcher for the LSW2 PC port.
+rem
+rem NOT REQUIRED ANY MORE. lsw2.exe run with no arguments now works out
+rem what it needs from its own location, so double-clicking the exe is
+rem enough. This is kept because it PAUSES on failure, which a
+rem double-clicked exe cannot do - if something goes wrong and the window
+rem vanishes, run this instead and the reason stays on screen.
+rem
+rem lsw2.exe on its own prints usage and exits, which as a double-click looks
+rem like "a cmd window flashed and nothing happened". This supplies the
+rem arguments and pauses on failure so the reason stays readable.
+rem
+rem Paths are relative to this file, so build\ can be copied elsewhere as long
+rem as rom\ and port\ come with it.
+setlocal
+rem "%~dp0" ends with a backslash, so cd /d "%~dp0" puts a \" at the end and
+rem the quote is escaped rather than closed - the cd silently does not happen
+rem and the next line cannot find lsw2.exe. The trailing dot fixes it.
+cd /d "%~dp0."
+
+set "ROMDIR=..\rom"
+set "PORTDIR=..\port"
+
+set "ROM="
+for %%F in ("%ROMDIR%\*.nds") do set "ROM=%%~fF"
+if not defined ROM (
+    echo.
+    echo No ROM found in %ROMDIR%
+    echo.
+    echo Put a LEGO Star Wars II: The Original Trilogy ^(USA^) cartridge dump
+    echo there and run this again. That is the only thing this port needs.
+    echo.
+    pause
+    exit /b 1
+)
+
+rem Your own BIOS dumps are used when present; FreeBIOS is embedded otherwise.
+if exist "%PORTDIR%\bios\biosnds9.rom" (set "BIOSARG=") else (set "BIOSARG=--freebios")
+
+rem The software rasteriser is the default because our shell presents from the
+rem CPU framebuffer; with the compute backend the top screen would be presented
+rem through OpenGL and this window would show nothing.
+rem
+rem This is only a DEFAULT. Turning on the OpenGL renderer in the settings makes
+rem the shell override this for itself at startup, so there is nothing to change
+rem here to use it.
+set NDS_3D_RENDERER=soft
+
+rem One settings file, shared with port\launch.sh. Without this the two
+rem launchers keep separate configurations, because each resolves a bare
+rem "settings.ini" against its own working directory.
+set "LSW2_SETTINGS=%~dp0..\port\settings.json"
+
+if not exist "%PORTDIR%\saves" mkdir "%PORTDIR%\saves"
+
+"%~dp0lsw2.exe" "%PORTDIR%\bios" --rom "%ROM%" --config "%PORTDIR%\game.toml" --save-path "%PORTDIR%\saves\baseline.sav" --boot direct --generated-firmware %BIOSARG% --interactive --screen-layout separate
+
+if errorlevel 1 (
+    echo.
+    echo The port exited with an error. The message above says why.
+    echo.
+    pause
+)

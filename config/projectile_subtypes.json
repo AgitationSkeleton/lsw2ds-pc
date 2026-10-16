@@ -1,0 +1,157 @@
+{
+ "table_base": "0x020F4D0C",
+ "stride": 12,
+ "source": "Launch routine 0x02018AD8. 0x02018AE0 ldrb r3,[r5,#0x1C3] reads the subtype, 0x02018AE4 mov r0,#0xc is the stride, 0x02018AE8 loads literal 0x020F4D10 (= base+0x04), 0x02018AEC smulbb r0,r3,r0, 0x02018AF0 ldrb r0,[r2,r0], 0x02018AF8 lsl r4,r0,#8 - the byte shifted left 8 IS the speed in 20.12 fixed point, i.e. units per 30 Hz tick.",
+ "lifetime": "Byte +0x05 of the same record, written to obj+0x1C6 at 0x02018CB8 (literal 0x020F4D11 = base+0x05) and decremented once per object update at 0x02019978. At zero the object sets its own destroy flag.",
+ "port_was": "arena_projectile.gd DEFAULT_SPEED 28.0 and DEFAULT_LIFETIME 4.0 - a third the speed and half the range of subtype 0.",
+ "subtypes": {
+  "0": {
+   "speed_byte": 45,
+   "speed_per_tick": 2.8125,
+   "speed_per_second": 84.375,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 225.0,
+   "raw": "100276022d50000009c90100"
+  },
+  "1": {
+   "speed_byte": 45,
+   "speed_per_tick": 2.8125,
+   "speed_per_second": 84.375,
+   "lifetime_ticks": 40,
+   "lifetime_seconds": 1.3333333333333333,
+   "range_units": 112.5,
+   "raw": "100276022d28000009c90100"
+  },
+  "2": {
+   "speed_byte": 80,
+   "speed_per_tick": 5.0,
+   "speed_per_second": 150.0,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 400.0,
+   "raw": "110276025050000031c90100"
+  },
+  "3": {
+   "speed_byte": 80,
+   "speed_per_tick": 5.0,
+   "speed_per_second": 150.0,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 400.0,
+   "raw": "120276025050000031c90100"
+  },
+  "4": {
+   "speed_byte": 80,
+   "speed_per_tick": 5.0,
+   "speed_per_second": 150.0,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 400.0,
+   "raw": "130276025050000031c90100"
+  },
+  "5": {
+   "speed_byte": 80,
+   "speed_per_tick": 5.0,
+   "speed_per_second": 150.0,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 400.0,
+   "raw": "100276025050000031c90100"
+  },
+  "6": {
+   "speed_byte": 70,
+   "speed_per_tick": 4.375,
+   "speed_per_second": 131.25,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 350.0,
+   "raw": "1002760246500000a0c90100"
+  },
+  "7": {
+   "speed_byte": 30,
+   "speed_per_tick": 1.875,
+   "speed_per_second": 56.25,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 150.0,
+   "raw": "140276021e50000ac9c80300"
+  },
+  "8": {
+   "speed_byte": 50,
+   "speed_per_tick": 3.125,
+   "speed_per_second": 93.75,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 250.0,
+   "raw": "150276023250000107c91100"
+  },
+  "9": {
+   "speed_byte": 0,
+   "speed_per_tick": 0.0,
+   "speed_per_second": 0.0,
+   "lifetime_ticks": 2,
+   "lifetime_seconds": 0.06666666666666667,
+   "range_units": 0.0,
+   "raw": "220276020002000873c90100"
+  },
+  "10": {
+   "speed_byte": 45,
+   "speed_per_tick": 2.8125,
+   "speed_per_second": 84.375,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 225.0,
+   "raw": "230276022d50000109c90100"
+  },
+  "11": {
+   "speed_byte": 45,
+   "speed_per_tick": 2.8125,
+   "speed_per_second": 84.375,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 225.0,
+   "raw": "230276022d50000209c90100"
+  },
+  "12": {
+   "speed_byte": 25,
+   "speed_per_tick": 1.5625,
+   "speed_per_second": 46.875,
+   "lifetime_ticks": 95,
+   "lifetime_seconds": 3.1666666666666665,
+   "range_units": 148.4375,
+   "raw": "24027602195f000009c90100"
+  },
+  "13": {
+   "speed_byte": 25,
+   "speed_per_tick": 1.5625,
+   "speed_per_second": 46.875,
+   "lifetime_ticks": 95,
+   "lifetime_seconds": 3.1666666666666665,
+   "range_units": 148.4375,
+   "raw": "26027602195f000909c90100"
+  },
+  "14": {
+   "speed_byte": 45,
+   "speed_per_tick": 2.8125,
+   "speed_per_second": 84.375,
+   "lifetime_ticks": 80,
+   "lifetime_seconds": 2.6666666666666665,
+   "range_units": 225.0,
+   "raw": "100276022d50000009c90100"
+  },
+  "15": {
+   "speed_byte": 223,
+   "speed_per_tick": 13.9375,
+   "speed_per_second": 418.125,
+   "lifetime_ticks": 107,
+   "lifetime_seconds": 3.566666666666667,
+   "range_units": 1491.3125,
+   "raw": "0300630cdf6b000066f6ffff",
+   "OUT_OF_TABLE": true,
+   "note": "NOT A REAL RECORD. Records 0-14 all begin with the byte pattern XX 02 76 02; index 15 begins 03 00 63 0c and the bytes after it are small signed values, i.e. this is the next data structure. The launcher at 0x02018AD8 reads the subtype from actor+0x1C3 and indexes 0x020F4D0C + index*12 with NO bound check (0x02018AE0-0x02018AF0), so the table's extent is set by the data rather than enforced by code. Treated as 15 records, 0-14. Kept rather than deleted so the boundary stays visible."
+  }
+ },
+ "record_count": 15,
+ "extent_evidence": "Records 0-14 share the leading pattern XX 02 76 02; record 15 does not. 0x02018AD8 applies no bound check to actor+0x1C3, so the count comes from the data pattern, not from a comparison in code."
+}

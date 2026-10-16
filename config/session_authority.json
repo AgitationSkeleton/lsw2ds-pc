@@ -1,0 +1,603 @@
+{
+ "schema": 1,
+ "object": "0x0210B320",
+ "note": "Every field of the session authority at 0x0210B320, by access.\n\nWHY THIS OBJECT. It turned out to sit under most of the open work, and three\nlines of investigation found it separately without noticing they had met:\n\n  view-mask +0x0E is the CONNECTION MASK - the single value the game popcounts\n            into every \"player count\" the port had been writing by hand, and\n            +0x08 is the active view index.\n  wireless  +0x20 is the wireless system state that WH_GetSystemState returns,\n            which the port already overrides.\n  here      +0x48 is a state enum written by 31 different functions.\n\nSo the wireless HLE, the view-mask work and the session state machine are three\nviews of one structure. This writes the whole field map down once.\n\nHOW. Every `LDR rD, [pc, #imm]` whose literal is the object, then every\nload/store through that register within the following few instructions. A field\nthat is only ever reached through a pointer copied into another register will be\nmissed - this is a floor, not a census.\n\n    python tools/export_session_authority.py\n",
+ "caveat": "A floor, not a census - fields reached through a copied pointer are not seen. Meanings are given only where a document established them.",
+ "field_count": 43,
+ "fields": {
+  "0x000": {
+   "offset": "+0x000",
+   "widths": [
+    "byte",
+    "word"
+   ],
+   "reads": 3,
+   "writes": 2,
+   "functions": [
+    "0x020AD5DC",
+    "0x020AD970",
+    "0x020ADBCC"
+   ]
+  },
+  "0x002": {
+   "offset": "+0x002",
+   "widths": [
+    "half"
+   ],
+   "reads": 8,
+   "writes": 2,
+   "functions": [
+    "0x020AD954",
+    "0x020ADAF0",
+    "0x020ADEC8",
+    "0x020ADF74",
+    "0x020AE5A0",
+    "0x020AE868",
+    "0x020AEDC8",
+    "0x020AEE68",
+    "0x020AEFC8"
+   ]
+  },
+  "0x004": {
+   "offset": "+0x004",
+   "widths": [
+    "half"
+   ],
+   "reads": 2,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C",
+    "0x020AE704"
+   ]
+  },
+  "0x006": {
+   "offset": "+0x006",
+   "widths": [
+    "half"
+   ],
+   "reads": 1,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C",
+    "0x020AE63C"
+   ]
+  },
+  "0x008": {
+   "offset": "+0x008",
+   "widths": [
+    "half"
+   ],
+   "reads": 1,
+   "writes": 3,
+   "functions": [
+    "0x020AD438",
+    "0x020ADC40",
+    "0x020AE170",
+    "0x020AE9C8"
+   ],
+   "meaning": "active view index",
+   "evidence": "vtable slot 11 returns this"
+  },
+  "0x00C": {
+   "offset": "+0x00C",
+   "widths": [
+    "half"
+   ],
+   "reads": 1,
+   "writes": 2,
+   "functions": [
+    "0x020ADAF0",
+    "0x020AEFC8"
+   ]
+  },
+  "0x00E": {
+   "offset": "+0x00E",
+   "widths": [
+    "half"
+   ],
+   "reads": 8,
+   "writes": 8,
+   "functions": [
+    "0x020AD438",
+    "0x020AD7F0",
+    "0x020ADC40",
+    "0x020AE170",
+    "0x020AE1D0",
+    "0x020AE9C8"
+   ],
+   "meaning": "connection mask",
+   "evidence": "slot 10; popcounted into every player count"
+  },
+  "0x010": {
+   "offset": "+0x010",
+   "widths": [
+    "word"
+   ],
+   "reads": 1,
+   "writes": 1,
+   "functions": [
+    "0x020AD438",
+    "0x020AE1D0"
+   ]
+  },
+  "0x014": {
+   "offset": "+0x014",
+   "widths": [
+    "word"
+   ],
+   "reads": 1,
+   "writes": 2,
+   "functions": [
+    "0x020ADD78",
+    "0x020ADDF0"
+   ]
+  },
+  "0x018": {
+   "offset": "+0x018",
+   "widths": [
+    "word"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD438"
+   ]
+  },
+  "0x01C": {
+   "offset": "+0x01C",
+   "widths": [
+    "word"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD438"
+   ]
+  },
+  "0x020": {
+   "offset": "+0x020",
+   "widths": [
+    "word"
+   ],
+   "reads": 23,
+   "writes": 4,
+   "functions": [
+    "0x020AD2A8",
+    "0x020AD55C",
+    "0x020AD5DC",
+    "0x020AD7A4",
+    "0x020AD7F0",
+    "0x020AD928",
+    "0x020AE128",
+    "0x020AE170",
+    "0x020AE1D0",
+    "0x020AE2F8",
+    "0x020AE388",
+    "0x020AE704",
+    "0x020AE8D0",
+    "0x020AE910",
+    "0x020AEBA4",
+    "0x020AEDC8",
+    "0x020AEE68"
+   ],
+   "meaning": "wireless system state",
+   "evidence": "WH_GetSystemState 0x020AD310 returns this"
+  },
+  "0x024": {
+   "offset": "+0x024",
+   "widths": [
+    "word"
+   ],
+   "reads": 4,
+   "writes": 1,
+   "functions": [
+    "0x020AD438",
+    "0x020AE2F8",
+    "0x020AEB40"
+   ]
+  },
+  "0x028": {
+   "offset": "+0x028",
+   "widths": [
+    "word"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD320"
+   ]
+  },
+  "0x02C": {
+   "offset": "+0x02C",
+   "widths": [
+    "word"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD438"
+   ]
+  },
+  "0x030": {
+   "offset": "+0x030",
+   "widths": [
+    "word"
+   ],
+   "reads": 12,
+   "writes": 16,
+   "functions": [
+    "0x020AD438",
+    "0x020AD55C",
+    "0x020AD75C",
+    "0x020AD7F0",
+    "0x020ADD78",
+    "0x020ADDF0",
+    "0x020ADEC8",
+    "0x020ADF74",
+    "0x020AE010",
+    "0x020AE4D4",
+    "0x020AE5A0",
+    "0x020AE868",
+    "0x020AE8D0",
+    "0x020AE910",
+    "0x020AECFC",
+    "0x020AEDC8"
+   ]
+  },
+  "0x034": {
+   "offset": "+0x034",
+   "widths": [
+    "word"
+   ],
+   "reads": 1,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C",
+    "0x020AE704"
+   ]
+  },
+  "0x038": {
+   "offset": "+0x038",
+   "widths": [
+    "word"
+   ],
+   "reads": 3,
+   "writes": 1,
+   "functions": [
+    "0x020AD438",
+    "0x020AE2F8",
+    "0x020AEB40"
+   ]
+  },
+  "0x03C": {
+   "offset": "+0x03C",
+   "widths": [
+    "word"
+   ],
+   "reads": 10,
+   "writes": 1,
+   "functions": [
+    "0x020AD438",
+    "0x020AD7F0",
+    "0x020AE2F8",
+    "0x020AEB40"
+   ]
+  },
+  "0x040": {
+   "offset": "+0x040",
+   "widths": [
+    "word"
+   ],
+   "reads": 6,
+   "writes": 1,
+   "functions": [
+    "0x020AD438",
+    "0x020AE2F8",
+    "0x020AEB40"
+   ]
+  },
+  "0x044": {
+   "offset": "+0x044",
+   "widths": [
+    "word"
+   ],
+   "reads": 3,
+   "writes": 2,
+   "functions": [
+    "0x020AD5DC",
+    "0x020AD970",
+    "0x020ADBCC",
+    "0x020AE388",
+    "0x020AEBA4"
+   ]
+  },
+  "0x048": {
+   "offset": "+0x048",
+   "widths": [
+    "word"
+   ],
+   "reads": 1,
+   "writes": 37,
+   "functions": [
+    "0x020ADDF0",
+    "0x020ADE64",
+    "0x020ADEC8",
+    "0x020ADF4C",
+    "0x020ADF74",
+    "0x020ADFDC",
+    "0x020AE010",
+    "0x020AE094",
+    "0x020AE0D8",
+    "0x020AE128",
+    "0x020AE170",
+    "0x020AE1D0",
+    "0x020AE2F8",
+    "0x020AE388",
+    "0x020AE498",
+    "0x020AE4D4",
+    "0x020AE578",
+    "0x020AE5A0",
+    "0x020AE608",
+    "0x020AE868",
+    "0x020AE8D0",
+    "0x020AE910",
+    "0x020AE9C8",
+    "0x020AEBA4",
+    "0x020AECFC",
+    "0x020AEDA0",
+    "0x020AEDC8",
+    "0x020AEE68",
+    "0x020AEEA8",
+    "0x020AEED0",
+    "0x020AEFC8"
+   ],
+   "meaning": "session state enum",
+   "evidence": "written by 31 functions with values 0x09..0x32"
+  },
+  "0x060": {
+   "offset": "+0x060",
+   "widths": [
+    "word"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AE63C"
+   ]
+  },
+  "0x064": {
+   "offset": "+0x064",
+   "widths": [
+    "half"
+   ],
+   "reads": 3,
+   "writes": 3,
+   "functions": [
+    "0x020ADB5C",
+    "0x020AE63C"
+   ]
+  },
+  "0x066": {
+   "offset": "+0x066",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AE63C"
+   ]
+  },
+  "0x068": {
+   "offset": "+0x068",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C"
+   ]
+  },
+  "0x06A": {
+   "offset": "+0x06A",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C"
+   ]
+  },
+  "0x06C": {
+   "offset": "+0x06C",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020ADB5C"
+   ]
+  },
+  "0x080": {
+   "offset": "+0x080",
+   "widths": [
+    "word"
+   ],
+   "reads": 8,
+   "writes": 11,
+   "functions": [
+    "0x020AD354",
+    "0x020AD3BC",
+    "0x020AD55C",
+    "0x020AD5DC",
+    "0x020AD970"
+   ]
+  },
+  "0x084": {
+   "offset": "+0x084",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 4,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x086": {
+   "offset": "+0x086",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 2,
+   "functions": [
+    "0x020AD3BC"
+   ]
+  },
+  "0x088": {
+   "offset": "+0x088",
+   "widths": [
+    "word"
+   ],
+   "reads": 2,
+   "writes": 3,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD7F0",
+    "0x020AE704",
+    "0x020AF0B4"
+   ]
+  },
+  "0x08C": {
+   "offset": "+0x08C",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 3,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x08E": {
+   "offset": "+0x08E",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 2,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x090": {
+   "offset": "+0x090",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 2,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x092": {
+   "offset": "+0x092",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 2,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x094": {
+   "offset": "+0x094",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 2,
+   "functions": [
+    "0x020AD3BC",
+    "0x020AD970"
+   ]
+  },
+  "0x096": {
+   "offset": "+0x096",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD970"
+   ]
+  },
+  "0x098": {
+   "offset": "+0x098",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD970"
+   ]
+  },
+  "0x0B2": {
+   "offset": "+0x0B2",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD970"
+   ]
+  },
+  "0x0B4": {
+   "offset": "+0x0B4",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD970"
+   ]
+  },
+  "0x0B6": {
+   "offset": "+0x0B6",
+   "widths": [
+    "half"
+   ],
+   "reads": 0,
+   "writes": 1,
+   "functions": [
+    "0x020AD970"
+   ]
+  },
+  "0x0C0": {
+   "offset": "+0x0C0",
+   "widths": [
+    "half"
+   ],
+   "reads": 1,
+   "writes": 0,
+   "functions": [
+    "0x020AD970"
+   ]
+  }
+ }
+}

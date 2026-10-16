@@ -1,0 +1,814 @@
+{
+ "source": "gpudump_walk_mos / gpudump_walk_jabba, matrix at actor+0x8C, type +0x212, asset +0xE8",
+ "note": "Duplicates at the same position are the same entity seen at overlapping struct offsets; dedupe before use.",
+ "arenas": {
+  "mos_eisley_streets": {
+   "barge_turret_b": [
+    {
+     "actor": "0x02120158",
+     "type": "0x5D",
+     "asset": 237,
+     "position": [
+      -12.0,
+      17.0,
+      -159.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125270",
+     "type": "0x5D",
+     "asset": 237,
+     "position": [
+      106.0,
+      0.0,
+      91.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "barge_turret": [
+    {
+     "actor": "0x02120380",
+     "type": "0x5C",
+     "asset": 237,
+     "position": [
+      -12.0,
+      17.0,
+      -159.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02121C54",
+     "type": "0x5C",
+     "asset": 237,
+     "position": [
+      106.0,
+      0.0,
+      91.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "turret": [
+    {
+     "actor": "0x02120A30",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      112.0,
+      49.0,
+      -142.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02124D78",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      113.0,
+      33.0,
+      149.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02124FF4",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      103.0,
+      52.0,
+      55.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "grapple_point": [
+    {
+     "actor": "0x02124024",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -30.0,
+      31.0,
+      170.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125A94",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      128.0,
+      46.0,
+      -78.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126260",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      49.0,
+      52.0,
+      91.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "buildable_grapple": [
+    {
+     "actor": "0x02125540",
+     "type": "0x4B",
+     "asset": 818,
+     "position": [
+      -31.0,
+      0.0,
+      163.0
+     ],
+     "yaw_deg": 180.0,
+     "state": 0
+    }
+   ],
+   "grapple_point_b": [
+    {
+     "actor": "0x021257C4",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      133.0,
+      17.0,
+      -78.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125FF8",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      50.0,
+      30.0,
+      95.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "lever": [
+    {
+     "actor": "0x021264C8",
+     "type": "0xDC",
+     "asset": 4504,
+     "position": [
+      99.0,
+      49.0,
+      -69.0
+     ],
+     "yaw_deg": 90.0,
+     "state": 1
+    },
+    {
+     "actor": "0x02127994",
+     "type": "0xDC",
+     "asset": 4504,
+     "position": [
+      -39.0,
+      -1.0,
+      21.0
+     ],
+     "yaw_deg": 90.0,
+     "state": 1
+    },
+    {
+     "actor": "0x02127BFC",
+     "type": "0xDC",
+     "asset": 4504,
+     "position": [
+      21.0,
+      -1.0,
+      92.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 1
+    }
+   ],
+   "health_dispenser": [
+    {
+     "actor": "0x021267B4",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      159.0,
+      2.0,
+      100.0
+     ],
+     "yaw_deg": -135.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126AA0",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      87.0,
+      5.0,
+      -30.0
+     ],
+     "yaw_deg": -135.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126D08",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      70.0,
+      17.0,
+      -111.0
+     ],
+     "yaw_deg": 90.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126F70",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      6.0,
+      0.0,
+      -26.0
+     ],
+     "yaw_deg": 135.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021271D8",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      22.0,
+      52.0,
+      83.0
+     ],
+     "yaw_deg": -45.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02127440",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      1.0,
+      30.0,
+      181.0
+     ],
+     "yaw_deg": -90.0,
+     "state": 0
+    }
+   ],
+   "bridge_plank": [
+    {
+     "actor": "0x021242D8",
+     "type": "0xE3",
+     "asset": 4636,
+     "position": [
+      -13.0,
+      -4.0,
+      107.0
+     ],
+     "yaw_deg": 180.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021245C4",
+     "type": "0xE3",
+     "asset": 4636,
+     "position": [
+      -13.0,
+      -4.0,
+      28.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212482C",
+     "type": "0xE3",
+     "asset": 4636,
+     "position": [
+      98.0,
+      47.0,
+      -78.0
+     ],
+     "yaw_deg": -90.0,
+     "state": 0
+    }
+   ],
+   "elevator": [
+    {
+     "actor": "0x02125CFC",
+     "type": "0x182",
+     "asset": 404,
+     "position": [
+      36.0,
+      0.0,
+      102.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0,
+     "source": "group-0 handle (0,17) in gpudump_walk_mos f12000; type 386 is Kind.ELEVATOR in arena_mechanism.gd and its interaction row gives model 404, radius 20, action code 0x800 = BUILD"
+    }
+   ]
+  },
+  "jabbas_tower": {
+   "barge_turret_b": [
+    {
+     "actor": "0x02120B64",
+     "type": "0x5D",
+     "asset": 237,
+     "position": [
+      126.0,
+      54.0,
+      -73.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212944C",
+     "type": "0x5D",
+     "asset": 237,
+     "position": [
+      -125.0,
+      54.0,
+      73.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "turret": [
+    {
+     "actor": "0x021246A8",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      0.0,
+      135.0,
+      -62.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02128A08",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      0.0,
+      135.0,
+      62.0
+     ],
+     "yaw_deg": 180.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02128C84",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      0.0,
+      53.0,
+      -82.0
+     ],
+     "yaw_deg": 180.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02128F00",
+     "type": "0x5E",
+     "asset": 332,
+     "position": [
+      0.0,
+      53.0,
+      82.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "grapple_point": [
+    {
+     "actor": "0x02124C2C",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -64.0,
+      53.0,
+      9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021251B0",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -64.0,
+      53.0,
+      -9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125B50",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      61.0,
+      53.0,
+      -9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125DB8",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      61.0,
+      53.0,
+      9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021264F0",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      82.0,
+      107.0,
+      37.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126758",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -82.0,
+      107.0,
+      -37.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126E90",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -27.0,
+      190.0,
+      0.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021270F8",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      27.0,
+      190.0,
+      0.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021278B4",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      -18.0,
+      80.0,
+      0.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02127B1C",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      18.0,
+      79.0,
+      0.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02128254",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      0.0,
+      107.0,
+      9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021284BC",
+     "type": "0x07",
+     "asset": 2522,
+     "position": [
+      0.0,
+      107.0,
+      -9.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "grapple_point_b": [
+    {
+     "actor": "0x02124EE0",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      -63.0,
+      27.0,
+      16.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125418",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      -63.0,
+      27.0,
+      -17.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02125680",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      62.0,
+      27.0,
+      -18.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021258E8",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      62.0,
+      27.0,
+      15.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126020",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      98.0,
+      81.0,
+      48.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126288",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      -99.0,
+      81.0,
+      -51.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021269C0",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      63.0,
+      135.0,
+      -1.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02126C28",
+     "type": "0x08",
+     "asset": 2524,
+     "position": [
+      -63.0,
+      135.0,
+      -1.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "buildable_grapple": [
+    {
+     "actor": "0x02127360",
+     "type": "0x4B",
+     "asset": 818,
+     "position": [
+      16.0,
+      54.0,
+      0.0
+     ],
+     "yaw_deg": -90.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212764C",
+     "type": "0x4B",
+     "asset": 818,
+     "position": [
+      -16.0,
+      54.0,
+      0.0
+     ],
+     "yaw_deg": 90.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02127D84",
+     "type": "0x4B",
+     "asset": 818,
+     "position": [
+      0.0,
+      81.0,
+      27.0
+     ],
+     "yaw_deg": -90.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02127FEC",
+     "type": "0x4B",
+     "asset": 818,
+     "position": [
+      0.0,
+      81.0,
+      -26.0
+     ],
+     "yaw_deg": 90.0,
+     "state": 0
+    }
+   ],
+   "barge_turret": [
+    {
+     "actor": "0x02128724",
+     "type": "0x5C",
+     "asset": 237,
+     "position": [
+      126.0,
+      54.0,
+      -73.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212917C",
+     "type": "0x5C",
+     "asset": 237,
+     "position": [
+      -125.0,
+      54.0,
+      73.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ],
+   "health_dispenser": [
+    {
+     "actor": "0x021296D0",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      -99.0,
+      81.0,
+      18.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x021299BC",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      98.0,
+      81.0,
+      -17.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02129C24",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      -44.0,
+      135.0,
+      -44.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x02129E8C",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      1.0,
+      191.0,
+      -37.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212A0F4",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      44.0,
+      135.0,
+      43.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    },
+    {
+     "actor": "0x0212A35C",
+     "type": "0x5B",
+     "asset": 230,
+     "position": [
+      0.0,
+      191.0,
+      37.0
+     ],
+     "yaw_deg": 0.0,
+     "state": 0
+    }
+   ]
+  }
+ },
+ "bridge_note": "SPPlank 4636 type 0xE3 is the Mos BRIDGE. Three instances, Mos only, Jabba none. One sits at (98,47,-78) directly under the lever at (99,49,-69) - the single-lever bridge. The other two share x=-13 and differ only in z, 28 and 107, which is the two-halves-meeting-over-the-death-pit pair seen in play and the bridge shared by two levers. The model renders as a COLLAPSED STACK OF FLAT PLATES, matching the described retracted state exactly. SPPlank2Platform 4639 is a related model identified visually; it has ONE instance and reads type 0x00, which may be an unset default, so it is placed with LOW confidence as scenery rather than as a lever-driven bridge."
+}

@@ -1,0 +1,1840 @@
+{
+ "schema": 1,
+ "note": "Read the material block out of an NSBMD, with the walk verified end to end.\n\nWHY THIS EXISTS. The port has been taking material properties from whatever the\nGLB converter chose to emit, which is a second-hand reading. Blend mode, alpha,\ncull, diffuse and emission are all stated by the model itself, and getting at\nthem needed the material block located - which took two passes and one wrong\nconclusion that had to be retracted.\n\nTHE WALK, for CantinaArenaLobb (asset 955):\n\n    0x1C    model dict: 1 entry; model 0 sits at offset 0x30 from the MDL0\n            section, and MDL0 is at 0x14, so the MODEL BASE is 0x44.\n    0x44    model header. +0x00 size, +0x04 renderCmds, +0x08 materialsOffset,\n            +0x0C shapes, +0x10 envelopes. materialsOffset = 0x03D4, so the\n            MATERIALS BLOCK is 0x418.\n    0x418   materials block: two u16 sub-dict offsets, then the material dict\n            at +4.\n    0x41C   the dict: u8 dummy, u8 numEntries, u16 sectionSize, then an unknown\n            block, then u16 entrySize / u16 namesOffset, then numEntries u32\n            entries, then numEntries 16-byte names.\n\nDict entry offsets are relative to the MATERIALS BLOCK, not to the file.\n\nTHE MATERIAL RECORD, offsets within each material:\n\n    +0x04  u32 diffAmb    diffuse RGB555 in bits 0..14, ambient in 16..30\n    +0x08  u32 specEmi    specular in bits 0..14, emission in 16..30\n    +0x0C  u32 polyAttr   ALPHA in bits 16..20 (0..31), CULL in bits 6..7\n    +0x14  u32 texImageParam    0 when the material carries no texture\n\nTHE PARSE IS CROSS-CHECKED RATHER THAN ASSUMED. polyAttr bits 6-7 are the cull\nmode, and the values this reads - 0x80 for cull-back, 0xC0 for cull-disabled -\nmatch what apicula independently produced for the same materials in the exported\nGLB. Two readers agreeing on a field neither was told about is the check.\n\nWHAT IT ALREADY SETTLED. Cantina_Hologram reads polyAttr 0x001F0080: alpha\n31/31, FULLY OPAQUE, texImageParam 0. A previous pass had forced that surface\ntranslucent on the theory that the converter dropped its vertex alpha; the model\nsays otherwise and that change was retracted.\n\nUsage:\n    python tools/export_nsbmd_materials.py                # the lobby and both arenas\n    python tools/export_nsbmd_materials.py 322 327 955    # any assets",
+ "record": {
+  "+0x04": "u32 diffAmb - diffuse RGB555 bits 0..14, ambient 16..30",
+  "+0x08": "u32 specEmi - specular bits 0..14, emission 16..30",
+  "+0x0C": "u32 polyAttr - ALPHA bits 16..20 (0..31), CULL bits 6..7",
+  "+0x14": "u32 texImageParam - 0 when untextured"
+ },
+ "models": {
+  "955": {
+   "model_base": "0x0044",
+   "materials_base": "0x0418",
+   "count": 27,
+   "materials": [
+    {
+     "index": 0,
+     "name": "BactaDecal",
+     "address": "0x0B20",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 1,
+     "name": "Black",
+     "address": "0x0B4C",
+     "diffuse": [
+      0,
+      0,
+      0
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    },
+    {
+     "index": 2,
+     "name": "Cantina_Hologram",
+     "address": "0x0B78",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    },
+    {
+     "index": 3,
+     "name": "Color_Black",
+     "address": "0x0BA4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 4,
+     "name": "Color_Brown",
+     "address": "0x0BD0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 5,
+     "name": "Color_LtBrown",
+     "address": "0x0BFC",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 6,
+     "name": "DoorFrame",
+     "address": "0x0C28",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x400B0000"
+    },
+    {
+     "index": 7,
+     "name": "ExtWall02_Edge",
+     "address": "0x0C60",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 8,
+     "name": "ExteriorFloor1",
+     "address": "0x0C8C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 9,
+     "name": "ExteriorWall01",
+     "address": "0x0CB8",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 10,
+     "name": "ExteriorWall01_I",
+     "address": "0x0CE4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 11,
+     "name": "ExteriorWall02",
+     "address": "0x0D10",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 12,
+     "name": "Exterior_Stone",
+     "address": "0x0D3C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 13,
+     "name": "Hole_Brown_Lt",
+     "address": "0x0D68",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 14,
+     "name": "Hologram_Glow",
+     "address": "0x0D94",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F00C0",
+     "alpha": 31,
+     "cull": "disabled",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 15,
+     "name": "Hologram_ScanLin",
+     "address": "0x0DC0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x40030000"
+    },
+    {
+     "index": 16,
+     "name": "LtBrown",
+     "address": "0x0DF4",
+     "diffuse": [
+      184,
+      160,
+      136
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    },
+    {
+     "index": 17,
+     "name": "Peg_Black",
+     "address": "0x0E20",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 18,
+     "name": "Peg_Brown",
+     "address": "0x0E4C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 19,
+     "name": "Peg_LtBrown",
+     "address": "0x0E78",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 20,
+     "name": "RoundTop_LtBrown",
+     "address": "0x0EA4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 21,
+     "name": "Round_Brown",
+     "address": "0x0ED0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x40070000"
+    },
+    {
+     "index": 22,
+     "name": "Round_LtBrown",
+     "address": "0x0F04",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x40070000"
+    },
+    {
+     "index": 23,
+     "name": "Sky1",
+     "address": "0x0F38",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 24,
+     "name": "WhiteGlow",
+     "address": "0x0F64",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    },
+    {
+     "index": 25,
+     "name": "lambert1",
+     "address": "0x0F90",
+     "diffuse": [
+      96,
+      96,
+      96
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    },
+    {
+     "index": 26,
+     "name": "phong1",
+     "address": "0x0FBC",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      128,
+      128,
+      128
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F008F",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    }
+   ]
+  },
+  "322": {
+   "model_base": "0x0044",
+   "materials_base": "0x0330",
+   "count": 19,
+   "materials": [
+    {
+     "index": 0,
+     "name": "ArenaPaver",
+     "address": "0x08E4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 1,
+     "name": "ArenaTile",
+     "address": "0x0910",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 2,
+     "name": "FloorTile",
+     "address": "0x093C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 3,
+     "name": "Font1",
+     "address": "0x0968",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 4,
+     "name": "Font2",
+     "address": "0x0994",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 5,
+     "name": "Four1",
+     "address": "0x09C0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 6,
+     "name": "Metal",
+     "address": "0x09EC",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 7,
+     "name": "One1",
+     "address": "0x0A18",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 8,
+     "name": "PlatSides",
+     "address": "0x0A44",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 9,
+     "name": "Three1",
+     "address": "0x0A70",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 10,
+     "name": "TileGreen",
+     "address": "0x0A9C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 11,
+     "name": "Tile_Blue",
+     "address": "0x0AC8",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 12,
+     "name": "Tile_Purp",
+     "address": "0x0AF4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 13,
+     "name": "Tile_Red",
+     "address": "0x0B20",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 14,
+     "name": "Two1",
+     "address": "0x0B4C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 15,
+     "name": "Wall1",
+     "address": "0x0B78",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 16,
+     "name": "Wall2",
+     "address": "0x0BA4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 17,
+     "name": "Wall3",
+     "address": "0x0BD0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 18,
+     "name": "Wall4",
+     "address": "0x0BFC",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    }
+   ]
+  },
+  "327": {
+   "model_base": "0x0044",
+   "materials_base": "0x0558",
+   "count": 13,
+   "materials": [
+    {
+     "index": 0,
+     "name": "Bld3",
+     "address": "0x0950",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 1,
+     "name": "Bld3Win",
+     "address": "0x097C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 2,
+     "name": "Des_Flr1",
+     "address": "0x09A8",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 3,
+     "name": "MEWalTop",
+     "address": "0x09D4",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 4,
+     "name": "ME_BGLt",
+     "address": "0x0A00",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 5,
+     "name": "ME_Bld2win",
+     "address": "0x0A2C",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 6,
+     "name": "ME_BldTrm",
+     "address": "0x0A58",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 7,
+     "name": "ME_Stair",
+     "address": "0x0A84",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 8,
+     "name": "Me_Fnce",
+     "address": "0x0AB0",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 9,
+     "name": "Wall2",
+     "address": "0x0ADC",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 10,
+     "name": "Wall3",
+     "address": "0x0B08",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x40030000"
+    },
+    {
+     "index": 11,
+     "name": "lambert14",
+     "address": "0x0B38",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    },
+    {
+     "index": 12,
+     "name": "lambert15",
+     "address": "0x0B64",
+     "diffuse": [
+      200,
+      200,
+      200
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0080",
+     "alpha": 31,
+     "cull": "back",
+     "textured": true,
+     "tex_image_param": "0x00030000"
+    }
+   ]
+  },
+  "2523": {
+   "model_base": "0x0044",
+   "materials_base": "0x00C8",
+   "count": 1,
+   "materials": [
+    {
+     "index": 0,
+     "name": "lambert1",
+     "address": "0x0114",
+     "diffuse": [
+      96,
+      96,
+      96
+     ],
+     "ambient": [
+      0,
+      0,
+      0
+     ],
+     "specular": [
+      0,
+      0,
+      0
+     ],
+     "emission": [
+      0,
+      0,
+      0
+     ],
+     "poly_attr": "0x001F0081",
+     "alpha": 31,
+     "cull": "back",
+     "textured": false,
+     "tex_image_param": "0x00000000"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,168 @@
+{
+  "note": "Character descriptor table, 24-byte records at 0x020EF57C. Read by the playable-character constructor 0x02001D20, which multiplies the character index by 0x18 and loads the model asset id from +0x00. Max HP at +0x03 was already known. The class vtable it installs is 0x020FCCC8.",
+  "table": "0x020EF57C",
+  "stride": 24,
+  "constructor": "0x02001D20",
+  "vtable": "0x020FCCC8",
+  "fields": {
+    "+0x00": "model asset id, u16",
+    "+0x03": "max HP"
+  },
+  "records": [
+    {
+      "index": 1,
+      "model_asset": 15,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 9,
+      "model_asset": 1,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 10,
+      "model_asset": 5,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 16,
+      "model_asset": 20,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 17,
+      "model_asset": 12,
+      "max_hp": 6,
+      "model_name": null
+    },
+    {
+      "index": 18,
+      "model_asset": 7,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 23,
+      "model_asset": 9,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 27,
+      "model_asset": 11,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 30,
+      "model_asset": 18,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 31,
+      "model_asset": 8,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 32,
+      "model_asset": 1,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 46,
+      "model_asset": 14,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 50,
+      "model_asset": 6,
+      "max_hp": 1,
+      "model_name": null
+    },
+    {
+      "index": 52,
+      "model_asset": 15,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 53,
+      "model_asset": 4,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 54,
+      "model_asset": 4,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 55,
+      "model_asset": 13,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 59,
+      "model_asset": 19,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 67,
+      "model_asset": 21,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 69,
+      "model_asset": 8,
+      "max_hp": 4,
+      "model_name": null
+    },
+    {
+      "index": 70,
+      "model_asset": 16,
+      "max_hp": 4,
+      "model_name": null
+    }
+  ],
+  "constructor_analysis": {
+    "routine": "0x02001D20 - the playable-character constructor.",
+    "signature": "Takes the character index in r2. 0x02001D2C..0x02001D30 multiply it by 0x18 and 0x02001D3C loads a halfword from 0x020EF57C + index*24.",
+    "installs_vtable": "0x020FCCC8 at 0x02001D5C, via str r1, [sb].",
+    "object_size": "The constructor writes as far as +0x6A8, so a playable character is a much larger object than an arena entity.",
+    "correction_to_earlier_reading": "+0x00 of the descriptor is NOT a model asset id. The values are small - 15, 1, 5, 20, 12, 7, 9 - and none corresponds to an archive model. It is passed to 0x0200C04C as an argument, so it is more likely a body or appearance selector. Only +0x03, max HP, is confirmed.",
+    "vtable_caveat": "Scanning live match RAM for 0x020FCCC8 finds five words, ALL in the 0x0200xxxx code region - they are literal-pool constants, not instances. No live actor carries this vtable, because a derived class overwrites it during construction. Player actors observed in recordings carry 0x020FCC68 and 0x020FCF28, which are presumably those derived classes.",
+    "notable": "Descriptor index 17 has max HP 6 where every other record has 4, so not every character in this table is an arena character."
+  },
+  "detection_gap_status": "PARTLY CLOSED. The constructor, the descriptor table stride and the base vtable are now ROM-established. What is still missing is the field inside a player actor that holds the character INDEX - without it, character detection in recordings still relies on model residency, which was shown to be unreliable because Ghost Human, Ghost Yoda, Leia and Vader are resident in every keyframe.",
+  "next": "Find where 0x02001D20 stores its r2 argument into the object. That offset is the character index, and reading it from the player actors already identified in the recordings closes the gap properly.",
+  "character_index_field": {
+    "offset": "+0x6BB",
+    "evidence": "0x02001D9C does strb r8, [sb, #0x6BB], and r8 holds the constructor r2 argument - the character index - set at 0x02001D28.",
+    "status": "ROM-established but NOT yet read successfully from a recording. Scanning the three-match session for actor bases and reading +0x6BB gives noisy values across 169 persistent actors, none of which carry the player vtables 0x020FCC68 or 0x020FCF28 seen elsewhere. So the scan is finding the wrong objects, not the field being wrong.",
+    "next": "Isolate player actors first - by their vtable, or by following the tank-scheme trace at 0x020075EC which takes the player actor in r0 - and only then read +0x6BB."
+  },
+  "max_hp_is_not_a_discriminator": "Dropped as a metric. Every LEGO Star Wars character has four hearts, so the byte at +0x03 cannot distinguish characters even where it is read correctly. The one record showing 6 is therefore more likely evidence that +0x03 is NOT max HP than evidence of an unusual character.",
+  "arena_roster": {
+    "size": 10,
+    "note": "Ten playable Bounty Hunters. The nine in config/bounty_hunter_combat.json plus Lando (Jabbas Palace).",
+    "observed_in_recordings": [
+      "Greedo",
+      "Jango Fett",
+      "Bossk",
+      "Lando (Jabbas Palace)",
+      "Zuckuss"
+    ]
+  }
+}

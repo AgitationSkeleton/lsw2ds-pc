@@ -1,0 +1,35 @@
+--- a/runner/src/vram.h
++++ b/runner/src/vram.h
+@@ -66,3 +66,10 @@
+ // remapped back — every content change is therefore a remap. A caller that
+ // cached the flat views may skip refreshing while the generation is stable.
+ uint64_t nds_vram_texture_generation();
++// LSW2 PORT PATCH: one halfword of the texture-palette slot space (8 x 16 KiB),
++// read and written through whatever banks VRAMCNT maps there - for a title
++// that recolours a palette the game uploaded. A write bumps the texture
++// generation, so a caller writes only what differs. False / 0 when no bank
++// is mapped at that slot.
++uint16_t nds_vram_read_texpal16(uint32_t addr);
++bool nds_vram_write_texpal16(uint32_t addr, uint16_t value);
+--- a/runner/src/vram.cpp
++++ b/runner/src/vram.cpp
+@@ -297,6 +297,19 @@
+ 
+ uint64_t nds_vram_texture_generation() { return g_texture_generation; }
+ 
++// LSW2 PORT PATCH: see nds_vram_read_texpal16 in vram.h.
++uint16_t nds_vram_read_texpal16(uint32_t addr) {
++    const uint16_t mask = g_texpal[(addr >> 14) & 7u];
++    return mask ? static_cast<uint16_t>(mapped_read(mask, addr & 0x1FFFEu, 2)) : 0u;
++}
++bool nds_vram_write_texpal16(uint32_t addr, uint16_t value) {
++    const uint16_t mask = g_texpal[(addr >> 14) & 7u];
++    if (!mask) return false;
++    mapped_write(mask, addr & 0x1FFFEu, value, 2);
++    ++g_texture_generation;
++    return true;
++}
++
+ bool nds_vram_lcdc_mapped(unsigned bank) {
+     return bank < 9 && (g_lcdc & (1u << bank)) != 0;
+ }

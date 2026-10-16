@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "runtime_table_rows": 72,
+  "playable_target_count": 67,
+  "humanoid_rows": [
+    0, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 18, 20, 21, 22,
+    24, 25, 26, 28, 29, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+    44, 46, 47, 48, 51, 56, 58, 60, 61, 62, 63, 64, 65, 66, 68, 71
+  ],
+  "special_body_rows": [1, 9, 10, 16, 17, 23, 27, 31, 32, 50, 52, 53, 54, 55, 59, 67, 69, 70],
+  "excluded_internal_rows": [19, 30, 45, 49, 57],
+  "notes": {
+    "18": "Generic custom-character base; its actor-part records intentionally retain default Human_Model materials.",
+    "19_30_45_49_57": "Internal/fallback family. Rows 19, 45, 49, and 57 share one mixed test/default composite and the family uses the same 3867/3868/3869 metadata asset triple."
+  }
+}

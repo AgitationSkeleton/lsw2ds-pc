@@ -1,0 +1,1194 @@
+{
+ "schema": 1,
+ "source": {
+  "link_array": "entity+0x1DE, 25 slots of 2 bytes",
+  "resolves_when": "byte 1 is non-zero (FUN_020508B4)",
+  "entity_filter": "obj+0x194 == action_code(obj+0x212), non-zero, plus a vtable in [0x02000000, 0x02200000)",
+  "type_table": "0x020F03AC"
+ },
+ "note": "Extract the arena entities and their +0x1DE link arrays from a capture.\n\nWHY FROM RAM. The link array is runtime state - it does not exist in the ARM9\nimage - so it has to be rebuilt from a session capture. The placements exported\nso far carry no link field at all, which is why the port's `linked_partners`\nhas never had anything to populate it from.\n\nTHE ENTITY FILTER IS SELF-VALIDATING, which is what makes this trustworthy\nrather than a heap trawl. An object is accepted only when\n\n    *(u32 *)(obj + 0x194) == action_code(*(u16 *)(obj + 0x212))\n\ni.e. the action code the entity is carrying equals the one the type table at\n0x020F03AC assigns to the type the entity claims to be. Two independent fields\nhave to agree. A VTABLE BOUND does the rest: `+0x194 == 0` matches any zeroed\nmemory, and type 0x07 legitimately carries a zero action code, so the code alone\ncannot separate them. A real entity vtable is STATIC and lies below the heap;\nrequiring 0x02000000 <= vtable < 0x02110000 is what excludes the zeroed hits.\nAn early pass of this scan with neither guard returned 1811 \"entities\".\n\nWHAT IT FINDS\n\n    Mos Eisley  (gpudump_walk_mos f12000)     17 entities\n    Jabba       (gpudump_walk_jabba f9000)    33 entities\n\nTHE SLOT INDEX ENCODES THE ROLE, and this settles a disagreement between two\nearlier reports. In Jabba every grapple PAD and every BUILDABLE grapple carries\nits handle in SLOT 0, and every static grapple POINT carries it in SLOT 1:\n\n    pad 0x02124EE0 slot 0 = (1, 1)      hook 0x02124C2C slot 1 = (1, 2)\n    pad 0x02125418 slot 0 = (1, 3)      hook 0x021251B0 slot 1 = (1, 4)\n\nThe original finding put every handle in slot 0; the refutation put the hooks in\nslot 1. The refutation is right, and it holds for all 24 linked entities.\n\nThe byte-1 values are UNIQUE with no repeats - twelve slot-0 entities and twelve\nslot-1 entities in Jabba. What that id REFERS TO is not established:\nit is not a consecutive-pair scheme, because ids 5 and 6 are both hooks and 7\nand 8 are both pads. Left unresolved rather than guessed.\n\nA NEGATIVE RESULT WORTH RECORDING: the three Mos Eisley LEVERS and every FLAG\nTURRET in both arenas have EMPTY link arrays at these frames. So the lever ->\nbridge relationship is not carried in +0x1DE here, and populating the port's\nlinked_partners from this array would not connect a lever to anything.\n\nUsage:  python tools/export_entity_links.py",
+ "findings": {
+  "slot_encodes_role": "grapple pads and buildable grapples link in SLOT 0; static grapple points link in SLOT 1",
+  "handles_unique": "byte 1 runs 1..24 in Jabba with no repeats",
+  "handle_meaning": "UNRESOLVED - not a consecutive-pair scheme, since ids 5 and 6 are both hooks and 7 and 8 are both pads",
+  "levers_have_no_links": "the three Mos levers and every flag turret in both arenas have EMPTY link arrays - slot 0 reads 00 00, and byte1 == 0 fails FUN_020508B4's test - so the lever -> bridge relationship is NOT carried there",
+  "lever_target_is_0x1D9": "it is carried at entity+0x1D9, a COMMAND ID the lever tick passes to FUN_020675d8(<manager>+0x28, id). Mos levers hold 7, 9 and 9 - TWO LEVERS DRIVE ONE BRIDGE, which is exactly the arena as described in play"
+ },
+ "arenas": {
+  "mos_eisley_streets": {
+   "capture": "gpudump_walk_mos",
+   "frame": 12000,
+   "entity_count": 20,
+   "by_name": {
+    "barge_turret": 1,
+    "barge_turret_b": 1,
+    "bridge": 3,
+    "buildable_grapple": 1,
+    "flag_turret": 2,
+    "grapple_pad": 2,
+    "grapple_point": 3,
+    "health_dispenser": 3,
+    "lever": 3,
+    "type_0x182": 1
+   },
+   "entities": [
+    {
+     "address": "0x02124024",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -30.0,
+      31.0,
+      170.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021242D8",
+     "type": 227,
+     "name": "bridge",
+     "vtable": "0x020FD6D8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -13.0,
+      -4.0,
+      107.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021245C4",
+     "type": 227,
+     "name": "bridge",
+     "vtable": "0x020FD6D8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -13.0,
+      -4.0,
+      28.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x0212482C",
+     "type": 227,
+     "name": "bridge",
+     "vtable": "0x020FD6D8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      98.0,
+      47.0,
+      -78.0
+     ],
+     "target_id": 0,
+     "link_state": 1,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02124A94",
+     "type": 93,
+     "name": "barge_turret_b",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00800000",
+     "built_state": 0,
+     "position": [
+      106.0,
+      0.0,
+      91.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02124D78",
+     "type": 94,
+     "name": "flag_turret",
+     "vtable": "0x020FDB50",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      113.0,
+      33.0,
+      149.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02124FF4",
+     "type": 94,
+     "name": "flag_turret",
+     "vtable": "0x020FDB50",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      103.0,
+      52.0,
+      55.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x0212555C",
+     "type": 92,
+     "name": "barge_turret",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -12.0,
+      17.0,
+      -159.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021257C4",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      133.0,
+      17.0,
+      -78.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        0,
+        16
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125A94",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      128.0,
+      46.0,
+      -78.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        0,
+        15
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125CFC",
+     "type": 386,
+     "name": "type_0x182",
+     "vtable": "0x020FD538",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      36.0,
+      0.0,
+      102.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 2,
+     "links": []
+    },
+    {
+     "address": "0x02125FF8",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      50.0,
+      30.0,
+      95.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        0,
+        19
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126260",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      49.0,
+      52.0,
+      91.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        0,
+        18
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021264C8",
+     "type": 220,
+     "name": "lever",
+     "vtable": "0x020FD468",
+     "action_code": "0x00200000",
+     "built_state": 0,
+     "position": [
+      99.0,
+      49.0,
+      -69.0
+     ],
+     "target_id": 7,
+     "link_state": 0,
+     "mechanism_state": 1,
+     "links": []
+    },
+    {
+     "address": "0x02126F70",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      6.0,
+      0.0,
+      -26.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021271D8",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      22.0,
+      52.0,
+      83.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02127440",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      1.0,
+      30.0,
+      181.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021276A8",
+     "type": 75,
+     "name": "buildable_grapple",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -31.0,
+      0.0,
+      163.0
+     ],
+     "target_id": 2,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        0,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02127994",
+     "type": 220,
+     "name": "lever",
+     "vtable": "0x020FD468",
+     "action_code": "0x00200000",
+     "built_state": 0,
+     "position": [
+      -39.0,
+      -1.0,
+      21.0
+     ],
+     "target_id": 9,
+     "link_state": 0,
+     "mechanism_state": 1,
+     "links": []
+    },
+    {
+     "address": "0x02127BFC",
+     "type": 220,
+     "name": "lever",
+     "vtable": "0x020FD468",
+     "action_code": "0x00200000",
+     "built_state": 0,
+     "position": [
+      21.0,
+      -1.0,
+      92.0
+     ],
+     "target_id": 9,
+     "link_state": 0,
+     "mechanism_state": 1,
+     "links": []
+    }
+   ]
+  },
+  "jabbas_tower": {
+   "capture": "gpudump_walk_jabba",
+   "frame": 9000,
+   "entity_count": 33,
+   "by_name": {
+    "barge_turret": 2,
+    "buildable_grapple": 4,
+    "flag_turret": 3,
+    "grapple_pad": 8,
+    "grapple_point": 12,
+    "health_dispenser": 4
+   },
+   "entities": [
+    {
+     "address": "0x02124C2C",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -64.0,
+      53.0,
+      9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        2
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02124EE0",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      -63.0,
+      27.0,
+      16.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021251B0",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -64.0,
+      53.0,
+      -9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        4
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125418",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      -63.0,
+      27.0,
+      -17.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        3
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125680",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      62.0,
+      27.0,
+      -18.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021258E8",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      62.0,
+      27.0,
+      15.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125B50",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      61.0,
+      53.0,
+      -9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        5
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02125DB8",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      61.0,
+      53.0,
+      9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126020",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      98.0,
+      81.0,
+      48.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        11
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126288",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      -99.0,
+      81.0,
+      -51.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        12
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021264F0",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      82.0,
+      107.0,
+      37.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126758",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -82.0,
+      107.0,
+      -37.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        10
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021269C0",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      63.0,
+      135.0,
+      -1.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        15
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126C28",
+     "type": 8,
+     "name": "grapple_pad",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000020",
+     "built_state": 0,
+     "position": [
+      -63.0,
+      135.0,
+      -1.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        16
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02126E90",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -27.0,
+      190.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        13
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021270F8",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      27.0,
+      190.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        14
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02127360",
+     "type": 75,
+     "name": "buildable_grapple",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      16.0,
+      54.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        19
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x0212764C",
+     "type": 75,
+     "name": "buildable_grapple",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -16.0,
+      54.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        20
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021278B4",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      -18.0,
+      80.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        17
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02127B1C",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      18.0,
+      79.0,
+      0.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        18
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02127D84",
+     "type": 75,
+     "name": "buildable_grapple",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      0.0,
+      81.0,
+      27.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        23
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02127FEC",
+     "type": 75,
+     "name": "buildable_grapple",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      0.0,
+      81.0,
+      -26.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 0,
+       "handle": [
+        1,
+        24
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02128254",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      0.0,
+      107.0,
+      9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        21
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x021284BC",
+     "type": 7,
+     "name": "grapple_point",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000000",
+     "built_state": 0,
+     "position": [
+      0.0,
+      107.0,
+      -9.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": [
+      {
+       "slot": 1,
+       "handle": [
+        1,
+        22
+       ]
+      }
+     ]
+    },
+    {
+     "address": "0x02128724",
+     "type": 94,
+     "name": "flag_turret",
+     "vtable": "0x020FDB50",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      0.0,
+      135.0,
+      62.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02128C84",
+     "type": 94,
+     "name": "flag_turret",
+     "vtable": "0x020FDB50",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      0.0,
+      53.0,
+      -82.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02128F00",
+     "type": 94,
+     "name": "flag_turret",
+     "vtable": "0x020FDB50",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      0.0,
+      53.0,
+      82.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x0212917C",
+     "type": 92,
+     "name": "barge_turret",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -125.0,
+      54.0,
+      73.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02129468",
+     "type": 92,
+     "name": "barge_turret",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      126.0,
+      54.0,
+      -73.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021296D0",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -99.0,
+      81.0,
+      18.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x021299BC",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      98.0,
+      81.0,
+      -17.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x02129C24",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      -44.0,
+      135.0,
+      -44.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    },
+    {
+     "address": "0x0212A0F4",
+     "type": 91,
+     "name": "health_dispenser",
+     "vtable": "0x020FCFB8",
+     "action_code": "0x00000800",
+     "built_state": 0,
+     "position": [
+      44.0,
+      135.0,
+      43.0
+     ],
+     "target_id": 0,
+     "link_state": 0,
+     "mechanism_state": 0,
+     "links": []
+    }
+   ]
+  }
+ }
+}

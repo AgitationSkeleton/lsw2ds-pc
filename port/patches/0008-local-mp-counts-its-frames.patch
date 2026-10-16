@@ -1,0 +1,71 @@
+Make the local-multiplayer transport count the frames it carries.
+
+WHY. Two consoles now bring the cartridge's own wireless stack all the way up -
+one reaches WH_SYSSTATE_DATASHARING, the other WH_SYSSTATE_SCANNING - and they
+never find each other. Three explanations were available:
+the transport carries nothing, the two radios sit on different channels, or a
+parent already in DATASHARING does not accept new children.
+
+Nothing could tell them apart, because the transport is SILENT. Both instances
+log "[local_mp] enabled" at startup and then never say anything again, so a
+transport carrying zero frames looks exactly like one carrying thousands. That
+is the same un-measurable claim this project keeps having to withdraw, and it
+is cheap to fix: count them and say so.
+
+Geometric backoff on the logging - 1, 4, 16, 64 ... - so a live transport
+announces itself within the first frames and then goes quiet, rather than
+printing at 60 Hz for a whole run. The receive line names the SENDING instance,
+because "instance 1 received a frame from instance 0" is the fact in question
+and "a frame arrived" is not.
+
+--- a/runner/src/wifi_net.cpp
++++ b/runner/src/wifi_net.cpp
+@@ -866,6 +866,16 @@
+                          reinterpret_cast<sockaddr*>(&target),
+                          sizeof(target)) != SOCKET_ERROR) {
+                 sent = len;
++                ++tx_frames_;
++                // Geometric, so a live transport says so early and
++                // then goes quiet instead of logging at 60 Hz.
++                if (tx_frames_ >= tx_logged_ * 4u + 1u) {
++                    tx_logged_ = tx_frames_;
++                    melonDS::Platform::Log(melonDS::Platform::Info,
++                        "[local_mp] instance %u SENT %llu frame(s)\n",
++                        static_cast<unsigned>(instance_),
++                        static_cast<unsigned long long>(tx_frames_));
++                }
+             } else if (send_error_log_counter_ < 8u) {
+                 ++send_error_log_counter_;
+                 melonDS::Platform::Log(melonDS::Platform::Warn,
+@@ -917,6 +927,16 @@
+             frame.payload.assign(datagram + kHeaderBytes,
+                                  datagram + kHeaderBytes + len);
+ 
++            ++rx_frames_;
++            if (rx_frames_ >= rx_logged_ * 4u + 1u) {
++                rx_logged_ = rx_frames_;
++                melonDS::Platform::Log(melonDS::Platform::Info,
++                    "[local_mp] instance %u RECEIVED %llu frame(s), from %u\n",
++                    static_cast<unsigned>(instance_),
++                    static_cast<unsigned long long>(rx_frames_),
++                    static_cast<unsigned>(frame.sender));
++            }
++
+             const uint32_t low_type = frame.type & 0xFFFFu;
+             if (low_type == 2u)
+                 reply_queue_.TryPush(std::move(frame));
+@@ -941,6 +961,14 @@
+     LocalMpFrameQueue reply_queue_{kQueueCapacity};
+     int last_host_id_ = -1;
+     uint32_t send_error_log_counter_ = 0;
++    // DOES ANYTHING ACTUALLY CROSS BETWEEN THE INSTANCES? Two consoles
++    // can both report enabled at startup and still never exchange a
++    // frame, and nothing counted them - so a silent transport was
++    // indistinguishable from a working one.
++    uint64_t tx_frames_ = 0;
++    uint64_t rx_frames_ = 0;
++    uint64_t tx_logged_ = 0;
++    uint64_t rx_logged_ = 0;
+ #ifdef _WIN32
+     SOCKET socket_ = INVALID_SOCKET;
+ #endif

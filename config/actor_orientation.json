@@ -1,0 +1,102 @@
+{
+  "note": "Actor orientation, decoded from the ROM and confirmed against the trig table itself.",
+  "routine": "0x01FFA6F8, called from the actor render path 0x020104D0 with r0=actor+0x8C, r1=actor+0xC8, gated by the dirty byte at actor+0xD0.",
+  "representation": {
+    "actor+0xC8": "three u16 DS binary angles - X at +0x00, Y at +0x02, Z at +0x04. A full turn is 65536.",
+    "sin_cos_table": "0x020F88C4. 4096 entries of 4 bytes: a s16 sine then a s16 cosine, both 20.12 fixed point.",
+    "index": "angle >> 4, so the table covers the full 65536-unit circle at 4096 steps.",
+    "evidence": "0x01FFA6F8 does ldrh from [r1], [r1,#2] and [r1,#4], asr #4 on each, doubles it twice to index the table, and reads with ldrsh - then smull to combine. Sampled entries match sin and cos to four decimal places."
+  },
+  "verified_samples": [
+    {
+      "index": 0,
+      "binary_angle": 0,
+      "degrees": 0.0,
+      "sin_fixed": 0,
+      "cos_fixed": 4096,
+      "sin": 0.0,
+      "cos": 1.0,
+      "math_sin": 0.0,
+      "math_cos": 1.0
+    },
+    {
+      "index": 64,
+      "binary_angle": 1024,
+      "degrees": 5.62,
+      "sin_fixed": 401,
+      "cos_fixed": 4076,
+      "sin": 0.0979,
+      "cos": 0.99512,
+      "math_sin": 0.09802,
+      "math_cos": 0.99518
+    },
+    {
+      "index": 128,
+      "binary_angle": 2048,
+      "degrees": 11.25,
+      "sin_fixed": 799,
+      "cos_fixed": 4017,
+      "sin": 0.19507,
+      "cos": 0.98071,
+      "math_sin": 0.19509,
+      "math_cos": 0.98079
+    },
+    {
+      "index": 256,
+      "binary_angle": 4096,
+      "degrees": 22.5,
+      "sin_fixed": 1567,
+      "cos_fixed": 3784,
+      "sin": 0.38257,
+      "cos": 0.92383,
+      "math_sin": 0.38268,
+      "math_cos": 0.92388
+    },
+    {
+      "index": 512,
+      "binary_angle": 8192,
+      "degrees": 45.0,
+      "sin_fixed": 2896,
+      "cos_fixed": 2896,
+      "sin": 0.70703,
+      "cos": 0.70703,
+      "math_sin": 0.70711,
+      "math_cos": 0.70711
+    },
+    {
+      "index": 1024,
+      "binary_angle": 16384,
+      "degrees": 90.0,
+      "sin_fixed": 4096,
+      "cos_fixed": 0,
+      "sin": 1.0,
+      "cos": 0.0,
+      "math_sin": 1.0,
+      "math_cos": 0.0
+    },
+    {
+      "index": 2048,
+      "binary_angle": 32768,
+      "degrees": 180.0,
+      "sin_fixed": 0,
+      "cos_fixed": -4096,
+      "sin": 0.0,
+      "cos": -1.0,
+      "math_sin": 0.0,
+      "math_cos": -1.0
+    },
+    {
+      "index": 3072,
+      "binary_angle": 49152,
+      "degrees": 270.0,
+      "sin_fixed": -4096,
+      "cos_fixed": 0,
+      "sin": -1.0,
+      "cos": 0.0,
+      "math_sin": -1.0,
+      "math_cos": -0.0
+    }
+  ],
+  "fast_path": "If X and Z are both zero the routine takes a shortcut at 0x01FFA738 using only the Y angle - the common case of an actor that only yaws.",
+  "port_usage": "Convert a DS binary angle to radians with angle * TAU / 65536. Entity yaw values in arena_entity_placements.json were derived from the matrices this routine builds."
+}

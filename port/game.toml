@@ -1,0 +1,116 @@
+# LEGO Star Wars II: The Original Trilogy (NDS) — PC port, Bounty Hunter mode.
+#
+# Every value under [game], [arm9] and [arm7] is read out of the ROM by
+# tools/gen_ndsrecomp_config.py, not typed in by hand. The keys are the ones
+# the ndsrecomp runner actually parses (runner/src/frontend_config.cpp); no
+# invented ones.
+#
+# Where this file diverges from what the cartridge specifies, the divergence is
+# marked DIVERGENCE and says which port feature needs it. The rule is that the
+# ROM is the source of truth, and wherever the port adds behaviour the ROM
+# lacks, the code that implements it carries a flag saying so.
+
+[game]
+name     = "LEGO Star Wars II: The Original Trilogy"
+id       = "AL7E"
+region   = "USA"
+revision = 0
+status   = "bring-up: banks emit, runner not yet linked"
+rom      = "0553 - LEGO Star Wars II - The Original Trilogy (USA).nds"
+rom_size = 0x02000000
+sha1     = "7c1afa070797945ba5a2577c7ddfded5cf2fc443"
+sha256   = "8e2192a906d2642e00acbeb29ffd27028971bc76125c53c897e27ff88323adf1"
+
+[display]
+# THE TOUCH SCREEN WINDOW - the touch screen is its own floating window rather
+# than a strip under the main one.
+screen_layout = "separate"
+supersampling = 1
+antialiasing  = 0
+
+# SCALING - independent, aspect-preserving scaling per screen, with the
+# touchscreen starfield TILED rather than stretched.
+#
+# NOT ENABLED YET, DELIBERATELY. The framework's adaptive widescreen widens the
+# 3D viewport, and the Prime Hunters notes record that widened projection and
+# culling let offscreen geometry wrap into the side regions - they ship with
+# `adaptive_center_native = true` to avoid exactly that. LSW2's own projection
+# has not been audited, and the scaling has to be done delicately. Starting
+# at native and widening once the 3D path is checked is the honest order.
+adaptive_widescreen = "off"
+
+[system]
+# DIRECT BOOT - skip the boot sequence and the save/load menus.
+boot = "direct"
+
+# RETAIL DUMPS ARE PRESENT AND VERIFIED, so this port takes the oracle-diffed
+# path rather than the BSD-2-Clause replacement. Both matched the SHA-1 the
+# framework demands, byte for byte:
+#
+#   port/bios/biosnds9.rom   4096  bfaac75f101c135e32e2aaf541de6b1be4c8c62d
+#   port/bios/biosnds7.rom  16384  24f67bdea115a2c847c8813a262502ee1607b7df
+#
+# FreeBIOS banks are still LINKED - the runner's nds_banks target lists them
+# unconditionally - but they are not selected at runtime.
+freebios = false
+
+# THE FIRMWARE DUMP DOES NOT MATCH and is deliberately not used. The development
+# firmware.bin is sha1 87dae2500e889737af51f4a5b5845770a62482f5; the framework
+# expects ae22de59fbf3f35ccfbeacaeba6fa87ac5e7b14b. A different console's dump
+# is not a defect, but the firmware RAM banks are captured against one specific
+# image, so pairing them would be unsound.
+#
+# A synthesized firmware plus `boot = "direct"` sidesteps it entirely, and
+# the port skips the boot sequence anyway. If the firmware menu is ever
+# needed, the matching dump has to be found first.
+generated_firmware = true
+
+[cartridge]
+# CORRECTED. This was `save_type = "none"` for the no-save design, and the game put
+# "could not detect DS data" on screen. The prediction written here at the time
+# - "if the game turns out to require a working save device to reach the arena,
+# this is the first thing to revisit" - is what happened.
+#
+# THE MISTAKE WAS CONFLATING TWO DIFFERENT THINGS. The design has no save
+# SYSTEM: every character and all customisation are unlocked from the start and
+# there is no stud currency to persist. That is a statement about game content.
+# It says nothing about the cartridge's backup CHIP, which the game probes at
+# boot and refuses to continue without. Removing the chip does not remove the
+# save system; it breaks the boot.
+#
+# The device is not guessed. melonDS's ROM database entry for AL7E is
+#
+#     { 0x45374C41, 0x02000000, 0x00000001 }
+#       ^ 'AL7E'    ^ 32 MB      ^ SaveMemType 1
+#
+# and its ROM size matches this cartridge exactly. NDSCart/CartRetail.cpp maps
+# type 1 through `sramlengths[1] = 512` and `case 1: SRAMType = 1; // EEPROM,
+# small`. So: EEPROM, 512 bytes. ndsrecomp requires save_size == 512 for
+# eeprom-tiny, which agrees.
+#
+# The no-save design is still honoured, just at the right layer: the chip is present so the
+# game boots, and nothing meaningful is persisted through it.
+save_type = "eeprom-tiny"
+save_size = 512
+
+# Read from the ROM header. NOTE the ARM9 is BLZ-compressed: `size` below is the
+# PACKED size in the header, and the image that actually runs is 0x107238 bytes
+# unpacked across three autoload sections (0x02000000 code, 0x01FF8000 ITCM,
+# 0x027E0000 DTCM). Banks are generated against the UNPACKED section 0.
+[arm9]
+rom_offset        = 0x00004000
+entry_pc          = 0x02000800
+load_address      = 0x02000000
+compressed_size   = 0x000A3F24
+decompressed_size = 0x00107238
+overlay_count     = 0
+
+[arm7]
+rom_offset   = 0x000A8000
+entry_pc     = 0x02380000
+load_address = 0x02380000
+size         = 0x000286A0
+
+[framework]
+path = "../third_party/ndsrecomp"
+note = "RetroPortingToolKit/ndsrecomp at e19dbf44 (tools/fetch_ndsrecomp.sh) plus port/patches/. Pre-alpha, no stable API. Vendors GPL melonDS GPU3D and Wi-Fi."

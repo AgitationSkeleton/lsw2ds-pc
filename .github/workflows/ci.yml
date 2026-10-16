@@ -1,0 +1,48 @@
+# What can be checked without the game: the unit tests (pure C++ and Python,
+# no ROM), the master server's syntax, the scripts' syntax, and the audit that
+# keeps game data and credentials out of the repository. Building the port
+# itself needs a ROM and is done locally (BUILDING.md).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Public-tree audit
+        run: python3 tools/check_public_tree.py
+      - name: Python compiles
+        run: python3 -m compileall -q tools services port
+      - name: Shell scripts parse
+        run: for f in $(git ls-files '*.sh'); do bash -n "$f" || exit 1; done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Master server parses
+        run: |
+          node --check services/master-server/src/index.js
+          node --check services/master-server/src/discord.js
+
+  unit:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: false
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python
+      - name: Unit tests
+        env:
+          UCRT64_BIN: /ucrt64/bin
+        run: bash tools/run_unit_tests.sh

@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "maps": [
+    {
+      "key": "mos_eisley_streets",
+      "label": "Mos Eisley Streets",
+      "level_asset": 325,
+      "model_assets": [
+        327,
+        329
+      ]
+    },
+    {
+      "key": "jabbas_tower",
+      "label": "Jabba's Tower",
+      "level_asset": 320,
+      "model_assets": [
+        322,
+        324
+      ]
+    }
+  ],
+  "hub": {
+    "key": "bounty_hunter_lobby",
+    "label": "Bounty Hunter Cantina",
+    "model_assets": [
+      955,
+      956,
+      957
+    ]
+  },
+  "game_modes": [
+    {
+      "key": "deathmatch",
+      "label": "Deathmatch"
+    },
+    {
+      "key": "capture_the_flag",
+      "label": "Capture the Flag",
+      "objective_identity": "han_carbonite_backpack",
+      "objective_model_asset": 2551,
+      "carrier_model_asset": 2552
+    }
+  ],
+  "time_limit_minutes": {
+    "minimum": 0,
+    "maximum": 60,
+    "zero_means": "unlimited",
+    "vanilla_default": 5
+  },
+  "score_limit": {
+    "deathmatch": {
+      "label": "Frag Limit",
+      "minimum": 0,
+      "maximum": 100,
+      "zero_means": "unlimited",
+      "default": 0
+    },
+    "capture_the_flag": {
+      "label": "Capture Limit",
+      "minimum": 0,
+      "maximum": 100,
+      "zero_means": "unlimited",
+      "default": 3
+    }
+  },
+  "characters_allowed": [
+    {
+      "key": "bounty_hunters",
+      "label": "Bounty Hunters"
+    },
+    {
+      "key": "free_play",
+      "label": "Free Play"
+    },
+    {
+      "key": "one_character",
+      "label": "One Character",
+      "default_runtime_id": 20
+    }
+  ],
+  "control_schemes": [
+    {
+      "key": "vanilla",
+      "label": "Vanilla (Tank Controls)"
+    },
+    {
+      "key": "enhanced",
+      "label": "Enhanced (Free Camera)"
+    }
+  ],
+  "client_music": [
+    {
+      "key": "off",
+      "label": "Off"
+    },
+    {
+      "key": "bounty_hunter",
+      "label": "Bounty Hunter",
+      "default": true
+    },
+    {
+      "key": "random_battle",
+      "label": "Random Battle"
+    }
+  ],
+  "balance": [
+    {
+      "key": "vanilla",
+      "label": "Vanilla",
+      "meaning": "Recovered action-row values"
+    },
+    {
+      "key": "rebalance",
+      "label": "Rebalance",
+      "meaning": "Project-owned override layer; values not yet designed"
+    }
+  ],
+  "modifiers": [
+    {
+      "key": "none",
+      "label": "None"
+    },
+    {
+      "key": "medieval",
+      "label": "Medieval Mode",
+      "attachment_assets": {
+        "female": 1572,
+        "other": 3361
+      },
+      "weapon_asset_candidate": 1494,
+      "weapon_behavior": "melee_replacement_candidate",
+      "extras_flag": 9
+    },
+    {
+      "key": "old_west",
+      "label": "Old West Mode",
+      "attachment_assets": {
+        "all": 1555
+      },
+      "weapon_asset_candidate": 1483,
+      "weapon_behavior": "western_firearm_replacement_candidate",
+      "extras_flag": 8
+    },
+    {
+      "key": "old_timey",
+      "label": "Old Timey Mode",
+      "extras_flag": 7,
+      "attachment_assets": {
+        "all": 5020
+      },
+      "attachment_actor_part": 228,
+      "evidence": "doc 31: Extras flag 7 at 0x02002828 assigns gear part 228 (TopHat 5020) via 0x020063d4",
+      "moustache_note": "Moustache 3781 (part 212) is authored in the same block but no code path applies it"
+    }
+  ],
+  "bounty_runtime_ids": [
+    0,
+    7,
+    8,
+    13,
+    20,
+    27,
+    29,
+    34,
+    36,
+    71
+  ],
+  "modifier_asset_candidates": {
+    "medieval": {
+      "weapon_asset": 1494,
+      "archive_name": "ClaymoreSaber",
+      "status": "strong identity; runtime substitution requires emulator confirmation"
+    },
+    "old_west": {
+      "weapon_asset": 1483,
+      "archive_name": "ClassicBlaster",
+      "hat_asset": 1555,
+      "hat_name": "CowboyHat",
+      "status": "strong identity; runtime substitution requires emulator confirmation"
+    }
+  },
+  "evidence_note": "Host ranges, controls, lobby rules, client music, modifier weapons, and Carbonite CTF behavior are project requirements/user observations. Vanilla action data is ROM-derived. Modifier asset identities are archive-name correlations; the exact enable-time substitution path still requires emulator confirmation.",
+  "decoded_option_strings": {
+    "source": "Huffman text bank, decompressed at runtime and captured by write watchpoint.",
+    "evidence_tier": "BOTH",
+    "match_types": [
+      "Deathmatch",
+      "Capture"
+    ],
+    "scoring_strings": [
+      "Kills - Deaths",
+      "Points - Deaths",
+      "DM Points"
+    ],
+    "arenas": [
+      "Mos Eisley Streets",
+      "Jabba's Tower"
+    ],
+    "time_limit_template": "Time: @2 min",
+    "supersedes": "The earlier note that read all five of these as one undifferentiated cycle. Deathmatch and Capture are the match types; the other three are separate.",
+    "string_ids": {
+      "Deathmatch": "0x2A1",
+      "Capture": "0x2A0",
+      "Kills - Deaths": "0x29F",
+      "DM Points": "0x2A2",
+      "Points - Deaths": "0x2A3",
+      "Time: @2 min": "0x297",
+      "Jabba's Tower": "0x0CD",
+      "Mos Eisley Streets": "0x0CE"
+    },
+    "verified": "2026-08-29: all eight re-found in the fully decoded bank (config/strings.json, 1333 strings) rather than resting on the runtime write-watchpoint capture they came from. The ids are new - the capture recorded text only.",
+    "also_in_the_same_block": {
+      "note": "Strings the watchpoint never caught because nothing wrote them while it was armed. The match-option block is 0x294..0x2A9 and these are the rest of it.",
+      "0x297": "Time: @2 min",
+      "0x299": "Time: @2 sec   <- a SECOND time template, minutes was not the only one",
+      "0x298": "Start Game",
+      "0x29B": "<<",
+      "0x29C": ">>",
+      "0x29D": "Game Settings",
+      "0x2A5": "Continue",
+      "0x2A6": "Select Character",
+      "0x2A7": "Settings",
+      "0x2A8": "Quit",
+      "0x2A9": "Winner!"
+    },
+    "arenas_are_level_names": "0x0CD and 0x0CE are not option strings: they sit inside the LEVEL NAME block 0x0C9..0x0D5, beside 'Blockade Runner 1' and 'Cantina Arena Lobby' (0x0D2). Listing them under decoded option strings blurred that - the option UI shows a level name, it does not own one."
+  }
+}

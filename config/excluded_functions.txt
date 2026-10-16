@@ -1,0 +1,7 @@
+# Decompiled files that must not be compiled at all.
+#
+# 0x0205E80C and 0x0205E818 are two DIFFERENT functions that Ghidra gave the
+# same name, thunk_FUN_0205e540, because both tail-call the same target. Both
+# carry "Could not recover jumptable ... Too many branches", so neither body is
+# usable, and linking either would silently pick one address's behaviour for
+# both. The name becomes an aborting stub instead.

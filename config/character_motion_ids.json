@@ -1,0 +1,289 @@
+{
+ "note": "character id (actor+0x6BB) -> motion id (actor+0x6EA), harvested from recorded RAM, with the walk/run speeds read from the ARM9 motion tables.",
+ "chain": {
+  "motion_field": "actor+0x6EA, HALFWORD, read at 0x02004BD4",
+  "classifier": "0x0208DA74",
+  "dispatch": "0x0208DAD8",
+  "tables": [
+   {
+    "class": 0,
+    "range": "0x00-0x2C",
+    "address": "0x020F2414",
+    "stride": 40
+   },
+   {
+    "class": 1,
+    "range": "0x2D-0x6A",
+    "address": "0x020F3E68",
+    "stride": 44
+   },
+   {
+    "class": 2,
+    "range": "0x6B-0xB0",
+    "address": "0x020F3490",
+    "stride": 36
+   },
+   {
+    "class": 3,
+    "range": "0xB1-0xE7",
+    "address": "0x020F2B1C",
+    "stride": 44
+   },
+   {
+    "class": 4,
+    "range": "0xE8-0xF9",
+    "address": "0x020F2144",
+    "stride": 40
+   }
+  ],
+  "class_byte_table": "0x020EE04C, indexed state*2 (0x02004BE8)",
+  "walk": "record+0x20 (0x02004C08)",
+  "run": "record+0x24 (0x02004C14)",
+  "locked": "class 2 -> speed 0 (0x02004C20)",
+  "separate_path": "character ids 0x54-0x63 use 0x020FF05C stride 12 (0x02004BB4); no Bounty Hunter is in that range"
+ },
+ "characters": {
+  "0": {
+   "name": "4-LOM",
+   "motion_id": 45,
+   "observations": {
+    "0": 6,
+    "45": 43,
+    "245": 5
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.300048828125,
+    "walk_fixed": 2048,
+    "run_fixed": 5325
+   }
+  },
+  "7": {
+   "name": "Boba Fett",
+   "motion_id": 47,
+   "observations": {
+    "47": 2
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "8": {
+   "name": "Bossk",
+   "motion_id": 48,
+   "observations": {
+    "48": 10
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.0,
+    "walk_fixed": 2048,
+    "run_fixed": 4096
+   }
+  },
+  "13": {
+   "name": "Dengar",
+   "motion_id": 56,
+   "observations": {
+    "56": 14
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.39990234375,
+    "walk_fixed": 2048,
+    "run_fixed": 5734
+   }
+  },
+  "18": {
+   "name": null,
+   "motion_id": 64,
+   "observations": {
+    "64": 1
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 0.60009765625,
+    "walk_fixed": 2048,
+    "run_fixed": 2458
+   }
+  },
+  "20": {
+   "name": "Greedo",
+   "motion_id": 65,
+   "observations": {
+    "65": 155
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "23": {
+   "name": null,
+   "motion_id": 51,
+   "observations": {
+    "51": 14
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.0,
+    "run": 0.0,
+    "walk_fixed": 0,
+    "run_fixed": 0
+   }
+  },
+  "27": {
+   "name": "IG-88",
+   "motion_id": 71,
+   "observations": {
+    "71": 39
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.5,
+    "walk_fixed": 2048,
+    "run_fixed": 6144
+   }
+  },
+  "29": {
+   "name": "Jango Fett",
+   "motion_id": 72,
+   "observations": {
+    "72": 25
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "34": {
+   "name": "Lando (Jabbas Palace)",
+   "motion_id": 76,
+   "observations": {
+    "76": 12
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "35": {
+   "name": null,
+   "motion_id": 79,
+   "observations": {
+    "79": 1
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "36": {
+   "name": "Princess Leia (Boushh)",
+   "motion_id": 77,
+   "observations": {
+    "77": 26
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "56": {
+   "name": null,
+   "motion_id": 57,
+   "observations": {
+    "57": 75
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.199951171875,
+    "walk_fixed": 2048,
+    "run_fixed": 4915
+   }
+  },
+  "71": {
+   "name": "Zuckuss",
+   "motion_id": 106,
+   "observations": {
+    "106": 45
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 1.10009765625,
+    "walk_fixed": 2048,
+    "run_fixed": 4506
+   }
+  },
+  "74": {
+   "name": null,
+   "motion_id": 105,
+   "observations": {
+    "105": 2
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 0.5,
+    "run": 0.5,
+    "walk_fixed": 2048,
+    "run_fixed": 2048
+   }
+  },
+  "75": {
+   "name": null,
+   "motion_id": 94,
+   "observations": {
+    "94": 3
+   },
+   "speed": {
+    "table": "0x020F3E68",
+    "stride": 44,
+    "walk": 1.0,
+    "run": 1.199951171875,
+    "walk_fixed": 4096,
+    "run_fixed": 4915
+   }
+  }
+ }
+}

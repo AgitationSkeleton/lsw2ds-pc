@@ -1,0 +1,19 @@
+{
+  "what": "A replay script that autonomously drives two DS instances from the Cantina lobby save state into a Bounty Hunter match on Jabba's Tower with Boba Fett and Greedo.",
+  "script": "out/work/replay_scripts/VERIFIED_jabba_boba_greedo.csv",
+  "regenerate": "python tools/make_join_script.py --to-frame 5200 --out <path>",
+  "run": "replay_melonds.bat <path>",
+  "source_capture": "out/work/gpudump_menu_demo/input.csv - a demonstration recorded with per-instance touch, the first capture in which stylus input is correctly attributed.",
+  "verified": {
+    "arena": "JABBA'S TOWER found in main RAM at frame 6300 (demo 6350)",
+    "characters": {
+      "P1": "7 = Boba Fett",
+      "P2": "20 = Greedo"
+    },
+    "first_PLAYER_TICK": "6315, against 6321 in the demonstration",
+    "method": "Arena model bytes located in main RAM; character indices read from actor +0x6BB on PLAYER_TICK."
+  },
+  "why_the_repeated_tap": "The demonstration has player 2 tapping the browse list at frames 4185 and 4208 while player 1 does not begin hosting until 4467. A human taps the host entry the moment it appears; absolute frame numbers cannot, because it appears at a different time every run. Player 2's browse tap at (53,49) is therefore repeated every 40 frames, 6 frames on, across the window in which the host can appear. A tap on an empty list does nothing.",
+  "why_to_frame_5200": "The first attempt repeated the tap to frame 5780 and produced Boba Fett against LANDO (34) instead of Greedo: the join had already succeeded and the surplus taps were landing on the character-select screen, walking player 2's cursor off Greedo. Stopping at 5200 keeps the join reliable and leaves the selection alone. This is the one tuned number in the script - if the join starts failing, widen it; if player 2's character drifts, narrow it.",
+  "do_not_use": "The original out/work/gpudump_abilities/input.csv cannot drive the menus. It was recorded before touch was per-instance, so both DSes logged each other's taps, and replaying it hosts a single-card game."
+}

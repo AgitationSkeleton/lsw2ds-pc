@@ -1,0 +1,244 @@
+--- a/runner/src/gpu2d.h
++++ b/runner/src/gpu2d.h
+@@ -26,6 +26,18 @@
+ // Title-audited transparent text HUD composition for wide 3D scenes.
+ void nds_gpu2d_set_adaptive_hud_anchor(bool enabled,
+                                        uint16_t center_width);
++// LSW2 PORT PATCH: let the backmost text BG extend into the widened columns,
++// so a 2D backdrop (a menu's starfield) reaches the new edges instead of
++// leaving an empty band. Independent of the HUD anchor above: this should be
++// on only while the 2D layers ARE the picture, and off while they are an
++// overlay on a 3D scene, where extending them tiles the HUD across the frame.
++void nds_gpu2d_set_adaptive_bg_extend(bool enabled);
++// LSW2 PORT PATCH: extend these particular text BGs of engine A (bit n = BGn)
++// into the widened columns as well, whatever the rule above decides. For a
++// layer that is an overlay AND covers the whole picture - a full-screen
++// translucent film blended over the 3D - where the backmost-layer rule is the
++// wrong question: the HUD must stay native while the film reaches the edges.
++void nds_gpu2d_set_adaptive_bg_extend_mask(uint8_t bg_mask);
+ 
+ // Narrow host-only seam used by the accelerated separate-window presenter.
+ // The eligibility decision is latched at frame start. While active, engine A
+--- a/runner/src/gpu2d.cpp
++++ b/runner/src/gpu2d.cpp
+@@ -98,6 +98,17 @@
+ uint32_t g_direct_force_cpu_frames = 0;
+ bool g_adaptive_hud_anchor = false;
+ int g_adaptive_hud_center_width = 64;
++// LSW2 PORT PATCH: whether the backmost text BG may extend into the widened
++// columns. Separate from the HUD anchor on purpose - they answer different
++// questions. Anchoring asks "should corner elements move to the new corners";
++// this asks "are the 2D layers the backdrop, or are they an overlay". A game
++// can want one and not the other, and LSW2 does: its portrait is drawn by the
++// 3D engine so anchoring the 2D parts tears the HUD away from it, while its
++// menus badly want the starfield to reach the new edges.
++bool g_adaptive_bg_extend = false;
++// LSW2 PORT PATCH: named text BGs that always extend - see
++// nds_gpu2d_set_adaptive_bg_extend_mask.
++uint8_t g_adaptive_bg_extend_mask = 0;
+ int g_front = 0;
+ uint64_t g_render_ns = 0;
+ uint64_t g_obj_ns = 0;
+@@ -390,11 +401,21 @@
+ // One decoded text-BG scanline. Per-pixel storage is the raw 15-bit color
+ // with bit 15 as the "opaque" flag; target/priority/order are per-layer
+ // constants on a text BG so they live once beside the buffer.
++// LSW2 PORT PATCH: color[] is sized for the widest adaptive surface, not the
++// hardware's 256. A text BG's tilemap lookup masks the source x, so columns
++// outside the hardware viewport are not an approximation - they are the tiles
++// the hardware would fetch if the viewport were wider. Decoding them lets a
++// widened frame show the real scrolling background in the new columns instead
++// of a blank band. Native paths index 0..255 and are unaffected.
+ struct BgLine {
+-    std::array<uint16_t, 256> color;  // bit15 = opaque
++    std::array<uint16_t, kMaxAdaptiveWidth> color;  // bit15 = opaque
+     uint8_t prio = 0;
+     uint8_t target = 0;
+     uint8_t order = 0;
++    // How many columns were decoded to the LEFT of hardware column 0. Zero for
++    // every native decode, so color[x] still means hardware column x there.
++    int left_extra = 0;
++    int decoded_width = 256;
+ };
+ 
+ enum class BgKind : uint8_t {
+@@ -438,16 +459,28 @@
+     }
+ }
+ 
++// LSW2 PORT PATCH: left_extra > 0 decodes left_extra columns either side of the
++// hardware viewport, so out.color[i] is hardware column (i - left_extra). The
++// tilemap lookup already masks the source x to the map's size, so those columns
++// are the genuine wrapped background rather than a synthesised fill.
+ void decode_text_line(int engine, int bg, int y, const uint8_t* palette,
+-                      const NdsVramRendererView& vram, BgLine& out) {
++                      const NdsVramRendererView& vram, BgLine& out,
++                      int left_extra = 0) {
+     Unit& u = g_unit[engine];
+     TextLine line = prepare_text_line(engine, bg, y, palette, &vram);
+     out.prio = static_cast<uint8_t>(line.cnt & 3u);
+     out.target = static_cast<uint8_t>(1u << bg);
+     out.order = static_cast<uint8_t>(bg + 1);
++    out.left_extra = left_extra;
++    out.decoded_width = 256 + left_extra * 2;
+ 
+     if ((line.cnt & 0x40u) && u.bg_mosaic_x) {
+-        // Mosaic-X resamples per pixel; keep the exact per-pixel path.
++        // Mosaic-X resamples per pixel; keep the exact per-pixel path. It is
++        // only defined over the hardware viewport, so a mosaic line reports
++        // itself as native width and the widened columns stay empty rather
++        // than being guessed at.
++        out.left_extra = 0;
++        out.decoded_width = 256;
+         for (int x = 0; x < 256; ++x) {
+             const Pixel p = text_pixel(line, x);
+             out.color[x] = p.valid
+@@ -470,11 +503,16 @@
+         row_base += (line.sy & 0xF8u) << 3;
+     }
+ 
++    const int total = out.decoded_width;
+     int x = 0;
+-    while (x < 256) {
+-        const uint32_t sx = (u.bgx[bg] + static_cast<uint32_t>(x)) & sx_mask;
++    while (x < total) {
++        // Hardware column for this buffer slot. Negative before the viewport;
++        // the unsigned add wraps and the mask below turns that into the correct
++        // tilemap column, which is what the hardware does when a BG scrolls.
++        const uint32_t hw_x = static_cast<uint32_t>(x - left_extra);
++        const uint32_t sx = (u.bgx[bg] + hw_x) & sx_mask;
+         const uint32_t tx = sx & 7u;
+-        const int run = std::min<int>(static_cast<int>(8u - tx), 256 - x);
++        const int run = std::min<int>(static_cast<int>(8u - tx), total - x);
+         const uint32_t map_addr =
+             row_base + ((sx & 0xF8u) >> 2) + ((sx & line.width_extra) << 3);
+         const uint16_t tile = static_cast<uint16_t>(
+@@ -719,11 +757,18 @@
+     end_affine_line(u, bg);
+ }
+ 
++// LSW2 PORT PATCH: left_extra is honoured for text BGs only. Affine and
++// extended backgrounds are sampled through a transform whose behaviour outside
++// the hardware viewport is not something we can claim to know, so they report
++// native width and the widened columns are left empty rather than invented.
+ void decode_bg_line(int engine, int bg, int y, const uint8_t* palette,
+-                    const NdsVramRendererView& vram, BgLine& out) {
++                    const NdsVramRendererView& vram, BgLine& out,
++                    int left_extra = 0) {
++    out.left_extra = 0;
++    out.decoded_width = 256;
+     switch (bg_kind(g_unit[engine], bg)) {
+         case BgKind::Text:
+-            decode_text_line(engine, bg, y, palette, vram, out);
++            decode_text_line(engine, bg, y, palette, vram, out, left_extra);
+             break;
+         case BgKind::Affine:
+             decode_affine_line(engine, bg, y, palette, vram, out);
+@@ -1719,6 +1764,16 @@
+         std::clamp<int>(center_width, 8, 256);
+ }
+ 
++// LSW2 PORT PATCH: see g_adaptive_bg_extend.
++void nds_gpu2d_set_adaptive_bg_extend(bool enabled) {
++    g_adaptive_bg_extend = enabled;
++}
++
++// LSW2 PORT PATCH: see g_adaptive_bg_extend_mask.
++void nds_gpu2d_set_adaptive_bg_extend_mask(uint8_t bg_mask) {
++    g_adaptive_bg_extend_mask = static_cast<uint8_t>(bg_mask & 0x0Eu);
++}
++
+ const uint32_t* nds_gpu2d_adaptive_framebuffer(int screen, uint16_t* width) {
+     const uint32_t* native = nds_gpu2d_framebuffer(screen);
+     const bool engine_a_on_top = (nds_powercontrol9() & 0x8000u) != 0;
+@@ -1799,6 +1854,34 @@
+         if (u.dispcnt & (0x100u << bg))
+             hud_bgs[hud_bg_count++] = bg;
+     }
++    // LSW2 PORT PATCH: which layer, if any, may extend into the widened
++    // columns.
++    //
++    // Extending every text BG wraps every one of them, and a tilemap only one
++    // screen wide simply repeats itself: the LEGO Star Wars II title card came
++    // out with the logo printed three times across the frame. Only ONE layer
++    // should reach into the new space, and it has to be the one furthest back -
++    // the sky, the starfield, the wall - because that is the layer the new
++    // space is a continuation of. Foreground art stays inside the hardware
++    // viewport where the game put it.
++    //
++    // Furthest back on the DS means the largest BGCNT priority, with the higher
++    // BG index behind on a tie, which is the same ordering the compositor
++    // itself resolves with.
++    int wide_bg_slot = -1;
++    if (g_adaptive_bg_extend) {
++        int best_prio = -1;
++        for (size_t i = 0; i < hud_bg_count; ++i) {
++            const int bg = hud_bgs[i];
++            const int prio = static_cast<int>(u.bgcnt[bg] & 3u);
++            if (wide_bg_slot < 0 || prio > best_prio ||
++                (prio == best_prio && bg > hud_bgs[wide_bg_slot])) {
++                best_prio = prio;
++                wide_bg_slot = static_cast<int>(i);
++            }
++        }
++    }
++
+     const bool snapshot_matches =
+         g_wide_3d_width[g_front] == output_width;
+     // The skybox repair rewrites the native 3D line before compositing. The
+@@ -1822,9 +1905,23 @@
+     for (int y = 0; y < 192; ++y) {
+         render_obj_line(0, y, obj.data(), output_width,
+                         oam, palette, *vram);
+-        for (size_t i = 0; i < hud_bg_count; ++i)
++        // LSW2 PORT PATCH: when the HUD is NOT being anchored, the 2D layers
++        // are the picture rather than an overlay - a title card, a menu, the
++        // starfield behind them - and the widened columns should show the real
++        // background instead of an empty band. Text BGs can supply it exactly,
++        // so ask for the extra columns. With anchoring on, the layers are a
++        // corner HUD being pinned to the edges and the native decode is right.
++        // LSW2 PORT PATCH: and any layer the title named, which extends on
++        // its own terms (a full-screen film over the 3D, while the HUD beside
++        // it stays native).
++        for (size_t i = 0; i < hud_bg_count; ++i) {
++            const bool named =
++                (g_adaptive_bg_extend_mask >> hud_bgs[i]) & 1u;
+             decode_bg_line(0, hud_bgs[i], y, palette, *vram,
+-                           hud_bg_lines[i]);
++                           hud_bg_lines[i],
++                           (static_cast<int>(i) == wide_bg_slot || named)
++                               ? extra : 0);
++        }
+         const uint32_t* const line3d = snapshot_matches
+             ? g_wide_3d_frame[g_front].data() +
+                   static_cast<size_t>(y) * output_width
+@@ -1935,15 +2032,20 @@
+             } else if (x >= extra && x < extra + 256) {
+                 hud_x = x - extra;
+             }
+-            if (hud_x >= 0) {
+-                for (size_t i = 0; i < hud_bg_count; ++i) {
+-                    const uint16_t c = hud_bg_lines[i].color[hud_x];
+-                    if (!(c & 0x8000u)) continue;
+-                    const BgLine& line = hud_bg_lines[i];
+-                    push(Pixel{
+-                        rgb6(static_cast<uint16_t>(c & 0x7FFFu)),
+-                        line.target, 0, line.prio, line.order, true});
+-                }
++            for (size_t i = 0; i < hud_bg_count; ++i) {
++                const BgLine& line = hud_bg_lines[i];
++                // LSW2 PORT PATCH: a layer decoded with extra columns is
++                // indexed by output column directly - it already covers the
++                // whole widened surface. One decoded at native width keeps the
++                // original band mapping, including hud_x < 0 meaning "no source
++                // column here".
++                const int src = line.left_extra > 0 ? x : hud_x;
++                if (src < 0 || src >= line.decoded_width) continue;
++                const uint16_t c = line.color[src];
++                if (!(c & 0x8000u)) continue;
++                push(Pixel{
++                    rgb6(static_cast<uint16_t>(c & 0x7FFFu)),
++                    line.target, 0, line.prio, line.order, true});
+             }
+             if (obj[x].valid) push(obj[x]);
+             if (emit_hd) {

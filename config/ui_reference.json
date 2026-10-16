@@ -1,0 +1,679 @@
+{
+  "schema_version": 1,
+  "purpose": "UI facts measured from DeSmuME captures of the running retail game, in DS 256x192 screen coordinates.",
+  "method": {
+    "emulator": "DeSmuME 0.9.13 x64, Window Size=1 (client 256x413, toolbar 29 rows, no side border)",
+    "driver": "tools/desmume_drive.ps1",
+    "attach_only_grabber": "tools/desmume_capture_now.ps1",
+    "cropper": "tools/crop_emulator_capture.py --border-x 0 --toolbar 29",
+    "note": "DeSmuME renders with Filter=0, so captured colours are exact device output, not resampled."
+  },
+  "match_hud": {
+    "status": "confirmed for a live Bounty Hunter arena match. Geometry and colours below come from lossless emulator captures of the hub HUD; a third-party gameplay video of an actual arena match shows the identical top-screen structure, so the arena reuses it unchanged.",
+    "source_capture": "n03_right.png",
+    "arena_confirmation": "video frames g012/g038 show a live match in Mos Eisley Streets and Jabba's Tower with the same portrait ring and four hearts and no text",
+    "has_any_text": false,
+    "text_note": "No labels of any kind appear on the HUD. Earlier prototype revisions invented FRAGS/DEATHS/name text; that was wrong.",
+    "portrait_ring": {
+      "centre": [
+        25.5,
+        28.0
+      ],
+      "outer_diameter": 36,
+      "stroke_rgb_hex": "0075FF",
+      "stroke_shades_hex": [
+        "0075FF",
+        "0065DF",
+        "00459E"
+      ],
+      "disc_fill_rgb_hex": "8E8EBE",
+      "content": "a rendered character bust, framed head-and-shoulders inside the disc"
+    },
+    "hearts": {
+      "count": 4,
+      "first_left_x": 50,
+      "pitch_x": 16,
+      "cluster_x_ranges": [
+        [
+          50,
+          60
+        ],
+        [
+          66,
+          76
+        ],
+        [
+          82,
+          92
+        ],
+        [
+          97,
+          109
+        ]
+      ],
+      "y_range": [
+        29,
+        41
+      ],
+      "approx_size": [
+        11,
+        13
+      ],
+      "rgb_hex_shades": [
+        "A60808",
+        "B61010",
+        "C72020"
+      ]
+    }
+  },
+  "menu_style": {
+    "status": "measured; palette and interaction model are exact",
+    "background": "the scrolling LegalStars starfield, black with white star dots",
+    "input_model": "touch driven. Directional-pad presses do not move a cursor. A first touch on an item highlights it, a second touch activates it.",
+    "palette": {
+      "title_rgb_hex": "F7CE10",
+      "item_normal_rgb_hex": "217BF7",
+      "item_normal_shade_hex": "0052B5",
+      "item_highlight_rgb_hex": "D618F7",
+      "item_highlight_shade_hex": "9400B5"
+    },
+    "title_alignment": "horizontally centred on every observed screen",
+    "item_alignment": "varies by screen: the pause menu centres its items, while Arena Mode Select left aligns them at x=31 with icons at x=5",
+    "icons": "wireless-capable entries carry a small DS-console glyph to the left of the label"
+  },
+  "match_bottom_screen": {
+    "status": "structure confirmed from a third-party gameplay video of a live arena match (frame g012). Colours are JPEG-degraded and marked approximate; the layout, ordering and iconography are unambiguous.",
+    "background": "the scrolling starfield",
+    "player_slots": {
+      "count": 4,
+      "arrangement": "a single left-hand column, one row per player, evenly spaced top to bottom",
+      "colour_order": [
+        "blue",
+        "green",
+        "red",
+        "purple"
+      ],
+      "colour_order_note": "This display order is NOT the turret-flag asset order in player_colors.json, which runs blue, green, purple, red across assets 340..343. Slot-to-colour mapping is taken from this screen; the flag assets remain proven only for the turret flag.",
+      "approx_ring_rgb_hex": [
+        "0075FF",
+        "53C63F",
+        "A0031E",
+        "7400A8"
+      ],
+      "approx_note": "Only the blue 0075FF is exact, from a lossless emulator capture. The other three are sampled from video and need a lossless capture to pin down.",
+      "row_contents": [
+        "circular character portrait framed by the slot's coloured ring; an unoccupied slot shows a pale tinted disc with no portrait",
+        "two stacked glyphs: a white skull LEGO head above a red LEGO head",
+        "two stacked counters in yellow digits, one aligned to each glyph"
+      ],
+      "counter_semantics": "Two counters per player matches the score manager's signed 16-bit kills at +0x1c and deaths at +0x24. Which glyph maps to which is NOT confirmed and must not be asserted.",
+      "text_labels": "none; the counters are identified purely by glyph"
+    },
+    "radar": {
+      "position": "right of the player column, occupying most of the screen width",
+      "bezel": "grey stone-textured rounded rectangle",
+      "field": "dark navy interior with blue concentric ellipses and radial grid lines",
+      "local_player_marker": "a grey triangle at the centre indicating heading",
+      "other_player_marker": "a yellow LEGO head icon at the contact's relative position"
+    },
+    "button_row": {
+      "position": "below the radar",
+      "buttons": [
+        {
+          "icon": "green radar dial",
+          "state": "active, drawn with a blue ring"
+        },
+        {
+          "icon": "signal strength meter"
+        },
+        {
+          "icon": "camera",
+          "state": "inactive, grey"
+        }
+      ]
+    }
+  },
+  "observed_screens": {
+    "pause_menu": {
+      "source_capture": "v01_pause.png",
+      "title": "Paused",
+      "title_y_range": [
+        12,
+        42
+      ],
+      "items": [
+        {
+          "label": "Resume",
+          "y_range": [
+            44,
+            55
+          ]
+        },
+        {
+          "label": "Host Wireless",
+          "y_range": [
+            65,
+            80
+          ],
+          "icon": "ds_console",
+          "toggles_to": "Shut Off Wireless"
+        },
+        {
+          "label": "Settings",
+          "y_range": [
+            82,
+            108
+          ]
+        },
+        {
+          "label": "Extras",
+          "y_range": [
+            110,
+            117
+          ]
+        },
+        {
+          "label": "Save Game",
+          "y_range": [
+            119,
+            129
+          ]
+        },
+        {
+          "label": "Quit Game",
+          "y_range": [
+            144,
+            154
+          ]
+        }
+      ],
+      "row_pitch_note": "Row extents were measured against a moving starfield, so pitch is approximate; the labels and order are exact."
+    },
+    "arena_mode_select": {
+      "source_capture": "A03.png",
+      "reached_by": "press A while facing the beige slope in front of the circular hologram pad in the Bounty Hunter Arena Lobby",
+      "title": {
+        "text": "Arena Mode Select",
+        "y_range": [
+          16,
+          26
+        ],
+        "x_range": [
+          53,
+          199
+        ],
+        "alignment": "centred"
+      },
+      "item_alignment": "left aligned at x=31, with the icon glyph at x=5..22",
+      "item_pitch_y": 28,
+      "items": [
+        {
+          "label": "Host Multi-Card Game",
+          "y_range": [
+            62,
+            72
+          ],
+          "x_range": [
+            31,
+            210
+          ],
+          "icon": "ds_console"
+        },
+        {
+          "label": "Host Single-Card Game",
+          "y_range": [
+            90,
+            102
+          ],
+          "x_range": [
+            31,
+            216
+          ],
+          "icon": "ds_console"
+        },
+        {
+          "label": "Join Wireless Game",
+          "y_range": [
+            118,
+            128
+          ],
+          "x_range": [
+            31,
+            190
+          ],
+          "icon": "ds_console"
+        },
+        {
+          "label": "Exit",
+          "y_range": [
+            154,
+            164
+          ],
+          "x_range": [
+            31,
+            58
+          ],
+          "note": "sits after a larger gap and carries no icon"
+        }
+      ]
+    },
+    "hosting_single_card_game": {
+      "source_capture": "B03_hosting2.png",
+      "title": "Hosting Single-Card Game",
+      "body": "the host player name is printed in white, left aligned near x=30, under the title",
+      "actions": [
+        {
+          "label": "Exit",
+          "approx_centre": [
+            72,
+            160
+          ]
+        },
+        {
+          "label": "START",
+          "approx_centre": [
+            145,
+            160
+          ]
+        }
+      ],
+      "decoration": "a wireless signal-strength icon sits in the upper right",
+      "behaviour": "START does not launch with only a host present; it waits for a client to join"
+    },
+    "cantina_bottom_screen": {
+      "source_capture": "g06.png",
+      "tab_bar": {
+        "count": 3,
+        "y": 167,
+        "x_positions": [
+          57,
+          128,
+          200
+        ],
+        "shape": "round buttons; the active tab is drawn with a blue ring",
+        "tabs": [
+          "camera_controls",
+          "party_members",
+          "character_customize"
+        ]
+      },
+      "party_members": {
+        "title": "Party Members",
+        "portrait_ring_stroke_hex": "0075FF",
+        "portrait_x_positions": [
+          55,
+          102
+        ],
+        "portrait_y": 90
+      },
+      "character_customize": {
+        "title": "Character Customize",
+        "widget": "grey rounded panel with blue left/right triangle arrows and a rotate glyph"
+      }
+    },
+    "title_menu": {
+      "source_capture": "b05.png",
+      "top_screen": "LEGO Star Wars II logo over the starfield",
+      "items": [
+        "New Game",
+        "Load Game",
+        "Settings"
+      ]
+    }
+  },
+  "remaining_blocker": {
+    "lossless_arena_capture": "There is no single-console arena match. Hosting a single-card game reaches a lobby whose START waits for a client and will not launch with only the host present, confirmed by capture C04.png. A third-party gameplay video supplied the arena UI structure, but its frames are JPEG-compressed and upscaled, so the three non-blue slot ring colours and the exact bottom-screen geometry still want a lossless two-console capture, for example melonDS local wireless across two instances."
+  },
+  "corrections_this_pass": {
+    "player_colour_conflation": "The HUD portrait ring is 0075FF. The four turret-flag player colours in config/player_colors.json are 2142E7, 31AD21, 94188C and E72929. These are different palettes and must not be conflated; the flag colours are proven for the turret flag only."
+  },
+  "MENU_SCREENS_ARE_INVENTED": {
+    "finding": "The Arena Setup screen the port renders is a plain text list on black using the extracted font. It is not a recreation of the DS menu.",
+    "evidence": "out/work/godot_ui_capture/01_server_setup.png, regenerated 2026-08-15 from the current port.",
+    "tells": "It lists options the DS does not have - Music Module, Play Offline, Host Wireless Game, Join by Code or IP - so it is the port own design, not decoded layout.",
+    "status": "Tier NONE. Must not be treated as reference for the DS menus.",
+    "what_is_actually_decoded": "The arena HUD geometry is measured from real framebuffers and is sound. The menu screens are not."
+  },
+  "menu_state_search": {
+    "goal": "Find a screen-identifier in RAM so the match driver can tell which menu it is on, instead of replaying taps at fixed frames. That is what would make the driver reach any map, mode or character rather than the one match it currently reaches.",
+    "status": "FOUND, in a better form than expected: 0x021046FC is a UI TEXT buffer holding the string most recently rendered by the menu, so the driver can read the actual label on screen rather than infer a state number.",
+    "method": "The demonstration capture has ten stylus taps on instance 0 at known frames, each followed by a screen change. RAM was sampled before and after every tap and filtered for bytes that change at four or more taps AND hold their value between them - the signature a screen id must have. 28 bytes survived.",
+    "what_they_turned_out_to_be": {
+      "0x021046FE": "Best structural fit - 7 changes, 5 within 25 frames of a tap, 6 distinct values - but the values are 0, 108, 112, 105, 32, 97, which read as ASCII l, p, i, space, a. This is a text buffer being rewritten per screen, not a state enum. It may still be useful as a screen fingerprint if the strings are stable.",
+      "0x02115805 / 0x02115821 / 0x02115861": "Monotonic counters, 45 46 47 48 49 50, incrementing once per UI interaction. They sit immediately below the voice-record pool at 0x02115AE0, so these are almost certainly sound-event counters - a menu click plays a cue. Useful as instrumentation: a driven tap that registers increments them, a tap that misses does not.",
+      "0x02102839 / 0x02102841": "A second counter of the same shape, 50 through 55.",
+      "0x0211602A and neighbours": "Toggle between 0 and 255 but never within 25 frames of a tap - unrelated to input, most likely rendering or animation state."
+    },
+    "next_step": "Two options, both better than another value sweep. Either treat the text buffer at 0x021046FE as a screen fingerprint and read the whole string rather than one byte, or find the routine that writes it and work back to whatever selects the screen. The counters give a cheap independent check that a driven tap landed.",
+    "why_it_matters": "Menus are the weakest area of the port at 10%, built on invented screens. They are also what generalises the match driver. Both problems are solved by the same decode."
+  },
+  "menu_label_buffer": {
+    "address": "0x021046FC",
+    "type": "null-terminated ASCII, at least 24 bytes",
+    "confidence": "high",
+    "evidence": "Read across the demonstrated setup it reproduces the demonstration exactly and in order: the wireless game name, then the game-mode options being cycled one tap at a time, then a countdown from 29 down to 21 as the match starts.",
+    "observed_sequence": [
+      {
+        "frame": 4520,
+        "text": "melonDS",
+        "meaning": "the hosted wireless game name, taken from the DS nickname"
+      },
+      {
+        "frame": 4870,
+        "text": "Kills - Deaths"
+      },
+      {
+        "frame": 5000,
+        "text": "Capture"
+      },
+      {
+        "frame": 5110,
+        "text": "Kills - Deaths"
+      },
+      {
+        "frame": 5150,
+        "text": "Points - Deaths"
+      },
+      {
+        "frame": 5190,
+        "text": "DM Points"
+      },
+      {
+        "frame": 5240,
+        "text": "Deathmatch",
+        "meaning": "the setting the demonstration landed on"
+      },
+      {
+        "frame": 5660,
+        "text": "29",
+        "meaning": "pre-match countdown, then 28 27 26 25 24 23 22 21"
+      }
+    ],
+    "how_to_use_it": "This is the screen fingerprint the match driver needs. A driven tap can be confirmed by reading the label rather than trusting a frame number, which is what would let the driver reach maps, modes and characters other than the one match it currently reaches. Pair it with the UI counters at 0x02115805 and 0x02102839, which tick once per interaction.",
+    "caveat": "It is the last string RENDERED, not a state enum, so it reflects whatever the menu drew most recently. Reading it mid-transition can catch a stale or partially overwritten value - the raw window shows text being written over the tail of the previous string."
+  },
+  "menu_text_slots": {
+    "what": "An array of 64-byte null-padded ASCII slots holding the strings the setup screen is currently displaying. Each slot is overwritten in place, so a shorter string leaves the tail of the previous one behind - \"Deathmatch\" followed by \"aths\", \"Jabba's Tower\" followed by \"eets\".",
+    "stride": "0x40 (64 bytes)",
+    "confidence": "high",
+    "slots": {
+      "0x021046FC": {
+        "field": "game mode",
+        "observed": [
+          "Kills - Deaths",
+          "Capture",
+          "Points - Deaths",
+          "DM Points",
+          "Deathmatch"
+        ],
+        "note": "Also carries the hosted game name and the pre-match countdown at other times."
+      },
+      "0x0210473C": {
+        "field": "a formatted number",
+        "observed": [
+          "15,680"
+        ],
+        "note": "Thousands-separated. Most likely the stud total, NOT verified."
+      },
+      "0x0210477C": {
+        "field": "arena",
+        "observed": [
+          "Mos Eisley Streets",
+          "Jabba's Tower"
+        ],
+        "note": "The demonstration changed the map and this slot changed with it - Jabba's Tower written over Mos Eisley Streets, leaving 'eets'."
+      },
+      "0x02104918": {
+        "field": "primary action button label",
+        "observed": [
+          "Exit",
+          "Wireless Game",
+          "Start Game"
+        ],
+        "note": "Tracks the stage of setup, so it is the single best screen fingerprint.",
+        "CORRECTION": "NOT part of the slot array. It sits at index 8.44 off the 64-byte grid, so it is a separate buffer with its own writer. Previously listed alongside the slots as if it were one of them."
+      },
+      "0x0210492E onward": {
+        "field": "static legal text",
+        "observed": [
+          "...alaxy far, far away....",
+          "LucasArts copyright block"
+        ],
+        "note": "Constant; useful only as an anchor for locating the region."
+      }
+    },
+    "evidence": "Read at three frames of a demonstrated setup - before configuration, after the mode and map were chosen, and during character select. Every slot changed in step with what the player was doing.",
+    "ROM_LOCATION_UNKNOWN": "These strings are NOT findable in the ROM. Searched arm9_section_0, arm9_decompressed and the whole of rom.bin, and all 5,548 extracted archive entries, in both ASCII and UTF-16: zero hits. The text bank is packed or compressed. So this decode is Tier RUN - runtime evidence only - and does not yet meet the both-sources bar (ROM and runtime evidence agreeing). Finding and decompressing the text bank is the outstanding work, and it would yield the FULL option lists rather than only the entries the demonstration happened to cycle past.",
+    "ROM_CROSS_REFERENCE": {
+      "tier": "BOTH - runtime and ROM agree. Was RUN.",
+      "writer": "0x0206612C..0x02066160, a copy-string-into-slot routine; the store is 0x02066148.",
+      "base_literal": "The word at 0x02066164 is 0x021046FC - the slot array base, straight from the ARM9.",
+      "stride_from_code": "add r2, r0, r2, lsl #6 - index times 64, in the instruction rather than inferred.",
+      "slots_confirmed": {
+        "0": "0x021046FC game mode",
+        "1": "0x0210473C general purpose",
+        "2": "0x0210477C arena"
+      },
+      "found_by": "A write watchpoint on 0x021046FC."
+    }
+  },
+  "menu_vocabulary_from_ram": {
+    "source": "Every printable string in 0x02103000-0x02108000 across a demonstrated setup, sampled every 40 frames. These are the game s own words, replacing the invented labels the port menus were built on.",
+    "evidence_tier": "RUN - runtime only. See text_bank_search_FAILED for why.",
+    "strings": {
+      "match_setup": [
+        "Deathmatch",
+        "Capture",
+        "Kills - Deaths",
+        "Points - Deaths",
+        "DM Points"
+      ],
+      "arenas": [
+        "Mos Eisley Streets",
+        "Jabba's Tower"
+      ],
+      "actions": [
+        "Exit",
+        "Wireless Game",
+        "Start Game",
+        "START",
+        "Confirm Load?"
+      ],
+      "labels": [
+        "Party Members",
+        "Page 2",
+        "Bounty Hunter",
+        "Character",
+        "Greedo"
+      ],
+      "formatted_number": [
+        "15,680"
+      ],
+      "character_variant_qualifiers": [
+        "Jabba's Palace"
+      ]
+    },
+    "format_strings": {
+      "template": "@1 - @2",
+      "observed_result": "melonDS - Arena",
+      "meaning": "The UI composes strings from templates with numbered placeholders rather than storing every combination. That is worth reproducing in the port, and it explains why some slots show a hybrid mid-write."
+    },
+    "slot_0x0210473C_is_general": "Earlier recorded as 'a formatted number' from '15,680'. It also held 'Greedo' during character select, so it is a general-purpose slot whose meaning depends on the screen, not a dedicated stud counter. Corrected.",
+    "partial_strings_are_overwrites": "Entries like 'haracter', 'nty Hunter' and \"bba's Palace\" are the tails of 'Character', 'Bounty Hunter' and \"Jabba's Palace\" left behind when a shorter string was written over a longer one. They are not separate strings.",
+    "correction_jabbas_palace": "Jabba's Palace was first grouped with the arenas. It is NOT an arena - Bounty Hunter has exactly two, Mos Eisley Streets and Jabba s Tower. The roster already carries Lando as \"Lando (Jabba s Palace)\", so the string is a character-variant qualifier. Everything outside the multiplayer component and the Cantina lobby is out of scope, and single-player level names must not be read as arena data."
+  },
+  "text_bank_search_FAILED": {
+    "goal": "Find the UI strings in the ROM, to raise the menu decode from runtime-only evidence to the both-sources standard (ROM and runtime evidence agreeing), and to recover the FULL option lists rather than the entries one demonstration scrolled past.",
+    "result": "NOT FOUND. Recorded so the same ground is not covered again.",
+    "searched": [
+      "arm9_section_0, arm9_decompressed, arm7.bin - ASCII and UTF-16, zero hits.",
+      "The whole 32 MB cartridge image - ASCII and UTF-16, zero hits.",
+      "All 5,548 extracted archive entries - zero hits.",
+      "LZ10 and RLE decompression of every entry carrying those headers: 26 entries decompressed, none containing UI text.",
+      "Constant-XOR encoding, all 255 keys - no hit.",
+      "Any constant-offset cipher, via the character-difference signature of \"Deathmatch\", which survives any such shift - zero candidates in 32 MB.",
+      "Any monoalphabetic substitution, via the repeated-character pattern of \"Deathmatch\" (a at 2 and 6, t at 3 and 7, h at 4 and 9) plus 42 inequality constraints - 196 candidates, every one of them ARM opcodes."
+    ],
+    "what_remains": "The pattern test is the strong one: it rules out every substitution encoding, so the bank is not a simple cipher. What is left is Huffman or another variable-length coding, which destroys positional structure, or a container this extraction has not opened. The format-string discovery (@1 - @2) also raises the possibility that some strings are assembled from fragments that are individually too short to search for.",
+    "next_step": "Find the routine that WRITES 0x021046FC and follow its source pointer back. That is a code-following problem rather than a search problem, and the write-watchpoint already planned for the scoreboard would answer it with the same instrumentation.",
+    "narrowed_by_register_trace": {
+      "method": "Traced r1 - the source pointer - at the copy routine 0x0206612C and at its loop body 0x02066144, across a full driven menu run. 95 STRCOPY calls and 926 byte copies captured.",
+      "sources_actually_seen": {
+        "0x021049xx": "807 copies - the UI buffer region itself, so this routine often moves text from one UI buffer to another",
+        "0x021597xx": "112 copies - the DS nicknames from the wireless link, confirmed by reading melonDS at 0x02159779 and 0x02159791",
+        "0x027E35xx / 0x027E36xx": "7 copies - DTCM"
+      },
+      "conclusion": "No separate text bank was read during the run. Every source was either another UI buffer or a wireless nickname. So 0x0206612C is a generic string copy and is NOT the routine that first produces \"Deathmatch\" or \"Jabba s Tower\" - something else fills the 0x021049xx buffer, and that writer is the real lead.",
+      "next_step": "Watchpoint writes into the 0x021049xx buffer rather than into the slot array, and identify the PC that fills it first. The capability exists; this is one more run, not new code.",
+      "also_learned": "0x02159779 and 0x02159791 hold the two players wireless nicknames - useful for the ports lobby."
+    }
+  },
+  "text_bank_is_huffman_coded": {
+    "status": "LOCATED. The bank is Huffman-compressed; the decoder is identified. Not yet decoded.",
+    "decoder": "0x0205CD70-0x0205CDD0 and surrounding, reached during menu construction.",
+    "found_by": "A write watchpoint on the staging buffer 0x02104918. 2,549 of 2,560 writes came from a single PC, 0x0205CDAC, emitting bytes that spelled Are, Hos, Hos, Joi, Exi on repeat - a five-entry menu being rebuilt each frame.",
+    "why_every_search_failed": "Huffman is variable-length, so a string has no fixed byte pattern in the compressed stream. That is consistent with every negative result already recorded: no ASCII or UTF-16 anywhere in the 32 MB cartridge, no constant-XOR, no constant-offset cipher, and no monoalphabetic substitution - the repeated-character pattern test returned only ARM opcodes. None of those tests could ever have found a Huffman stream.",
+    "evidence_in_the_disassembly": {
+      "ldrh sb, [r7, #-0xfe] / ldrh sb, [r7]": "16-bit table entries - tree nodes",
+      "add r7, r6, sb, lsl #2": "node index scaled by 4 - walking the tree",
+      "cmp sb, #0x100 / bhs": "the symbol-versus-node test; below 0x100 is a literal byte",
+      "and r6, sb, #0xff": "extract the decoded byte",
+      "strb r6, [r1, r5]": "store it into the staging buffer",
+      "cmp r6, #0xf0": "a control-code threshold. Bytes at or above 0xF0 are handled separately, which is very likely how the @1 and @2 placeholders already observed in \"@1 - @2\" are encoded."
+    },
+    "menu_structure_recovered": {
+      "entries": [
+        "Are...",
+        "Hos...",
+        "Hos...",
+        "Joi...",
+        "Exi..."
+      ],
+      "reading": "A five-entry wireless menu with TWO Host entries. It was confirmed independently, from the original game, that one hosts a single-card game (Download Play, which a second cartridge-running DS cannot join) and the other a multi-card game. That is the exact distinction the match driver had to be tuned around, and it is now visible in the menu data rather than inferred from a failure.",
+      "caveat": "Only the first three characters were watched, so the full strings are not yet read."
+    },
+    "next_step": "Reimplement the decoder, or simply widen the watchpoint across the whole staging buffer and let the game decompress the strings for us - the cheaper option, and it yields the complete option lists that a demonstration could only sample.",
+    "evidence_tier": "BOTH - runtime watchpoint plus ROM disassembly of the decoder."
+  },
+  "DECODED_MENU_STRINGS": {
+    "status": "COMPLETE for every screen the setup flow passes through.",
+    "method": "The text bank is Huffman-coded, so it cannot be searched for. Instead the game was made to decompress it: a write watchpoint across 64 bytes of the staging buffer at 0x02104918 captured every byte the decoder emitted, and the strings were reassembled from 4,929 writes.",
+    "evidence_tier": "BOTH - runtime watchpoint, with the decoder identified in the ROM at 0x0205CD70.",
+    "strings": {
+      "boot": [
+        "LICENSED BY NINTENDO"
+      ],
+      "arena_mode_select": [
+        "Arena Mode Select",
+        "Host Multi-Card Game",
+        "Host Single-Card Game",
+        "Join Wireless Game",
+        "Exit"
+      ],
+      "connection": [
+        "Hosting Wireless Game",
+        "Browsing Wireless Game",
+        "Waiting for Host",
+        "START",
+        "@1 - Arena"
+      ],
+      "game_settings": [
+        "Game Settings",
+        "Start Game",
+        "Time: @2 min"
+      ],
+      "match_type": [
+        "Deathmatch",
+        "Capture"
+      ],
+      "scoring": [
+        "Kills - Deaths",
+        "Points - Deaths",
+        "DM Points"
+      ],
+      "arenas": [
+        "Mos Eisley Streets",
+        "Jabba's Tower"
+      ],
+      "character_select": [
+        "Select Character",
+        "Boba Fett",
+        "Bossk",
+        "Dengar",
+        "Greedo",
+        "IG-88",
+        "Jango Fett",
+        "Lando Jabba's Palace",
+        "Leia Bounty Hunter",
+        "Zuckuss",
+        "????"
+      ],
+      "format_templates": [
+        "@1",
+        "@1 - @2",
+        "@1 - Arena",
+        "@3",
+        "Time: @2 min"
+      ]
+    },
+    "what_this_settles": {
+      "multi_vs_single_card": "Host Multi-Card Game and Host Single-Card Game are two separate menu entries. The replay driver was landing on the wrong one, which is now visible in the data rather than inferred.",
+      "ten_bounty_hunters": "All ten are named. Nine were decoded from RAM - Boba Fett, Bossk, Dengar, Greedo, IG-88, Jango Fett, Lando Jabba's Palace, Leia Bounty Hunter, Zuckuss - and the tenth rendered as ???? , which was a LOCKED character rather than a missing string, exactly as suspected. SETTLED 2026-08-30 from the cartridge: config/strings.json's source block records that character names are string id 0x1CB + character id, and decoding that for the ten ids in the Free Play select's hunter pages (20 7 29 27 0 13 8 34 36 71, table at 0x020EDDB2) names the tenth as 4-LOM, character id 0, string id 0x1CB. dispatch_overrides.cpp already decodes at that base, so the fork's picker has been rendering it correctly all along.",
+      "bounty_hunter_roster_decoded": [
+        {"character": 20, "string_id": "0x1DF", "name": "Greedo"},
+        {"character": 7, "string_id": "0x1D2", "name": "Boba Fett"},
+        {"character": 29, "string_id": "0x1E8", "name": "Jango Fett"},
+        {"character": 27, "string_id": "0x1E6", "name": "IG-88"},
+        {"character": 0, "string_id": "0x1CB", "name": "4-LOM"},
+        {"character": 13, "string_id": "0x1D8", "name": "Dengar"},
+        {"character": 8, "string_id": "0x1D3", "name": "Bossk"},
+        {"character": 34, "string_id": "0x1ED", "name": "Lando Jabba's Palace"},
+        {"character": 36, "string_id": "0x1EF", "name": "Leia Bounty Hunter"},
+        {"character": 71, "string_id": "0x212", "name": "Zuckuss"}
+      ],
+      "official_names": "Leia Bounty Hunter and Lando Jabba's Palace are the game's own names, confirming the roster spellings rather than the descriptive ones used in earlier notes.",
+      "mode_vs_scoring": "Deathmatch and Capture are match types. Kills - Deaths, Points - Deaths and DM Points are separate strings that appear in the settings flow, consistent with scoring or display options rather than modes. Which control belongs to which is still NOT established.",
+      "time_limit": "Time: @2 min confirms a numeric time-limit setting."
+    },
+    "placeholders": "@1, @2 and @3 are substitution slots. The decoder tests for bytes at or above 0xF0, which is very likely how they are encoded in the stream.",
+    "still_unknown": "The full option list for each setting (only the values the flow passed through were captured), and the on-screen layout - position, font and colour of every entry. The tenth character is no longer among these: see what_this_settles/ten_bounty_hunters."
+  },
+  "freeplay_circles_deferred": "The free-play selection circles are OUT OF SCOPE for now. The character-select focus is the ten Bounty Hunter statues. Free play comes much later, after 1:1 parity is reached - the rule is attain parity first, deviate afterwards.",
+  "RENDER_BASELINE_REQUIREMENT": {
+    "stated_by": "design requirement",
+    "requirement": "The Godot window must scale the DS UP WHILE KEEPING ITS ASPECT: both screens, top and bottom, matching the hardware entirely, in 3D world space and in UI alike.",
+    "implication": "The DS is two 256x192 screens stacked - 256x384 together, a 2:3 aspect. The port was configured for a single 256x192 viewport in a 1024x768 (4:3) window, so it could only ever show one screen at the wrong aspect.",
+    "applied": "viewport 256x384, window override 512x768 - a whole 2x of both screens together, with stretch mode viewport and integer scaling.",
+    "do_not_guess": "Exact values come from the ROM and from captures, never from estimation. Every layout number now in the configs is measured from a captured frame; anything not measured is marked as such.",
+    "still_to_do": [
+      "Confirm the port actually renders BOTH screens into the taller viewport rather than one stretched screen.",
+      "Match the inter-screen gap the DS hardware shows between top and bottom.",
+      "Re-verify the arena HUD layout at the corrected resolution - its 82 score was measured while the renderer was not pixel-native.",
+      "Match the 3D world rendering on the top screen, which has not been compared against a DS frame at all yet."
+    ],
+    "verification_18_29": {
+      "capture": "out/work/godot_ui_capture/01_server_setup.png",
+      "confirmed_working": [
+        "The viewport is now 256x384 - the render is visibly 2:3, both DS screens tall.",
+        "Start Game renders CENTRED and CYAN, at the measured y 164. The action flag reaches add_item now.",
+        "Option rows sit at the 40px pitch with arrows flanking centred values.",
+        "The starfield is no longer smeared - integer scroll under nearest filtering."
+      ],
+      "NEW_GAP_FOUND": "The whole UI is drawn into the TOP 192 rows and the lower half is empty starfield. On the DS, Game Settings is the BOTTOM screen - the touch screen - and the TOP screen shows something else entirely. The port has a two-screen viewport but still only one screen of content, placed on the wrong half.",
+      "what_that_means": "The viewport change was necessary but not sufficient. The port needs a real top/bottom split: menu content anchored to the lower 256x192 region, and whatever the DS draws on the top screen rendered into the upper region. The top screen during menus has NOT been captured yet - every menu dump so far read screen1, the bottom.",
+      "next_step": "Dump screen0 during the settings screen to see what the DS top screen actually shows during menu navigation. That is one dump away and has never been looked at."
+    },
+    "TWO_WINDOWS_not_one_tall_one": {
+      "stated_by": "design requirement, superseding the stacked layout above",
+      "requirement": "The Godot window is NOT elongated to stack both DS screens. The port uses TWO WINDOWS, one per DS screen (top and touch), and the MAIN window is the TOP screen.",
+      "applied": "project.godot reverted to viewport 256x192 with a 1024x768 window override - exactly 4x, and 4:3, the same aspect as one DS screen. stretch mode viewport with integer scaling is kept, so one DS pixel stays a square block of four.",
+      "why_the_stacked_version_was_wrong": "It produced a 2:3 window that matches neither DS screen, and it put the menu content in the top half when Game Settings is the BOTTOM screen. Two windows sidestep both problems and match how the hardware is actually used.",
+      "port_already_has_the_mechanism": "capture_ui.gd references main.bottom_screen_host.popout, so a second window for the touch screen already exists in the port.",
+      "still_to_verify": [
+        "That the popout window renders the menu content and the MAIN window renders the 3D top screen - currently the menu is drawn in the main window, which is backwards.",
+        "The port top screen has still never been rendered for comparison against the DS frame in config/bounty_hud_layout.json.",
+        "capture_ui.gd fails at save_viewport for the popout, so the touch-screen window cannot be captured yet - that blocks any side-by-side of the bottom screen."
+      ]
+    }
+  }
+}

@@ -1,0 +1,1114 @@
+{
+ "schema": 3,
+ "source": {
+  "rom": "arm9_section_0_02000000.bin",
+  "page_table": "0x020EDDB2",
+  "page_stride": 8,
+  "page_count": 14,
+  "layout_table": "0x020EDE22",
+  "descriptor_table": "0x020EF57C",
+  "descriptor_stride": "0x18",
+  "portrait_field": "+0x08",
+  "empty_slot": 100,
+  "functions": {
+   "construct": "0x020682C4",
+   "build_widgets": "0x0206846C",
+   "redraw_page": "0x02068D74",
+   "fill_page": "0x02068FBC",
+   "input": "0x02068598",
+   "slot_touched": "0x020687B4",
+   "party_refresh": "0x020691B4",
+   "party_swap": "0x02068B90",
+   "hit_test": "0x0205EACC",
+   "blit_portrait": "0x02068E34"
+  },
+  "retracted": [
+   "config/free_play_roster.json schema 1 - image matched by tools/match_freeplay_slots.py, superseded by this decode",
+   "0x020EFF10 - the CHARACTERS UNLOCKED notice's layout, not this screen's; its rows are at y=80/128, not 56/104"
+  ]
+ },
+ "behaviour": {
+  "page_bounds_default": [
+   0,
+   12
+  ],
+  "page_bounds_vehicle_mode": [
+   12,
+   14
+  ],
+  "page_memory": "0x02104D90+0x51, 0xFF means unset",
+  "title_string_base": "0x231",
+  "party_title_string": "0x23F",
+  "title_y": 30,
+  "hit_box": [
+   32,
+   32
+  ],
+  "hit_origin": "top-left of the widget, FUN_0205EACC",
+  "hidden_slots_are_not_touchable": true,
+  "touch_state": {
+   "block": "0x021044A4",
+   "down_bit": "bit 4 of +0x00",
+   "x": "+0x2A",
+   "y": "+0x2C"
+  },
+  "pad_paging": {
+   "previous": "L (0x200)",
+   "next": "R (0x100)",
+   "block": "0x021027F8"
+  },
+  "wrap": "left from the low bound goes to high-1; right from high-1 goes to the low bound",
+  "two_stage_select": "the first touch highlights (palette 13); a second touch on the SAME slot commits. FUN_020687B4 returns early unless +0x36 already equals the touched slot.",
+  "palettes": {
+   "unlocked": 15,
+   "locked": 14,
+   "selected": 13
+  },
+  "sounds": {
+   "page_or_select": 182,
+   "locked_denied": 183,
+   "party_swap": 180
+  },
+  "party": {
+   "slots": 4,
+   "source": "0x0210930C + 0x4C + i*4, character id at actor+0x6BB",
+   "present_mask": "actor+0x08 & 0x803 == 1",
+   "range_fixed_2012": 204800,
+   "range_units": 50.0,
+   "swap": "FUN_020922F4(levelmgr, localIndex, slot)",
+   "refused_when": [
+    "the touched slot is the local player",
+    "0x027E02A8 & 0x400",
+    "0x02104D90 & 1",
+    "localActor+0x5D6 != 0",
+    "either actor+0x6BA != 0",
+    "out of range"
+   ]
+  },
+  "creator_slot_remap_player_2": {
+   "0x49": "0x4C",
+   "0x4A": "0x4D",
+   "0x4B": "0x4E"
+  }
+ },
+ "widgets": [
+  {
+   "index": 0,
+   "address": "0x020EDE22",
+   "role": "arrow_left",
+   "sprite": {
+    "pixels": 2813,
+    "header": 2815,
+    "palette": 2816
+   },
+   "x": 1,
+   "y": 83,
+   "palette_field": "0x0400"
+  },
+  {
+   "index": 1,
+   "address": "0x020EDE2E",
+   "role": "arrow_right",
+   "sprite": {
+    "pixels": 2817,
+    "header": 2819,
+    "palette": 2820
+   },
+   "x": 230,
+   "y": 83,
+   "palette_field": "0x0400"
+  },
+  {
+   "index": 2,
+   "address": "0x020EDE3A",
+   "role": "slot_0",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": 623
+   },
+   "x": 40,
+   "y": 56,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 3,
+   "address": "0x020EDE46",
+   "role": "slot_1",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 88,
+   "y": 56,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 4,
+   "address": "0x020EDE52",
+   "role": "slot_2",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 136,
+   "y": 56,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 5,
+   "address": "0x020EDE5E",
+   "role": "slot_3",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 184,
+   "y": 56,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 6,
+   "address": "0x020EDE6A",
+   "role": "slot_4",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 40,
+   "y": 104,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 7,
+   "address": "0x020EDE76",
+   "role": "slot_5",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 88,
+   "y": 104,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 8,
+   "address": "0x020EDE82",
+   "role": "slot_6",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 136,
+   "y": 104,
+   "palette_field": "0x0F00"
+  },
+  {
+   "index": 9,
+   "address": "0x020EDE8E",
+   "role": "slot_7",
+   "sprite": {
+    "pixels": 621,
+    "header": 622,
+    "palette": null
+   },
+   "x": 184,
+   "y": 104,
+   "palette_field": "0x0F00"
+  }
+ ],
+ "pages": [
+  {
+   "page": 0,
+   "address": "0x020EDDB2",
+   "title_string": "0x231",
+   "title": "Rebel Blasters Page 1",
+   "raw": [
+    35,
+    37,
+    39,
+    40,
+    38,
+    26,
+    21,
+    24
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 35,
+     "label": "Princess Leia",
+     "portrait_asset": 3512,
+     "png": "portrait_3512.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 37,
+     "label": "Princess Leia (Cloud City)",
+     "portrait_asset": 1362,
+     "png": "portrait_1362.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 39,
+     "label": "Princess Leia (Hoth)",
+     "portrait_asset": 3502,
+     "png": "portrait_3502.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 40,
+     "label": "Princess Leia (Jabba's Prisoner)",
+     "portrait_asset": 3526,
+     "png": "portrait_3526.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 38,
+     "label": "Princess Leia (Endor)",
+     "portrait_asset": 3485,
+     "png": "portrait_3485.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 26,
+     "label": "Han Solo (Stormtrooper)",
+     "portrait_asset": 2609,
+     "png": "portrait_2609.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 21,
+     "label": "Han Solo (variant 1)",
+     "portrait_asset": 2605,
+     "png": "portrait_2605.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 24,
+     "label": "Han Solo (variant 3)",
+     "portrait_asset": 2584,
+     "png": "portrait_2584.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 1,
+   "address": "0x020EDDBA",
+   "title_string": "0x232",
+   "title": "Rebel Blasters Page 2",
+   "raw": [
+    25,
+    10,
+    41,
+    47,
+    33,
+    56,
+    58,
+    2
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 25,
+     "label": "Han Solo (variant 4)",
+     "portrait_asset": 2595,
+     "png": "portrait_2595.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 10,
+     "label": "Chewbacca",
+     "portrait_asset": 1463,
+     "png": "portrait_1463.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 41,
+     "label": "Luke Skywalker (variant 1)",
+     "portrait_asset": 3647,
+     "png": "portrait_3647.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 47,
+     "label": "Luke Skywalker (Stormtrooper)",
+     "portrait_asset": 3651,
+     "png": "portrait_3651.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 33,
+     "label": "Lando Calrissian",
+     "portrait_asset": 3374,
+     "png": "portrait_3374.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 56,
+     "label": "Rebel Trooper",
+     "portrait_asset": 4151,
+     "png": "portrait_4151.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 58,
+     "label": "Rebel Trooper (Hoth)",
+     "portrait_asset": 2793,
+     "png": "portrait_2793.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 2,
+     "label": "Biggs Darklighter",
+     "portrait_asset": 356,
+     "png": "portrait_0356.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 2,
+   "address": "0x020EDDC2",
+   "title_string": "0x233",
+   "title": "Imperial Blasters",
+   "raw": [
+    64,
+    60,
+    63,
+    61,
+    28,
+    62,
+    12,
+    65
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 64,
+     "label": "Stormtrooper",
+     "portrait_asset": 4703,
+     "png": "portrait_4703.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 60,
+     "label": "Sandtrooper",
+     "portrait_asset": 4239,
+     "png": "portrait_4239.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 63,
+     "label": "Snowtrooper",
+     "portrait_asset": 4483,
+     "png": "portrait_4483.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 61,
+     "label": "Scout Trooper",
+     "portrait_asset": 4277,
+     "png": "portrait_4277.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 28,
+     "label": "Imperial Officer",
+     "portrait_asset": 2936,
+     "png": "portrait_2936.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 62,
+     "label": "Shuttle Pilot",
+     "portrait_asset": 4306,
+     "png": "portrait_4306.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 12,
+     "label": "Death Star Trooper",
+     "portrait_asset": 1722,
+     "png": "portrait_1722.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 65,
+     "label": "TIE Fighter Pilot",
+     "portrait_asset": 4946,
+     "png": "portrait_4946.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 3,
+   "address": "0x020EDDCA",
+   "title_string": "0x234",
+   "title": "Jedi Page 1",
+   "raw": [
+    51,
+    44,
+    46,
+    43,
+    42,
+    14,
+    11,
+    1
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 51,
+     "label": "Obi-Wan Kenobi",
+     "portrait_asset": 3804,
+     "png": "portrait_3804.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 44,
+     "label": "Luke Skywalker (Endor)",
+     "portrait_asset": 3627,
+     "png": "portrait_3627.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 46,
+     "label": "Luke Skywalker (Jabba's Palace)",
+     "portrait_asset": 3639,
+     "png": "portrait_3639.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 43,
+     "label": "Luke Skywalker (variant 3)",
+     "portrait_asset": 3623,
+     "png": "portrait_3623.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 42,
+     "label": "Luke Skywalker (variant 2)",
+     "portrait_asset": 3619,
+     "png": "portrait_3619.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 14,
+     "label": "Emperor Palpatine",
+     "portrait_asset": 2119,
+     "png": "portrait_2119.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 11,
+     "label": "Darth Vader",
+     "portrait_asset": 1596,
+     "png": "portrait_1596.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 1,
+     "label": "Anakin Skywalker (Force Ghost)",
+     "portrait_asset": 2458,
+     "png": "portrait_2458.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 4,
+   "address": "0x020EDDD2",
+   "title_string": "0x235",
+   "title": "Jedi Page 2",
+   "raw": [
+    48,
+    52,
+    69,
+    70,
+    100,
+    100,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 48,
+     "label": "Mace Windu",
+     "portrait_asset": 3656,
+     "png": "portrait_3656.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 52,
+     "label": "Obi-Wan Kenobi (Force Ghost)",
+     "portrait_asset": 2470,
+     "png": "portrait_2470.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 69,
+     "label": "Yoda",
+     "portrait_asset": 5492,
+     "png": "portrait_5492.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 70,
+     "label": "Yoda (Force Ghost)",
+     "portrait_asset": 2479,
+     "png": "portrait_2479.png"
+    },
+    null,
+    null,
+    null,
+    null
+   ],
+   "occupied": 4
+  },
+  {
+   "page": 5,
+   "address": "0x020EDDDA",
+   "title_string": "0x236",
+   "title": "Droids",
+   "raw": [
+    9,
+    32,
+    53,
+    54,
+    50,
+    18,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 9,
+     "label": "C-3PO",
+     "portrait_asset": 925,
+     "png": "portrait_0925.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 32,
+     "label": "K-3PO",
+     "portrait_asset": 3351,
+     "png": "portrait_3351.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 53,
+     "label": "R2-D2",
+     "portrait_asset": 4024,
+     "png": "portrait_4024.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 54,
+     "label": "R5-D4",
+     "portrait_asset": 4036,
+     "png": "portrait_4036.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 50,
+     "label": "MSE-6",
+     "portrait_asset": 3790,
+     "png": "portrait_3790.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 18,
+     "label": "Custom Character 1",
+     "portrait_asset": 2519,
+     "png": "portrait_2519.png"
+    },
+    null,
+    null
+   ],
+   "occupied": 6
+  },
+  {
+   "page": 6,
+   "address": "0x020EDDE2",
+   "title_string": "0x237",
+   "title": "Bounty Hunters Page 1",
+   "raw": [
+    20,
+    7,
+    29,
+    27,
+    0,
+    13,
+    8,
+    34
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 20,
+     "label": "Greedo",
+     "portrait_asset": 2530,
+     "png": "portrait_2530.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 7,
+     "label": "Boba Fett",
+     "portrait_asset": 606,
+     "png": "portrait_0606.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 29,
+     "label": "Jango Fett",
+     "portrait_asset": 3058,
+     "png": "portrait_3058.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 27,
+     "label": "IG-88",
+     "portrait_asset": 2920,
+     "png": "portrait_2920.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 0,
+     "label": "4-LOM",
+     "portrait_asset": 35,
+     "png": "portrait_0035.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 13,
+     "label": "Dengar",
+     "portrait_asset": 1788,
+     "png": "portrait_1788.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 8,
+     "label": "Bossk",
+     "portrait_asset": 669,
+     "png": "portrait_0669.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 34,
+     "label": "Lando Calrissian (Jabba's Palace)",
+     "portrait_asset": 3365,
+     "png": "portrait_3365.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 7,
+   "address": "0x020EDDEA",
+   "title_string": "0x238",
+   "title": "Bounty Hunters Page 2",
+   "raw": [
+    36,
+    71,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 36,
+     "label": "Princess Leia (Boushh)",
+     "portrait_asset": 3475,
+     "png": "portrait_3475.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 71,
+     "label": "Zuckuss",
+     "portrait_asset": 5535,
+     "png": "portrait_5535.png"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "occupied": 2
+  },
+  {
+   "page": 8,
+   "address": "0x020EDDF2",
+   "title_string": "0x239",
+   "title": "Small",
+   "raw": [
+    31,
+    16,
+    59,
+    67,
+    100,
+    100,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 31,
+     "label": "Jawa",
+     "portrait_asset": 3070,
+     "png": "portrait_3070.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 16,
+     "label": "Ewok",
+     "portrait_asset": 2200,
+     "png": "portrait_2200.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 59,
+     "label": "Salacious Crumb",
+     "portrait_asset": 4221,
+     "png": "portrait_4221.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 67,
+     "label": "Wicket",
+     "portrait_asset": 5217,
+     "png": "portrait_5217.png"
+    },
+    null,
+    null,
+    null,
+    null
+   ],
+   "occupied": 4
+  },
+  {
+   "page": 9,
+   "address": "0x020EDDFA",
+   "title_string": "0x23A",
+   "title": "Misc Page 1",
+   "raw": [
+    15,
+    66,
+    17,
+    23,
+    3,
+    4,
+    5,
+    6
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 15,
+     "label": "Emperor's Guard",
+     "portrait_asset": 2103,
+     "png": "portrait_2103.png"
+    },
+    {
+     "slot": 1,
+     "character_id": 66,
+     "label": "Tusken Raider",
+     "portrait_asset": 5119,
+     "png": "portrait_5119.png"
+    },
+    {
+     "slot": 2,
+     "character_id": 17,
+     "label": "Gamorrean Guard",
+     "portrait_asset": 2417,
+     "png": "portrait_2417.png"
+    },
+    {
+     "slot": 3,
+     "character_id": 23,
+     "label": "Han Solo (in Carbonite)",
+     "portrait_asset": 2570,
+     "png": "portrait_2570.png"
+    },
+    {
+     "slot": 4,
+     "character_id": 3,
+     "label": "Bith 1",
+     "portrait_asset": 369,
+     "png": "portrait_0369.png"
+    },
+    {
+     "slot": 5,
+     "character_id": 4,
+     "label": "Bith 2",
+     "portrait_asset": 374,
+     "png": "portrait_0374.png"
+    },
+    {
+     "slot": 6,
+     "character_id": 5,
+     "label": "Bith 3",
+     "portrait_asset": 379,
+     "png": "portrait_0379.png"
+    },
+    {
+     "slot": 7,
+     "character_id": 6,
+     "label": "Bith 4",
+     "portrait_asset": 384,
+     "png": "portrait_0384.png"
+    }
+   ],
+   "occupied": 8
+  },
+  {
+   "page": 10,
+   "address": "0x020EDE02",
+   "title_string": "0x23B",
+   "title": "Misc Page 2",
+   "raw": [
+    68,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 68,
+     "label": "Wuher",
+     "portrait_asset": 5325,
+     "png": "portrait_5325.png"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "occupied": 1
+  },
+  {
+   "page": 11,
+   "address": "0x020EDE0A",
+   "title_string": "0x23C",
+   "title": "Character Creator",
+   "raw": [
+    73,
+    74,
+    75,
+    100,
+    100,
+    100,
+    100,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 73,
+     "label": "id 73",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 1,
+     "character_id": 74,
+     "label": "id 74",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 2,
+     "character_id": 75,
+     "label": "id 75",
+     "portrait_asset": null,
+     "png": ""
+    },
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "occupied": 3
+  },
+  {
+   "page": 12,
+   "address": "0x020EDE12",
+   "title_string": "0x23D",
+   "title": "Rebel Vehicles",
+   "raw": [
+    88,
+    90,
+    92,
+    93,
+    97,
+    98,
+    99,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 88,
+     "label": "id 88",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 1,
+     "character_id": 90,
+     "label": "id 90",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 2,
+     "character_id": 92,
+     "label": "id 92",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 3,
+     "character_id": 93,
+     "label": "id 93",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 4,
+     "character_id": 97,
+     "label": "id 97",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 5,
+     "character_id": 98,
+     "label": "id 98",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 6,
+     "character_id": 99,
+     "label": "id 99",
+     "portrait_asset": null,
+     "png": ""
+    },
+    null
+   ],
+   "occupied": 7
+  },
+  {
+   "page": 13,
+   "address": "0x020EDE1A",
+   "title_string": "0x23E",
+   "title": "Imperial Vehicles",
+   "raw": [
+    85,
+    87,
+    89,
+    91,
+    94,
+    95,
+    96,
+    100
+   ],
+   "slots": [
+    {
+     "slot": 0,
+     "character_id": 85,
+     "label": "id 85",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 1,
+     "character_id": 87,
+     "label": "id 87",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 2,
+     "character_id": 89,
+     "label": "id 89",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 3,
+     "character_id": 91,
+     "label": "id 91",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 4,
+     "character_id": 94,
+     "label": "id 94",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 5,
+     "character_id": 95,
+     "label": "id 95",
+     "portrait_asset": null,
+     "png": ""
+    },
+    {
+     "slot": 6,
+     "character_id": 96,
+     "label": "id 96",
+     "portrait_asset": null,
+     "png": ""
+    },
+    null
+   ],
+   "occupied": 7
+  }
+ ],
+ "hunter_pages": [
+  6,
+  7
+ ],
+ "hunter_ids": [
+  20,
+  7,
+  29,
+  27,
+  0,
+  13,
+  8,
+  34,
+  36,
+  71
+ ]
+}

@@ -1,0 +1,1120 @@
+{
+ "schema": 1,
+ "source": {
+  "image": "arm9_section_0_02000000.bin",
+  "action_rows": "0x020F6BA8",
+  "row_stride": 36,
+  "shared_set_field": "+0x0C",
+  "character_set_field": "+0x10",
+  "precedence": "FUN_02005C44 reads +0x10 BEFORE +0x0C",
+  "descriptor_stride": 10,
+  "names_from": "out/raw/archive/catalog.json, truncated to 16 chars"
+ },
+ "note": "Export each hunter's EFFECTIVE animation set, with the ROM's own precedence.\n\nTHE TWO SETS AND WHICH WINS\n---------------------------\nThe action row at 0x020F6BA8 (stride 0x24 - the same row that carries the\ncooldown at +0x18 and the flags at +0x1A) holds two descriptor-set pointers:\n\n    +0x0C   the SHARED set        0x020E92DC for every hunter\n    +0x10   the CHARACTER set     per hunter, or 0 when there is none\n\nFUN_02005C44 reads +0x10 BEFORE +0x0C, so a state present in the character's\nown set wins and the shared set only fills the gaps.\n\nA descriptor set is {u32 array, u16 tag, u16 count} and the array is 10-byte\nrecords whose first two halfwords are (state, anim).\n\nWHY THIS MATTERS - THE JANGO RUN FLIP\n-------------------------------------\nJango's own set 0x020E92F4 maps BOTH state 6 and state 11 to asset 609\n(BobaFettRun). The shared set maps state 6 to 526 (BlstrRunGun) and has no\nstate 11 at all.\n\nThe port's manifest took armed_run (state 6) from the SHARED set and unarmed_run\n(state 11) from the CHARACTER set, so Jango flipped between a single-blaster run\nand a heavy-gun run depending on whether his weapon was drawn. With the ROM's\nprecedence both are 609 and there is nothing to flip between.\n\nAND IT IS NOT ONLY JANGO. Greedo's own set 0x020E932C resolves to the PISTOL\nfamily - 494 BlstrIdlePistol, 543 BlstrWalkPistol, 528 BlstrRunPistol - where\nthe port has him on the shared Blstr*Gun clips. Boba's own set gives 610\nBobaFettRunGun for state 6 and 609 BobaFettRun for state 11, which are genuinely\ndifferent clips. 4-LOM's +0x10 is 0, so he correctly uses the shared set.\n\nCLIP NAMES come from out/raw/archive/catalog.json, and NSBCA names are truncated\nto 16 characters - which is why the existing overrides read \"JangoFettIdleGun\"\nand not the catalog's \"JangoFettIdleGunJ\".\n\nUsage:  python tools/export_weapon_sets.py",
+ "characters": [
+  {
+   "runtime_id": 0,
+   "label": "4-LOM",
+   "row": 31,
+   "shared_set": "0x020E92DC",
+   "character_set": null,
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 493,
+     "clip": "BlstrIdleGun",
+     "from": "shared"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 541,
+     "clip": "BlstrWalkGun",
+     "from": "shared"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 526,
+     "clip": "BlstrRunGun",
+     "from": "shared"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 491,
+     "clip": "BlstrIdle",
+     "from": "shared"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 490,
+     "clip": "BlstrGunOut",
+     "from": "shared"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 488,
+     "clip": "BlstrGunIn",
+     "from": "shared"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "from": "shared"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 7,
+   "label": "Boba Fett",
+   "row": 4,
+   "shared_set": "0x020E92DC",
+   "character_set": "0x020E92EC",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 561,
+     "clip": "BobaFettIdleGun",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 616,
+     "clip": "BobaFettWalkGun",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 566,
+     "clip": "BobaFettJumpUp",
+     "from": "own"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 562,
+     "clip": "BobaFettJumpFall",
+     "from": "own"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 564,
+     "clip": "BobaFettJumpLand",
+     "from": "own"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 610,
+     "clip": "BobaFettRunGun",
+     "from": "own"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 560,
+     "clip": "BobaFettIdle",
+     "from": "own"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "unarmed_run": {
+     "state": 11,
+     "asset": 609,
+     "clip": "BobaFettRun",
+     "from": "own"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 553,
+     "clip": "BobaFettGunOut",
+     "from": "own"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 551,
+     "clip": "BobaFettGunIn",
+     "from": "own"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 613,
+     "clip": "BobaFettShootGun",
+     "from": "own"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 8,
+   "label": "Bossk",
+   "row": 5,
+   "shared_set": "0x020E92DC",
+   "character_set": "0x020E9334",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 634,
+     "clip": "BosskIdleGun",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 680,
+     "clip": "BosskWalkGun",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 673,
+     "clip": "BosskRunGun",
+     "from": "own"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 633,
+     "clip": "BosskIdle",
+     "from": "own"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 5128,
+     "clip": "TuskenRaiderWalk",
+     "from": "own"
+    },
+    "unarmed_run": {
+     "state": 11,
+     "asset": 5123,
+     "clip": "TuskenRaiderRun",
+     "from": "own"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 631,
+     "clip": "BosskGunOut",
+     "from": "own"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 628,
+     "clip": "BosskGunIn",
+     "from": "own"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 676,
+     "clip": "BosskShootGun",
+     "from": "own"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 13,
+   "label": "Dengar",
+   "row": 4,
+   "shared_set": "0x020E92DC",
+   "character_set": "0x020E92EC",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 561,
+     "clip": "BobaFettIdleGun",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 616,
+     "clip": "BobaFettWalkGun",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 566,
+     "clip": "BobaFettJumpUp",
+     "from": "own"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 562,
+     "clip": "BobaFettJumpFall",
+     "from": "own"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 564,
+     "clip": "BobaFettJumpLand",
+     "from": "own"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 610,
+     "clip": "BobaFettRunGun",
+     "from": "own"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 560,
+     "clip": "BobaFettIdle",
+     "from": "own"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "unarmed_run": {
+     "state": 11,
+     "asset": 609,
+     "clip": "BobaFettRun",
+     "from": "own"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 553,
+     "clip": "BobaFettGunOut",
+     "from": "own"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 551,
+     "clip": "BobaFettGunIn",
+     "from": "own"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 613,
+     "clip": "BobaFettShootGun",
+     "from": "own"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 20,
+   "label": "Greedo",
+   "row": 26,
+   "shared_set": "0x020E92DC",
+   "character_set": "0x020E932C",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 494,
+     "clip": "BlstrIdlePistol",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 543,
+     "clip": "BlstrWalkPistol",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 528,
+     "clip": "BlstrRunPistol",
+     "from": "own"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 492,
+     "clip": "BlstrIdle2",
+     "from": "own"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "own"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 518,
+     "clip": "BlstrPistolOut",
+     "from": "own"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 516,
+     "clip": "BlstrPistolIn",
+     "from": "own"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 532,
+     "clip": "BlstrShootPistol",
+     "from": "own"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 27,
+   "label": "IG-88",
+   "row": 31,
+   "shared_set": "0x020E92DC",
+   "character_set": null,
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 493,
+     "clip": "BlstrIdleGun",
+     "from": "shared"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 541,
+     "clip": "BlstrWalkGun",
+     "from": "shared"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 526,
+     "clip": "BlstrRunGun",
+     "from": "shared"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 491,
+     "clip": "BlstrIdle",
+     "from": "shared"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 490,
+     "clip": "BlstrGunOut",
+     "from": "shared"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 488,
+     "clip": "BlstrGunIn",
+     "from": "shared"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "from": "shared"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 29,
+   "label": "Jango Fett",
+   "row": 27,
+   "shared_set": "0x020E92DC",
+   "character_set": "0x020E92F4",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 3024,
+     "clip": "JangoFettIdleGun",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 616,
+     "clip": "BobaFettWalkGun",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 566,
+     "clip": "BobaFettJumpUp",
+     "from": "own"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 562,
+     "clip": "BobaFettJumpFall",
+     "from": "own"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 564,
+     "clip": "BobaFettJumpLand",
+     "from": "own"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 609,
+     "clip": "BobaFettRun",
+     "from": "own"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 560,
+     "clip": "BobaFettIdle",
+     "from": "own"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "unarmed_run": {
+     "state": 11,
+     "asset": 609,
+     "clip": "BobaFettRun",
+     "from": "own"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 3017,
+     "clip": "JangoFettGunOut",
+     "from": "own"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 3015,
+     "clip": "JangoFettGunIn",
+     "from": "own"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 3063,
+     "clip": "JangoFettShootGu",
+     "from": "own"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    },
+    "hover_move": {
+     "state": 104,
+     "asset": 3020,
+     "clip": "JangoFettHoverMo",
+     "from": "own"
+    },
+    "hover_idle": {
+     "state": 105,
+     "asset": 3019,
+     "clip": "JangoFettHoverId",
+     "from": "own"
+    },
+    "hover_action": {
+     "state": 106,
+     "asset": 3023,
+     "clip": "JangoFettHoverSh",
+     "from": "own"
+    }
+   }
+  },
+  {
+   "runtime_id": 34,
+   "label": "Lando Calrissian",
+   "row": 16,
+   "shared_set": "0x020E9304",
+   "character_set": "0x020E9304",
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 2098,
+     "clip": "EmperorGuardIdle",
+     "from": "own"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 2109,
+     "clip": "EmperorGuardWalk",
+     "from": "own"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 2101,
+     "clip": "EmperorGuardJump",
+     "from": "own"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 2099,
+     "clip": "EmperorGuardJump",
+     "from": "own"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 2100,
+     "clip": "EmperorGuardJump",
+     "from": "own"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 2106,
+     "clip": "EmperorGuardRun",
+     "from": "own"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 2089,
+     "clip": "EmperorGuardAtta",
+     "from": "own"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 2092,
+     "clip": "EmperorGuardAtta",
+     "from": "own"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 2095,
+     "clip": "EmperorGuardAtta",
+     "from": "own"
+    }
+   }
+  },
+  {
+   "runtime_id": 36,
+   "label": "Princess Leia (Boushh)",
+   "row": 31,
+   "shared_set": "0x020E92DC",
+   "character_set": null,
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 493,
+     "clip": "BlstrIdleGun",
+     "from": "shared"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 541,
+     "clip": "BlstrWalkGun",
+     "from": "shared"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 526,
+     "clip": "BlstrRunGun",
+     "from": "shared"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 491,
+     "clip": "BlstrIdle",
+     "from": "shared"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 490,
+     "clip": "BlstrGunOut",
+     "from": "shared"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 488,
+     "clip": "BlstrGunIn",
+     "from": "shared"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "from": "shared"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  },
+  {
+   "runtime_id": 71,
+   "label": "Zuckuss",
+   "row": 34,
+   "shared_set": "0x020E92DC",
+   "character_set": null,
+   "states": {
+    "armed_idle": {
+     "state": 0,
+     "asset": 493,
+     "clip": "BlstrIdleGun",
+     "from": "shared"
+    },
+    "armed_walk": {
+     "state": 1,
+     "asset": 541,
+     "clip": "BlstrWalkGun",
+     "from": "shared"
+    },
+    "jump_or_airborne": {
+     "state": 2,
+     "asset": 503,
+     "clip": "BlstrJumpUp",
+     "from": "shared"
+    },
+    "jump_fall": {
+     "state": 3,
+     "asset": 496,
+     "clip": "BlstrJumpFall",
+     "from": "shared"
+    },
+    "fall": {
+     "state": 4,
+     "asset": 483,
+     "clip": "BlstrFall",
+     "from": "shared"
+    },
+    "jump_land": {
+     "state": 5,
+     "asset": 498,
+     "clip": "BlstrJumpLand",
+     "from": "shared"
+    },
+    "armed_run": {
+     "state": 6,
+     "asset": 526,
+     "clip": "BlstrRunGun",
+     "from": "shared"
+    },
+    "unarmed_idle": {
+     "state": 9,
+     "asset": 491,
+     "clip": "BlstrIdle",
+     "from": "shared"
+    },
+    "unarmed_walk": {
+     "state": 10,
+     "asset": 539,
+     "clip": "BlstrWalk",
+     "from": "shared"
+    },
+    "weapon_out": {
+     "state": 12,
+     "asset": 490,
+     "clip": "BlstrGunOut",
+     "from": "shared"
+    },
+    "weapon_in": {
+     "state": 13,
+     "asset": 488,
+     "clip": "BlstrGunIn",
+     "from": "shared"
+    },
+    "repair_or_build": {
+     "state": 26,
+     "asset": 520,
+     "clip": "BlstrRepair",
+     "from": "shared"
+    },
+    "melee_1": {
+     "state": 33,
+     "asset": 506,
+     "clip": "BlstrMelee1",
+     "from": "shared"
+    },
+    "melee_2": {
+     "state": 34,
+     "asset": 509,
+     "clip": "BlstrMelee2",
+     "from": "shared"
+    },
+    "melee_3": {
+     "state": 35,
+     "asset": 513,
+     "clip": "BlstrMelee3",
+     "from": "shared"
+    },
+    "primary_fire": {
+     "state": 44,
+     "asset": 530,
+     "clip": "BlstrShootGun",
+     "from": "shared"
+    },
+    "generic_use": {
+     "state": 83,
+     "asset": 485,
+     "clip": "BlstrGenUse",
+     "from": "shared"
+    }
+   }
+  }
+ ]
+}

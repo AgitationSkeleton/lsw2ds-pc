@@ -1,0 +1,864 @@
+{
+ "schema_version": 1,
+ "purpose": "Per-character stats read from the 24-byte runtime descriptors at 0x020ef57c.",
+ "descriptor_table": {
+  "address": "0x020ef57c",
+  "record_size": 24,
+  "indexed_by": "actor runtime ID at +0x6bb",
+  "fields": {
+   "+0x03": "max HP; proven by 0x02001e14 loading it and 0x02001e24 storing it to actor +0x6b8, then 0x02001e30 copying it to current HP at +0x6b6",
+   "+0x04": "character archetype; grouping is unambiguous but its consumer has not been traced, so behaviour attached to it is inference, not decoded",
+   "+0x05": "action-row index; proven by 0x02006290 and 0x0200629c storing it to actor +0x6c3"
+  }
+ },
+ "max_hp_distribution": {
+  "note": "Values line up with the characters they belong to: the MSE-6 mouse droid has 1, Imperial infantry 2, the Gamorrean Guard 6 and the Emperor's Guard 8. All ten bounty hunters have 4, matching the arena's four-heart HUD."
+ },
+ "archetypes": {
+  "1": {
+   "name": "droid",
+   "note": "astromech and protocol droids plus Wuher",
+   "members": [
+    "C-3PO",
+    "Custom Character 1",
+    "K-3PO",
+    "MSE-6",
+    "R2-D2",
+    "R5-D4",
+    "Wuher"
+   ]
+  },
+  "2": {
+   "name": "force_user",
+   "note": "Jedi, Sith and Force ghosts; the only arena member is Lando (Jabba's Palace), which is where his double jump comes from",
+   "double_jump": true,
+   "members": [
+    "Anakin Skywalker (Force Ghost)",
+    "Darth Vader",
+    "Emperor Palpatine",
+    "Emperor's Guard",
+    "Lando Calrissian (Jabba's Palace)",
+    "Luke Skywalker (Endor)",
+    "Luke Skywalker (Jabba's Palace)",
+    "Luke Skywalker (variant 2)",
+    "Mace Windu",
+    "Obi-Wan Kenobi",
+    "Obi-Wan Kenobi (Force Ghost)",
+    "Yoda",
+    "Yoda (Force Ghost)"
+   ]
+  },
+  "3": {
+   "name": "imperial_trooper",
+   "note": "Imperial infantry plus Greedo",
+   "members": [
+    "Death Star Trooper",
+    "Greedo",
+    "Imperial Officer",
+    "Shuttle Pilot",
+    "Snowtrooper",
+    "Stormtrooper",
+    "TIE Fighter Pilot"
+   ]
+  },
+  "4": {
+   "name": "han_variant",
+   "note": "the Han Solo appearances",
+   "members": [
+    "Han Solo (Stormtrooper)",
+    "Han Solo (variant 1)",
+    "Han Solo (variant 2)",
+    "Han Solo (variant 3)",
+    "Han Solo (variant 4)"
+   ]
+  },
+  "5": {
+   "name": "luke_variant",
+   "note": "Luke Skywalker appearances plus Dengar",
+   "members": [
+    "Dengar",
+    "Luke Skywalker (Stormtrooper)",
+    "Luke Skywalker (variant 1)",
+    "Luke Skywalker (variant 3)",
+    "runtime_045"
+   ]
+  },
+  "6": {
+   "name": "standard",
+   "note": "the default; most of the roster and most bounty hunters",
+   "members": [
+    "4-LOM",
+    "Biggs Darklighter",
+    "Bith 1",
+    "Bith 2",
+    "Bith 3",
+    "Bith 4",
+    "Bossk",
+    "Chewbacca",
+    "Ewok",
+    "Gamorrean Guard",
+    "Gonk Droid",
+    "IG-88",
+    "Jawa",
+    "Lando Calrissian",
+    "Princess Leia",
+    "Princess Leia (Boushh)",
+    "Princess Leia (Cloud City)",
+    "Princess Leia (Endor)",
+    "Princess Leia (Hoth)",
+    "Princess Leia (Jabba's Prisoner)",
+    "Rebel Trooper",
+    "Rebel Trooper (Hoth)",
+    "Salacious Crumb",
+    "Sandtrooper",
+    "Scout Trooper",
+    "Tusken Raider",
+    "Wicket",
+    "Zuckuss",
+    "runtime_019",
+    "runtime_030",
+    "runtime_049",
+    "runtime_057"
+   ]
+  },
+  "7": {
+   "name": "carbonite",
+   "note": "Han Solo in Carbonite only",
+   "members": [
+    "Han Solo (in Carbonite)"
+   ]
+  },
+  "9": {
+   "name": "jetpack",
+   "note": "exactly Boba Fett and Jango Fett, the game's two jetpack characters",
+   "jetpack": true,
+   "members": [
+    "Boba Fett",
+    "Jango Fett"
+   ]
+  }
+ },
+ "characters": [
+  {
+   "runtime_id": 0,
+   "label": "4-LOM",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 1,
+   "label": "Anakin Skywalker (Force Ghost)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 18
+  },
+  {
+   "runtime_id": 2,
+   "label": "Biggs Darklighter",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 3,
+   "label": "Bith 1",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 0
+  },
+  {
+   "runtime_id": 4,
+   "label": "Bith 2",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 1
+  },
+  {
+   "runtime_id": 5,
+   "label": "Bith 3",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 2
+  },
+  {
+   "runtime_id": 6,
+   "label": "Bith 4",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 3
+  },
+  {
+   "runtime_id": 7,
+   "label": "Boba Fett",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 9,
+   "archetype_name": "jetpack",
+   "action_row": 4
+  },
+  {
+   "runtime_id": 8,
+   "label": "Bossk",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 5
+  },
+  {
+   "runtime_id": 9,
+   "label": "C-3PO",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 10,
+   "label": "Chewbacca",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 6
+  },
+  {
+   "runtime_id": 11,
+   "label": "Darth Vader",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 24
+  },
+  {
+   "runtime_id": 12,
+   "label": "Death Star Trooper",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 13,
+   "label": "Dengar",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 5,
+   "archetype_name": "luke_variant",
+   "action_row": 4
+  },
+  {
+   "runtime_id": 14,
+   "label": "Emperor Palpatine",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 24
+  },
+  {
+   "runtime_id": 15,
+   "label": "Emperor's Guard",
+   "bounty_hunter": false,
+   "max_hp": 8,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 11
+  },
+  {
+   "runtime_id": 16,
+   "label": "Ewok",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 38
+  },
+  {
+   "runtime_id": 17,
+   "label": "Gamorrean Guard",
+   "bounty_hunter": false,
+   "max_hp": 6,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 12
+  },
+  {
+   "runtime_id": 18,
+   "label": "Custom Character 1",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 19,
+   "label": "runtime_019",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 19
+  },
+  {
+   "runtime_id": 20,
+   "label": "Greedo",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 21,
+   "label": "Han Solo (variant 1)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 4,
+   "archetype_name": "han_variant",
+   "action_row": 28
+  },
+  {
+   "runtime_id": 22,
+   "label": "Han Solo (variant 2)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 4,
+   "archetype_name": "han_variant",
+   "action_row": 28
+  },
+  {
+   "runtime_id": 23,
+   "label": "Han Solo (in Carbonite)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 7,
+   "archetype_name": "carbonite",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 24,
+   "label": "Han Solo (variant 3)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 4,
+   "archetype_name": "han_variant",
+   "action_row": 28
+  },
+  {
+   "runtime_id": 25,
+   "label": "Han Solo (variant 4)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 4,
+   "archetype_name": "han_variant",
+   "action_row": 28
+  },
+  {
+   "runtime_id": 26,
+   "label": "Han Solo (Stormtrooper)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 4,
+   "archetype_name": "han_variant",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 27,
+   "label": "IG-88",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 28,
+   "label": "Imperial Officer",
+   "bounty_hunter": false,
+   "max_hp": 3,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 29,
+   "label": "Jango Fett",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 9,
+   "archetype_name": "jetpack",
+   "action_row": 27
+  },
+  {
+   "runtime_id": 30,
+   "label": "runtime_030",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 31,
+   "label": "Jawa",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 13
+  },
+  {
+   "runtime_id": 32,
+   "label": "K-3PO",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 33,
+   "label": "Lando Calrissian",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 34,
+   "label": "Lando Calrissian (Jabba's Palace)",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 16
+  },
+  {
+   "runtime_id": 35,
+   "label": "Princess Leia",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 36,
+   "label": "Princess Leia (Boushh)",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 37,
+   "label": "Princess Leia (Cloud City)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 38,
+   "label": "Princess Leia (Endor)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 39,
+   "label": "Princess Leia (Hoth)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 40,
+   "label": "Princess Leia (Jabba's Prisoner)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 38
+  },
+  {
+   "runtime_id": 41,
+   "label": "Luke Skywalker (variant 1)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 5,
+   "archetype_name": "luke_variant",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 42,
+   "label": "Luke Skywalker (variant 2)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 37
+  },
+  {
+   "runtime_id": 43,
+   "label": "Luke Skywalker (variant 3)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 5,
+   "archetype_name": "luke_variant",
+   "action_row": 37
+  },
+  {
+   "runtime_id": 44,
+   "label": "Luke Skywalker (Endor)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 19
+  },
+  {
+   "runtime_id": 45,
+   "label": "runtime_045",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 5,
+   "archetype_name": "luke_variant",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 46,
+   "label": "Luke Skywalker (Jabba's Palace)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 19
+  },
+  {
+   "runtime_id": 47,
+   "label": "Luke Skywalker (Stormtrooper)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 5,
+   "archetype_name": "luke_variant",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 48,
+   "label": "Mace Windu",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 22
+  },
+  {
+   "runtime_id": 49,
+   "label": "runtime_049",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 19
+  },
+  {
+   "runtime_id": 50,
+   "label": "MSE-6",
+   "bounty_hunter": false,
+   "max_hp": 1,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 51,
+   "label": "Obi-Wan Kenobi",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 18
+  },
+  {
+   "runtime_id": 52,
+   "label": "Obi-Wan Kenobi (Force Ghost)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 18
+  },
+  {
+   "runtime_id": 53,
+   "label": "R2-D2",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 35
+  },
+  {
+   "runtime_id": 54,
+   "label": "R5-D4",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 35
+  },
+  {
+   "runtime_id": 55,
+   "label": "Gonk Droid",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 56,
+   "label": "Rebel Trooper",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 57,
+   "label": "runtime_057",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 19
+  },
+  {
+   "runtime_id": 58,
+   "label": "Rebel Trooper (Hoth)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 59,
+   "label": "Salacious Crumb",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 60,
+   "label": "Sandtrooper",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 61,
+   "label": "Scout Trooper",
+   "bounty_hunter": false,
+   "max_hp": 3,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 62,
+   "label": "Shuttle Pilot",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 26
+  },
+  {
+   "runtime_id": 63,
+   "label": "Snowtrooper",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 64,
+   "label": "Stormtrooper",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 65,
+   "label": "TIE Fighter Pilot",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 3,
+   "archetype_name": "imperial_trooper",
+   "action_row": 31
+  },
+  {
+   "runtime_id": 66,
+   "label": "Tusken Raider",
+   "bounty_hunter": false,
+   "max_hp": 2,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 32
+  },
+  {
+   "runtime_id": 67,
+   "label": "Wicket",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 38
+  },
+  {
+   "runtime_id": 68,
+   "label": "Wuher",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 1,
+   "archetype_name": "droid",
+   "action_row": 40
+  },
+  {
+   "runtime_id": 69,
+   "label": "Yoda",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 20
+  },
+  {
+   "runtime_id": 70,
+   "label": "Yoda (Force Ghost)",
+   "bounty_hunter": false,
+   "max_hp": 4,
+   "archetype": 2,
+   "archetype_name": "force_user",
+   "action_row": 20
+  },
+  {
+   "runtime_id": 71,
+   "label": "Zuckuss",
+   "bounty_hunter": true,
+   "max_hp": 4,
+   "archetype": 6,
+   "archetype_name": "standard",
+   "action_row": 34
+  }
+ ],
+ "tick_rate_hz": 30,
+ "tick_rate_evidence": "Every traced routine fires once per two emulator frames. ENTITY_TICK 671331 gaps of 2 against 6100 of 1; PLAYER_TICK 40763 against 220; also TURRET_TICK, GRAPPLE_TICK, LEVER_TICK and ANIM_TICK. The DS renders at 60Hz but simulates at 30Hz, so every per-frame constant is per 30Hz tick.",
+ "measured_run_speeds": {
+  "units": "world units per 30 Hz tick, from the per-body records reached through 0x0208DAD8 - 0x020F2414 stride 0x28, 0x020F3E68 stride 0x2C, 0x020F3490 stride 0x24, 0x020F2B1C stride 0x2C, 0x020F2144 stride 0x28 - walk at +0x20 and run at +0x24. CORRECTION: this previously cited 0x020EE04C, which is the animation-state -> {walk, run, locked} class table and holds no speeds.",
+  "method": "Median of the top-speed plateau over all moving samples in a session, per character id at actor +0x6BB. The 99th percentile equalled the plateau for every character, so run speed is a hard constant with no ramp.",
+  "cross_check": "Each measured value lands exactly on an existing entry of the decoded motion table - independent runtime and ROM agreement.",
+  "characters": {
+   "Bossk": {
+    "id": 8,
+    "per_tick": 1.0,
+    "fixed": 4096,
+    "units_per_second": 30.0,
+    "motion_id": 48
+   },
+   "Zuckuss": {
+    "id": 71,
+    "per_tick": 1.1,
+    "fixed": 4506,
+    "units_per_second": 33.0,
+    "motion_id": [
+     102,
+     103,
+     106
+    ]
+   },
+   "Greedo": {
+    "id": 20,
+    "per_tick": 1.2,
+    "fixed": 4915,
+    "units_per_second": 36.0,
+    "motion_id": "4915 group",
+    "note": "Matches the documented 1.2 exactly, which calibrates the whole set."
+   },
+   "Jango Fett": {
+    "id": 29,
+    "per_tick": 1.2,
+    "fixed": 4915,
+    "units_per_second": 36.0,
+    "motion_id": "4915 group"
+   },
+   "Dengar": {
+    "id": 13,
+    "per_tick": 1.4,
+    "fixed": 5734,
+    "units_per_second": 42.0,
+    "motion_id": 56
+   },
+   "IG-88": {
+    "id": 27,
+    "per_tick": 1.5,
+    "fixed": 6144,
+    "units_per_second": 45.0,
+    "motion_id": 71
+   }
+  },
+  "not_yet_measured": [
+   "Lando (id 34)",
+   "Leia Boushh (id 36)"
+  ],
+  "where_the_constant_lives": "ANSWERED. The selector is the halfword at actor+0x6EA - element 1 of the array at actor+0x6E8 - harvested into config/character_motion_ids.json and loaded by main.gd. Lando reads 76, Boba 47. The earlier note that this was an open question is superseded. (Prior text: NOT in a character-id-indexed table. Searched arm9 section 0, arm9_decompressed and the full rom.bin for a table with these values at the six known ids at any s)"
+ },
+ "confirmed_character_indices": {
+  "7": "Boba Fett",
+  "8": "Bossk",
+  "13": "Dengar",
+  "20": "Greedo",
+  "27": "IG-88",
+  "29": "Jango Fett",
+  "34": "Lando (Jabbas Palace)",
+  "36": "Princess Leia (Boushh)",
+  "71": "Zuckuss",
+  "_evidence": "All from actor +0x6BB during play. Boba Fett added from a menu demonstration in which player 1 moved from the default to Boba Fett and player 2 stayed on Greedo; the resulting match ticked exactly indices 7 and 20, 1062 samples each."
+ }
+}

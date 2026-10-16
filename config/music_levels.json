@@ -1,0 +1,653 @@
+{
+  "_source": "0x020FF674, a table of per-level record pointers; byte +1 of each record is the music slot, read by 0x02093F6C",
+  "_why": "the host settings menu's Music: RANDOM needs a set of tracks, and this is the set the game itself uses for levels",
+  "_arena": "levels 4 and 5 are the arena maps and 9 is the arena lobby; all three use slot 2, so the arena has ONE track",
+  "levels": [
+    {
+      "level": 0,
+      "record": "0x020F5AB0",
+      "music_slot": 0,
+      "field_0": 4,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 1,
+      "record": "0x020F5B04",
+      "music_slot": 1,
+      "field_0": 7,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 2,
+      "record": "0x020F5B20",
+      "music_slot": 1,
+      "field_0": 7,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 3,
+      "record": "0x020F5B58",
+      "music_slot": 1,
+      "field_0": 7,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 4,
+      "record": "0x020F5B90",
+      "music_slot": 2,
+      "field_0": 17,
+      "field_2": 201,
+      "field_4": 20
+    },
+    {
+      "level": 5,
+      "record": "0x020F5BE4",
+      "music_slot": 2,
+      "field_0": 17,
+      "field_2": 201,
+      "field_4": 20
+    },
+    {
+      "level": 6,
+      "record": "0x020F5C00",
+      "music_slot": 3,
+      "field_0": 0,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 7,
+      "record": "0x020F5C54",
+      "music_slot": 3,
+      "field_0": 0,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 8,
+      "record": "0x020F5CA8",
+      "music_slot": 3,
+      "field_0": 0,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 9,
+      "record": "0x020F55E0",
+      "music_slot": 2,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 10,
+      "record": "0x020F5D18",
+      "music_slot": 4,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 11,
+      "record": "0x020F5D34",
+      "music_slot": 4,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 12,
+      "record": "0x020F5D6C",
+      "music_slot": 4,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 13,
+      "record": "0x020F59EC",
+      "music_slot": 4,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 14,
+      "record": "0x020F5CC4",
+      "music_slot": 4,
+      "field_0": 16,
+      "field_2": 201,
+      "field_4": 80
+    },
+    {
+      "level": 15,
+      "record": "0x020F5618",
+      "music_slot": 5,
+      "field_0": 20,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 16,
+      "record": "0x020F5634",
+      "music_slot": 6,
+      "field_0": 8,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 17,
+      "record": "0x020F5688",
+      "music_slot": 6,
+      "field_0": 8,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 18,
+      "record": "0x020F56A4",
+      "music_slot": 6,
+      "field_0": 8,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 19,
+      "record": "0x020F56DC",
+      "music_slot": 7,
+      "field_0": 9,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 20,
+      "record": "0x020F5714",
+      "music_slot": 7,
+      "field_0": 9,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 21,
+      "record": "0x020F5730",
+      "music_slot": 7,
+      "field_0": 9,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 22,
+      "record": "0x020F59D0",
+      "music_slot": 8,
+      "field_0": 14,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 23,
+      "record": "0x020F5ACC",
+      "music_slot": 8,
+      "field_0": 14,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 24,
+      "record": "0x020F5AE8",
+      "music_slot": 8,
+      "field_0": 14,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 25,
+      "record": "0x020F5BAC",
+      "music_slot": 8,
+      "field_0": 14,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 26,
+      "record": "0x020F57A0",
+      "music_slot": 9,
+      "field_0": 3,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 27,
+      "record": "0x020F57D8",
+      "music_slot": 9,
+      "field_0": 3,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 28,
+      "record": "0x020F57F4",
+      "music_slot": 9,
+      "field_0": 3,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 29,
+      "record": "0x020F5BC8",
+      "music_slot": 9,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 30,
+      "record": "0x020F5944",
+      "music_slot": 10,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 31,
+      "record": "0x020F5880",
+      "music_slot": 10,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 32,
+      "record": "0x020F58B8",
+      "music_slot": 10,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 33,
+      "record": "0x020F58D4",
+      "music_slot": 10,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 34,
+      "record": "0x020F590C",
+      "music_slot": 10,
+      "field_0": 2,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 35,
+      "record": "0x020F597C",
+      "music_slot": 11,
+      "field_0": 15,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 36,
+      "record": "0x020F5A24",
+      "music_slot": 11,
+      "field_0": 15,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 37,
+      "record": "0x020F5CE0",
+      "music_slot": 12,
+      "field_0": 13,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 38,
+      "record": "0x020F5D88",
+      "music_slot": 12,
+      "field_0": 13,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 39,
+      "record": "0x020F5C70",
+      "music_slot": 12,
+      "field_0": 13,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 40,
+      "record": "0x020F5B74",
+      "music_slot": 12,
+      "field_0": 13,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 41,
+      "record": "0x020F5C1C",
+      "music_slot": 12,
+      "field_0": 13,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 42,
+      "record": "0x020F5C38",
+      "music_slot": 13,
+      "field_0": 9,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 43,
+      "record": "0x020F5CFC",
+      "music_slot": 14,
+      "field_0": 5,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 44,
+      "record": "0x020F5D50",
+      "music_slot": 14,
+      "field_0": 5,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 45,
+      "record": "0x020F5A08",
+      "music_slot": 14,
+      "field_0": 5,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 46,
+      "record": "0x020F5960",
+      "music_slot": 15,
+      "field_0": 6,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 47,
+      "record": "0x020F58F0",
+      "music_slot": 15,
+      "field_0": 6,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 48,
+      "record": "0x020F56F8",
+      "music_slot": 15,
+      "field_0": 6,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 49,
+      "record": "0x020F55FC",
+      "music_slot": 15,
+      "field_0": 6,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 50,
+      "record": "0x020F5768",
+      "music_slot": 16,
+      "field_0": 10,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 51,
+      "record": "0x020F5784",
+      "music_slot": 16,
+      "field_0": 10,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 52,
+      "record": "0x020F5810",
+      "music_slot": 17,
+      "field_0": 10,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 53,
+      "record": "0x020F5848",
+      "music_slot": 18,
+      "field_0": 1,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 54,
+      "record": "0x020F589C",
+      "music_slot": 18,
+      "field_0": 1,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 55,
+      "record": "0x020F5928",
+      "music_slot": 18,
+      "field_0": 1,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 56,
+      "record": "0x020F59B4",
+      "music_slot": 4,
+      "field_0": 1,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 57,
+      "record": "0x020F5A5C",
+      "music_slot": 19,
+      "field_0": 15,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 58,
+      "record": "0x020F5B3C",
+      "music_slot": 10,
+      "field_0": 19,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 59,
+      "record": "0x020F5C8C",
+      "music_slot": 20,
+      "field_0": 11,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 60,
+      "record": "0x020F5DA4",
+      "music_slot": 20,
+      "field_0": 11,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 61,
+      "record": "0x020F5650",
+      "music_slot": 20,
+      "field_0": 11,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 62,
+      "record": "0x020F56C0",
+      "music_slot": 20,
+      "field_0": 11,
+      "field_2": 201,
+      "field_4": 50
+    },
+    {
+      "level": 63,
+      "record": "0x020F574C",
+      "music_slot": 21,
+      "field_0": 4,
+      "field_2": 201,
+      "field_4": 50
+    }
+  ],
+  "levels_by_slot": {
+    "0": [
+      0
+    ],
+    "1": [
+      1,
+      2,
+      3
+    ],
+    "2": [
+      4,
+      5,
+      9
+    ],
+    "3": [
+      6,
+      7,
+      8
+    ],
+    "4": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      56
+    ],
+    "5": [
+      15
+    ],
+    "6": [
+      16,
+      17,
+      18
+    ],
+    "7": [
+      19,
+      20,
+      21
+    ],
+    "8": [
+      22,
+      23,
+      24,
+      25
+    ],
+    "9": [
+      26,
+      27,
+      28,
+      29
+    ],
+    "10": [
+      30,
+      31,
+      32,
+      33,
+      34,
+      58
+    ],
+    "11": [
+      35,
+      36
+    ],
+    "12": [
+      37,
+      38,
+      39,
+      40,
+      41
+    ],
+    "13": [
+      42
+    ],
+    "14": [
+      43,
+      44,
+      45
+    ],
+    "15": [
+      46,
+      47,
+      48,
+      49
+    ],
+    "16": [
+      50,
+      51
+    ],
+    "17": [
+      52
+    ],
+    "18": [
+      53,
+      54,
+      55
+    ],
+    "19": [
+      57
+    ],
+    "20": [
+      59,
+      60,
+      61,
+      62
+    ],
+    "21": [
+      63
+    ]
+  },
+  "level_music_slots": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ]
+}

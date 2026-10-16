@@ -1,0 +1,66 @@
+Advance system time past a zero-debt GXFIFO stall so it cannot deadlock.
+
+WHY. The single-instance host intermittently HARD-freezes on
+wireless bring-up, cdb caught spinning in melonDS::GPU3D::CmdFIFORead via
+scheduler_run_round from the frontend's present loop. The mechanism is a
+scheduler/geometry-engine deadlock, not a radio bug:
+
+  - When the ARM9 writes to a full GX command FIFO, CmdFIFOWrite pushes the
+    overflow onto CmdStallQueue and calls NDS.GXFIFOStall() - the ARM9 halts and
+    retires nothing until the stall clears.
+  - The stall is cleared in exactly one place, CmdFIFORead -> GXFIFOUnstall, and
+    CmdFIFORead runs only from ExecuteCommand, which runs only from GPU3D::Run()'s
+    drain loop.
+  - GPU3D::Run() early-returns WITHOUT draining when a FlushRequest is pending (a
+    SwapBuffers awaiting VBlank) or geometry is disabled. So the FIFO stays full,
+    the stall stays set, and the ARM9 stays halted.
+  - The VBlank that would clear FlushRequest is delivered by nds_tick_display,
+    which this scheduler drives off the ARM9 rendezvous timestamp. That timestamp
+    only advances by the geometry engine's pending cycle debt while stalled - and
+    with Run() refusing to drain, the debt is zero. Timestamp frozen -> no VBlank
+    -> FlushRequest never clears -> stall never clears -> timestamp frozen. A
+    two-way wait, intermittent because it depends on the exact frame at which the
+    FIFO fills relative to the swap.
+
+melonDS does not deadlock here because its SysTimestamp marches to the next
+scheduled event during a GX stall (RunSystem keeps running system events while
+the ARM9 is CPUStop_GXStall'd); our debt-only advance froze time whenever the
+debt was zero.
+
+FIX. In the GXFIFO-stall branch, keep the melonDS-faithful debt-based advance
+whenever the geometry engine has real pending work (debt > 0), but when the debt
+is zero while still stalled, step the ARM9 timestamp to the planned rendezvous
+(arm9_target, the same ~kIterCap step the non-stalled path would take). The ARM9
+still retires no instructions - it is stalled - so this only unblocks the device
+clocks below (display/SPU/timer), letting the VBlank that clears FlushRequest be
+delivered so the FIFO can drain and the stall clear on a following round. The
+frontend's own non-advance watchdog remains as a last-resort safety net.
+
+--- a/runner/src/scheduler.cpp
++++ b/runner/src/scheduler.cpp
+@@ -327,7 +327,24 @@
+             const uint64_t debt =
+                 static_cast<uint64_t>(nds_gpu3d_cycles_to_run())
+                 << kArm9ClockShift;
+-            g_slot[0].cycles = std::min(arm9_target, g_slot[0].cycles + debt);
++            if (debt > 0) {
++                g_slot[0].cycles = std::min(arm9_target, g_slot[0].cycles + debt);
++            } else {
++                // ZERO DEBT WHILE STILL STALLED - break the wedge. The geometry
++                // engine's Run() is refusing to drain the FIFO: it early-returns
++                // on a pending FlushRequest (a SwapBuffers awaiting VBlank) or
++                // with geometry disabled, so no GX cycles are pending, yet the
++                // FIFO stays full and the ARM9 stays GXFIFO-halted. Advancing
++                // only by `debt` would freeze g_slot[0].cycles here, and the
++                // VBlank that clears FlushRequest is driven off THIS timestamp:
++                // the two wait on each other forever (the single-instance
++                // host GPU3D-FIFO wedge). Step system time to the
++                // planned rendezvous so the display/SPU/timer ticks below run and
++                // deliver the event that releases the stall. The ARM9 still
++                // retires nothing - it is stalled - matching melonDS, whose
++                // SysTimestamp marches to the next event during a GX stall.
++                g_slot[0].cycles = arm9_target;
++            }
+         } else {
+             run_slice(0, static_cast<uint32_t>(arm9_target - g_slot[0].cycles));
+         }

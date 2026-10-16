@@ -1,0 +1,72 @@
+--- a/runner/src/debug_server.cpp
++++ b/runner/src/debug_server.cpp
+@@ -1650,6 +1650,27 @@
+ std::mutex g_pump_mutex;
+ std::condition_variable g_pump_resp_cv;
+ PumpIo g_pump_state = PumpIo::Idle;
++// LSW2 PORT PATCH: which request a response belongs to.
++//
++// Without this the handshake desyncs permanently after a single timeout, and
++// the failure is silent. The sequence:
++//
++//   1. I/O posts request A and waits.
++//   2. The frontend takes A, releases the lock, and starts handling it.
++//   3. The wait times out (a long frame - a level load will do it). The I/O
++//      thread answers "frontend busy", resets to Idle, and moves on.
++//   4. I/O posts request B and waits.
++//   5. The frontend FINALLY finishes A and publishes its response.
++//   6. I/O wakes, sees Resp, and returns A's answer as B's.
++//
++// From there every reply is one behind its request, for the life of the
++// connection. It looks like a client bug - a read returning the wrong shape,
++// then timeouts - and it is not.
++//
++// Stamping each request and checking the stamp on the way back makes a late
++// response identifiable and discardable.
++uint64_t g_pump_gen = 0;       // incremented for every request posted
++uint64_t g_pump_resp_gen = 0;  // which request g_pump_resp answers
+ std::string g_pump_req;
+ std::string g_pump_resp;
+ std::atomic<bool> g_pump_shutdown{false};
+@@ -1685,9 +1706,17 @@
+                     std::unique_lock<std::mutex> lock(g_pump_mutex);
+                     g_pump_req = req;
+                     g_pump_state = PumpIo::Req;
++                    // LSW2 PORT PATCH: stamp this request and only accept a
++                    // response carrying the same stamp, so an answer to an
++                    // earlier abandoned request cannot be mistaken for this
++                    // one. See the note beside g_pump_gen.
++                    const uint64_t gen = ++g_pump_gen;
+                     if (g_pump_resp_cv.wait_for(
+                             lock, std::chrono::seconds(30),
+-                            [] { return g_pump_state == PumpIo::Resp; })) {
++                            [gen] {
++                                return g_pump_state == PumpIo::Resp &&
++                                       g_pump_resp_gen == gen;
++                            })) {
+                         resp = g_pump_resp;
+                     } else {
+                         resp = "{\"error\":\"frontend busy or frozen\"}";
+@@ -1752,10 +1781,22 @@
+     std::unique_lock<std::mutex> lock(g_pump_mutex, std::try_to_lock);
+     if (!lock.owns_lock() || g_pump_state != PumpIo::Req) return;
+     const std::string req = g_pump_req;
++    // LSW2 PORT PATCH: remember which request this is, so a response produced
++    // after the waiter gave up can be recognised as stale below.
++    const uint64_t gen = g_pump_gen;
+     lock.unlock();
+     std::string resp = handle(req);   // frontend thread: the safe point
+     lock.lock();
++    if (g_pump_gen != gen) {
++        // The waiter timed out and has since posted a newer request. Publishing
++        // this would hand the new request the old one's answer and leave the
++        // connection one reply behind for good. Drop it; the newer request is
++        // still sitting in g_pump_req and the next pump will pick it up.
++        lock.unlock();
++        return;
++    }
+     g_pump_resp = std::move(resp);
++    g_pump_resp_gen = gen;
+     g_pump_state = PumpIo::Resp;
+     lock.unlock();
+     g_pump_resp_cv.notify_one();

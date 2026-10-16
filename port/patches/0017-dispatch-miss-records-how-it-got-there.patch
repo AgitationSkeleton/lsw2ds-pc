@@ -1,0 +1,75 @@
+Make a dispatch miss say how execution got there, in the file a crash keeps.
+
+A miss halts the CPU (nds_halt), so for a played session - a double-clicked
+exe whose stderr goes nowhere - dispatch_misses.log is the only record. It held
+pc and lr only. One crash left "pc=0x0005D630 lr=0x0000104C":
+ITCM code (the collision routine at 0x01FF8ABC, whose `bl 0x02055630` sits at
+0x01FF9048) executed through the ITCM's low mirror, so its relative branch
+resolved to 0x0005D630. Nothing in the log could say what jumped into the
+mirror.
+
+So the miss now also records the time, the guest registers and the runtime's
+own stack of pending guest returns (runtime_call_stack_data, already used by
+patch 0007's unmapped-access report) - in the file, and on stderr for a drive.
+
+--- a/runner/src/runtime_arm.cpp
++++ b/runner/src/runtime_arm.cpp
+@@ -18,6 +18,7 @@
+ #include <cstdio>
+ #include <cstdlib>
+ #include <cstring>
++#include <ctime>
+ #include <vector>
+ 
+ #include "state.h"
+@@ -1172,6 +1173,15 @@
+     std::fprintf(stderr,
+         "[dispatch-miss] cpu=%s pc=0x%08X %s (lr=0x%08X)\n",
+         cpu, t, mode, g_cpu.R[14]);
++    {
++        const uint32_t depth = runtime_call_stack_depth();
++        const uint32_t* ret = runtime_call_stack_data();
++        std::fprintf(stderr, "[dispatch-miss]   pending guest returns "
++                     "(innermost first, depth %u):", unsigned(depth));
++        for (uint32_t i = 0; i < depth && i < 24u; ++i)
++            std::fprintf(stderr, " %08X", unsigned(ret[depth - 1u - i]));
++        std::fprintf(stderr, "\n");
++    }
+ 
+     // A miss INSIDE recompiled static ROM is a real non-function-start entry
+     // PC (a BIOS-ABI landing pad reached by a runtime-computed branch), NOT a
+@@ -1221,6 +1231,34 @@
+         if (in_static_rom && have_range)
+             std::fprintf(f, "#   containing static range 0x%08X..0x%08X\n",
+                          rs, re);
++        // WHAT LED HERE, kept where a crash leaves it (patch 0017). A miss
++        // halts the CPU, so this file is the only record a played session
++        // keeps: a double-clicked exe's stderr goes nowhere. pc and lr alone
++        // named a wild branch seen in play (0x0005D630 from ITCM code run
++        // through its low mirror) and nothing about how execution got there.
++        // The runtime's own stack of pending guest returns names the chain,
++        // and the registers are what a bad pointer was built from.
++        {
++            const std::time_t now = std::time(nullptr);
++            char when[32] = "?";
++            if (const std::tm* lt = std::localtime(&now))
++                std::strftime(when, sizeof when, "%Y-%m-%d %H:%M:%S", lt);
++            std::fprintf(f, "#   at %s  cpsr=%08X sp=%08X\n", when,
++                         g_cpu.cpsr, g_cpu.R[13]);
++            std::fprintf(f, "#   r0-r7  %08X %08X %08X %08X %08X %08X %08X %08X\n",
++                         g_cpu.R[0], g_cpu.R[1], g_cpu.R[2], g_cpu.R[3],
++                         g_cpu.R[4], g_cpu.R[5], g_cpu.R[6], g_cpu.R[7]);
++            std::fprintf(f, "#   r8-r12 %08X %08X %08X %08X %08X\n",
++                         g_cpu.R[8], g_cpu.R[9], g_cpu.R[10], g_cpu.R[11],
++                         g_cpu.R[12]);
++            const uint32_t depth = runtime_call_stack_depth();
++            const uint32_t* ret = runtime_call_stack_data();
++            std::fprintf(f, "#   pending guest returns (innermost first, depth %u):",
++                         unsigned(depth));
++            for (uint32_t i = 0; i < depth && i < 24u; ++i)
++                std::fprintf(f, " %08X", unsigned(ret[depth - 1u - i]));
++            std::fprintf(f, "\n");
++        }
+         std::fprintf(f,
+             "[[entry_point]]\naddr = 0x%08X\nmode = \"%s\"\n"
+             "kind = \"runtime_confirmed\"\n\n",

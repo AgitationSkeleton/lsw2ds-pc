@@ -1,0 +1,91 @@
+--- a/runner/src/melonds_compute/ComputeHost.h
++++ b/runner/src/melonds_compute/ComputeHost.h
+@@ -14,9 +14,27 @@
+ bool nds_compute_host_start(SDL_Window* presentation_window = nullptr);
+ bool nds_compute_host_make_current();
+ bool nds_compute_host_has_visible_context();
++// LSW2 PORT PATCH: two additions, both defaulted so existing callers are
++// unchanged.
++//
++// `viewport` (x, y, w, h in drawable pixels) draws the frame into a sub-rect
++// instead of stretching it across the whole window. Without it a wide window
++// distorts the picture, because the present pass covers the full drawable.
++// Pass nullptr for the original behaviour.
++//
++// `defer_swap` returns before SDL_GL_SwapWindow so the caller can draw its own
++// overlay - a settings UI, a debug panel - on top of the presented frame, then
++// call nds_compute_host_swap(). Without this the window is already on screen by
++// the time control comes back and nothing can be drawn over it.
+ bool nds_compute_host_present_top(const unsigned int* fallback_pixels,
+                                   unsigned short fallback_width,
+                                   const NdsGpu2dDirectFrame* direct_frame,
+-                                  NdsComputePresentTicks* ticks);
++                                  NdsComputePresentTicks* ticks,
++                                  const int* viewport = nullptr,
++                                  bool defer_swap = false);
++
++// LSW2 PORT PATCH: the swap half of a deferred present. Safe to call when the
++// matching present failed or was never made - it simply does nothing.
++bool nds_compute_host_swap(NdsComputePresentTicks* ticks);
+ void nds_compute_host_stop();
+ bool nds_compute_host_active();
+--- a/runner/src/melonds_compute/ComputeHost.cpp
++++ b/runner/src/melonds_compute/ComputeHost.cpp
+@@ -516,7 +516,9 @@
+ bool nds_compute_host_present_top(const unsigned int* fallback_pixels,
+                                   unsigned short fallback_width,
+                                   const NdsGpu2dDirectFrame* direct_frame,
+-                                  NdsComputePresentTicks* ticks)
++                                  NdsComputePresentTicks* ticks,
++                                  const int* viewport,
++                                  bool defer_swap)
+ {
+     if (!g_active || !g_visible || !g_present_program || !ticks)
+         return false;
+@@ -576,7 +578,19 @@
+     int drawable_width = 0;
+     int drawable_height = 0;
+     SDL_GL_GetDrawableSize(g_window, &drawable_width, &drawable_height);
+-    glViewport(0, 0, drawable_width, drawable_height);
++    // LSW2 PORT PATCH: honour a caller-supplied sub-rect. The present pass is
++    // a full-viewport triangle, so the viewport IS the letterbox: clear the
++    // whole drawable first, then restrict drawing to the rect, otherwise the
++    // bars keep whatever the previous frame left there.
++    if (viewport) {
++        glViewport(0, 0, drawable_width, drawable_height);
++        glDisable(GL_SCISSOR_TEST);
++        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
++        glClear(GL_COLOR_BUFFER_BIT);
++        glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
++    } else {
++        glViewport(0, 0, drawable_width, drawable_height);
++    }
+     glUseProgram(g_present_program);
+     glActiveTexture(GL_TEXTURE1);
+     glBindTexture(GL_TEXTURE_2D, g_object_texture[buffer]);
+@@ -631,12 +645,25 @@
+     glDrawArrays(GL_TRIANGLES, 0, 3);
+     ticks->draw += SDL_GetPerformanceCounter() - start;
+ 
++    // LSW2 PORT PATCH: the caller may want to draw over the frame first.
++    if (defer_swap) return glGetError() == GL_NO_ERROR;
++
+     start = SDL_GetPerformanceCounter();
+     SDL_GL_SwapWindow(g_window);
+     ticks->swap += SDL_GetPerformanceCounter() - start;
+     return glGetError() == GL_NO_ERROR;
+ }
+ 
++// LSW2 PORT PATCH: see the header.
++bool nds_compute_host_swap(NdsComputePresentTicks* ticks)
++{
++    if (!g_active || !g_visible || !g_window) return false;
++    const unsigned long long start = SDL_GetPerformanceCounter();
++    SDL_GL_SwapWindow(g_window);
++    if (ticks) ticks->swap += SDL_GetPerformanceCounter() - start;
++    return true;
++}
++
+ void nds_compute_host_stop()
+ {
+     if (!g_active) {

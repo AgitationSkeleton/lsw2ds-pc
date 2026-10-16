@@ -1,0 +1,1422 @@
+{
+  "note": "Every actor slot in the two Bounty Hunter arenas, from the decoded level scripts (config/level_actors.json, produced by tools/export_level_actors.py from the level-record table at 0x020f55c4 and the handler constructor table at 0x020ed5cc), correlated against the entity inventory reported first-hand from play.",
+  "how_identification_was_done": "Handler type comes from the ROM and is certain. Entity naming comes from matching per-map instance counts against the observed inventory, with cross-map agreement as the check: an asset appearing on both maps with counts matching both observations is far stronger evidence than a single-map coincidence. Confidence is stated per row and must not be upgraded without further evidence.",
+  "confidence_levels": {
+    "rom_certain": "the handler itself encodes the meaning; no inference",
+    "strong": "counts match the observation on both maps, or an exact distinctive count on one",
+    "probable": "counts are consistent but the assignment among two or more candidates is not forced",
+    "unresolved": "decoded and counted, but not yet tied to a named entity"
+  },
+  "rom_certain": {
+    "player_start": {
+      "handler": 0,
+      "count": {
+        "mos_eisley_streets": 4,
+        "jabbas_tower": 4
+      },
+      "note": "Four per map, matching the four-player maximum. Handler 0 is the only handler with a decoded field map, from the constructor table.",
+      "fields": [
+        "+0x00",
+        "+0x02",
+        "+0x04",
+        "+0x08",
+        "+0x09"
+      ]
+    },
+    "team_capture_corner": {
+      "handler": 18,
+      "count": {
+        "jabbas_tower": 4
+      },
+      "note": "Decoded kind is literally team_capture_corner. Four of them, one per player, and player-gated in play. Absent from Mos Eisley, which is why the Mos CTF data in bounty_arena_entities.json is marked ctf_clone_authored - there are no handler-18 volumes in vanilla Mos.",
+      "capabilities": [
+        "gated to its owning player",
+        "capture completes when the flag carrier enters"
+      ]
+    },
+    "carbonite_flag_spawn": {
+      "handler": 2,
+      "count": {
+        "jabbas_tower": 1
+      },
+      "decoded_kind": "normal_actor_spawn",
+      "note": "Han Solo in Carbonite, the flag. One per map on Jabba's Tower only, spawning runtime character id 23 at [0,44,0].",
+      "capabilities": [
+        "carried by a player",
+        "dropped on death",
+        "captured at a team_capture_corner"
+      ],
+      "not_decoded": [
+        "pickup radius",
+        "carry attachment point",
+        "return timer",
+        "drop rules"
+      ]
+    },
+    "death_volume": {
+      "handler": 9,
+      "count": {
+        "mos_eisley_streets": 1,
+        "jabbas_tower": 1
+      },
+      "decoded_kind": "arena_type5_timed_actor_volume",
+      "constructor": "0x020511d4",
+      "note": "One per map, a volume rather than a model. The Mos instance sits at y=-20, below the walkable floor, with extents [80,10,100] - a floor-level kill volume, matching the reported death pit.",
+      "mos_position_s16": [
+        -12,
+        -20,
+        66
+      ],
+      "mos_extents": [
+        80,
+        10,
+        100
+      ]
+    }
+  },
+  "strong": {
+    "mountable_buildable_turret": {
+      "asset": 4835,
+      "handler": 4,
+      "count": {
+        "mos_eisley_streets": 2,
+        "jabbas_tower": 2
+      },
+      "why": "Two on each map, matching the reported count on both maps independently. Cross-map agreement makes this the strongest correlation in the table.",
+      "build_frames": 81,
+      "capabilities": [
+        "built like any other buildable",
+        "a player mounts it and aims it manually",
+        "occupied by at most one player"
+      ],
+      "not_decoded": [
+        "mount radius",
+        "dismount trigger",
+        "aim limits",
+        "fire rate",
+        "damage",
+        "whether the rider is vulnerable"
+      ],
+      "confidence_note": "SEE CONTRADICTED_BY_RENDERS - this naming is in doubt",
+      "VOID": "asset id came from a scenery slot - see MY_ASSET_SELECTION_WAS_WRONG"
+    },
+    "heart_dispenser": {
+      "asset": 1855,
+      "handler": 4,
+      "count": {
+        "mos_eisley_streets": 6,
+        "jabbas_tower": 6
+      },
+      "why": "Six on each map, fitting the reported several on Mos. Confirmed by the model registry: 1855 carries flags=6, the same category as the flag turret 3923, which is exactly right for the other entity that is built and destroyed. The rival candidate 2835 is eliminated - it has flags=141 and shares handler 0x020eb234 with asset 3631, a different behaviour class entirely.",
+      "capabilities": [
+        "drops a heart when built",
+        "drops a heart again when destroyed",
+        "the pieces pile animates while a player is near"
+      ],
+      "not_decoded": [
+        "heart value",
+        "respawn behaviour",
+        "hit points"
+      ],
+      "confidence_note": "SEE CONTRADICTED_BY_RENDERS - this naming is in doubt",
+      "VOID": "asset id came from a scenery slot - see MY_ASSET_SELECTION_WAS_WRONG"
+    }
+  },
+  "probable": {
+    "grapple_point": {
+      "asset": 2276,
+      "handler": 4,
+      "count": {
+        "mos_eisley_streets": 1,
+        "jabbas_tower": 4
+      },
+      "why": "Mos was reported as having one static grapple and one buildable grapple; Jabba as having several of each. A single Mos instance fits either, and 2276 is the only asset with exactly one Mos instance that also appears several times on Jabba.",
+      "capabilities": [
+        "has a base and a hook",
+        "a player stands on the base and presses ability to grapple to the hook"
+      ],
+      "not_decoded": [
+        "whether 2276 is the static or the buildable variant",
+        "travel speed",
+        "where traversal ends",
+        "attach radius"
+      ],
+      "caution": "Static and buildable grapples are separate entities and only one of them is identified here. Asset 2835 - Mos 2, Jabba 8 - is the leading candidate for the other.",
+      "note_4046": "Asset 4046 - Mos only, x2, flags=1, the same flags as 2276 - is the leading candidate for the second grapple variant. Grapples have a base and a hook as separate pieces, so a grapple installation may occupy more than one slot, which would explain counts that do not match installations one-for-one.",
+      "confidence_note": "SEE CONTRADICTED_BY_RENDERS - this naming is in doubt",
+      "VOID": "asset id came from a scenery slot - see MY_ASSET_SELECTION_WAS_WRONG"
+    },
+    "buildable_elevator": {
+      "asset": 3400,
+      "handler": 4,
+      "count": {
+        "mos_eisley_streets": 1
+      },
+      "why": "Mos Eisley only, exactly one, matching the single reported elevator. Jabba's Tower has none, which is consistent.",
+      "animation": {
+        "state_a": 2,
+        "transition": 30,
+        "state_b": 7
+      },
+      "capabilities": [
+        "two-state platform with a 30-frame travel between them"
+      ],
+      "not_decoded": [
+        "trigger",
+        "whether it is callable from either end",
+        "travel extent in world units"
+      ],
+      "confidence_note": "SEE CONTRADICTED_BY_RENDERS - this naming is in doubt",
+      "VOID": "asset id came from a scenery slot - see MY_ASSET_SELECTION_WAS_WRONG"
+    },
+    "bridge_lever": {
+      "handler": 16,
+      "count": {
+        "mos_eisley_streets": 2
+      },
+      "why": "Two on Mos Eisley only, both at identical height y=26, matching two levers driving one bridge. Asset 1586 carries flags=5, unique across both maps, which suits a one-off mechanism. The rival 4046 is set aside because its flags=1 groups it with the grapple family rather than with a mechanism.",
+      "note": "Levers are not buildable - they are placed on the level as-is, so they have no pieces state.",
+      "capabilities": [
+        "pulled by a player",
+        "extends a bridge"
+      ],
+      "not_decoded": [
+        "interaction radius",
+        "whether the bridge can be retracted",
+        "the lever-to-bridge binding",
+        "which bridge asset it drives"
+      ],
+      "asset": 1586,
+      "confidence_note": "SEE CONTRADICTED_BY_RENDERS - this naming is in doubt",
+      "VOID": "asset id came from a scenery slot - see MY_ASSET_SELECTION_WAS_WRONG"
+    }
+  },
+  "unresolved": {
+    "note": "Decoded and counted, but not tied to a named entity. Listed so the accounting is complete - every slot in both maps appears somewhere in this file.",
+    "mos_eisley_streets": {
+      "handler_4": {
+        "1000": 3,
+        "270": 3,
+        "5310": 3,
+        "2835": 2
+      },
+      "handler_16": {
+        "5028": 4,
+        "2277": 1,
+        "2336": 1,
+        "3631": 1,
+        "5064": 1,
+        "5094": 1
+      }
+    },
+    "jabbas_tower": {
+      "handler_4": {
+        "2835": 8,
+        "1000": 4
+      }
+    },
+    "leading_hypotheses": {
+      "2835": "NOT the dispenser - eliminated by flags=141 and by sharing handler 0x020eb234 with 3631. Behaviour class unknown.",
+      "1000": "present on both maps at 3 and 4; no reported entity has those counts, so possibly scenery or a spawn helper",
+      "270_and_5310": "Mos-exclusive, 3 each; candidates for the bridge sections, which are Mos-only",
+      "handler_16_singletons": "Mos-exclusive one-offs; the bridge itself is a plausible member",
+      "4046": "second grapple variant, by flags agreement with 2276"
+    },
+    "flag_turret": "Not identified. Asset 3923 previously held this label and is a power droid, so the flag turret is one of the remaining unnamed assets - 2835 (Mos 2, Jabba 8) and 3631 are the leading candidates, both of which lack TEX0 and use a shared texture bank."
+  },
+  "slot_accounting": {
+    "mos_eisley_streets": {
+      "decoded_slots": 42,
+      "handlers": {
+        "4": 24,
+        "16": 13,
+        "0": 4,
+        "9": 1
+      }
+    },
+    "jabbas_tower": {
+      "decoded_slots": 46,
+      "handlers": {
+        "4": 36,
+        "0": 4,
+        "18": 4,
+        "2": 1,
+        "9": 1
+      }
+    },
+    "unhandled_slots": 0
+  },
+  "registry_flags_evidence": {
+    "note": "The model registry row for each asset carries a handler address and a flags byte. Assets sharing a handler share behaviour, and the flags byte groups them into categories. This is ROM evidence and it settles ambiguities that counting alone left open.",
+    "flags_6": {
+      "assets": [
+        3923,
+        1855
+      ],
+      "meaning": "the destructible-buildable family - the flag turret and the heart dispenser are siblings, which is consistent with both being built and both being destroyed"
+    },
+    "flags_141_handler_0x020eb234": {
+      "assets": [
+        2835,
+        3631
+      ],
+      "meaning": "a distinct behaviour class sharing one handler; NOT the dispenser family"
+    },
+    "flags_1": {
+      "assets": [
+        2276,
+        4046,
+        2277,
+        5064,
+        5094
+      ],
+      "meaning": "grapple-family and small fixed props"
+    },
+    "flags_5": {
+      "assets": [
+        1586
+      ],
+      "meaning": "unique in both maps"
+    }
+  },
+  "CONTRADICTED_BY_RENDERS": {
+    "severity": "blocking - do not use the strong/probable names until resolved",
+    "what_happened": "tools/render_entity_assets.py decoded the TEX0 textures of each named asset. The texture names do not match the entities: asset 3923, named here as the flag turret, contains a texture called PowerDroid; 1586, named as the bridge lever, contains TrRn_BlkDr, TrRn_BluDr and Trnch_DrGlw, which read as Death Star trench-run art; 3400, named as the elevator, contains CCLaser.",
+    "why_it_matters": "The archive catalog maps asset_id directly onto entries/<id>.nsbmd, so these really are the models the level slots name. Either the count-based identification is wrong, or archive_model_asset indexes a level-local texture bank rather than the global archive - the level record table does carry a per-level texture bank, which would explain it.",
+    "status": "The rom_certain rows are unaffected - player starts, capture corners, the Carbonite spawn and the death volume come from handler semantics, not from asset ids. Everything in strong and probable rests on asset ids and is now in doubt.",
+    "next_step": "Resolve whether archive_model_asset is global or level-local by checking the level record texture bank at 0x020f55c4 against these ids, before any further naming or rendering.",
+    "resolution_so_far": "The id space is confirmed correct, so the renders stand. What they show is that 3923 - named here as the flag turret - is a PowerDroid model. Its counts (Mos 3, Jabba 12) fit the reported dispenser distribution (several / many) better than the turret one, so the flag-turret and heart-dispenser assignments are most likely swapped or both wrong. Assets 1000 and 4835 are entirely blue brick objects and are now the leading candidates for the blue-and-green dispenser. This is not yet resolved."
+  },
+  "texture_evidence": {
+    "note": "TEX0 texture names read from each candidate model (tools/render_entity_assets.py). These are LEGO piece textures - Peg, Rnd, RndTop, Ribd, Side - which confirms the assets are brick-built objects rather than scenery, and gives each one a colour signature.",
+    "assets": {
+      "3923": {
+        "mos": 3,
+        "jabba": 12,
+        "textures": [
+          "PowerDroid"
+        ]
+      },
+      "1855": {
+        "mos": 6,
+        "jabba": 6,
+        "textures": [
+          "Dtectr_Glw",
+          "Side_Blk",
+          "Side_BrnLt",
+          "Side_Brn"
+        ]
+      },
+      "4835": {
+        "mos": 2,
+        "jabba": 2,
+        "textures": [
+          "Peg_BluLt",
+          "RndBtm_Blu",
+          "RndTop_Blue",
+          "RndTop_Brn",
+          "Rnd_Blk",
+          "Rnd_Blu"
+        ],
+        "note": "heavily blue round pieces"
+      },
+      "2276": {
+        "mos": 1,
+        "jabba": 4,
+        "textures": [
+          "FlrBlast",
+          "Side_Blu",
+          "Side_Gry",
+          "TrRn_GryDr"
+        ]
+      },
+      "3400": {
+        "mos": 1,
+        "jabba": 0,
+        "textures": [
+          "CCLaser",
+          "Peg_Wht"
+        ]
+      },
+      "1586": {
+        "mos": 2,
+        "jabba": 0,
+        "textures": [
+          "Glow_Trpr",
+          "ID_Imp",
+          "ID_Lite",
+          "Side_Blk",
+          "Side_Blu",
+          "TrRn_BlkDr"
+        ]
+      },
+      "4046": {
+        "mos": 2,
+        "jabba": 0,
+        "textures": [
+          "Hole_Blk",
+          "Peg_Blk",
+          "Peg_Gry",
+          "Ribd_Blk",
+          "Ribd_Gry",
+          "Rnd_Blk"
+        ]
+      },
+      "1000": {
+        "mos": 3,
+        "jabba": 4,
+        "textures": [
+          "Peg_Blu",
+          "RndBtm_Blu",
+          "Rnd_Blu",
+          "Side_Blu"
+        ],
+        "note": "entirely blue"
+      },
+      "5310": {
+        "mos": 3,
+        "jabba": 0,
+        "textures": [
+          "FloorWireElec"
+        ]
+      },
+      "5028": {
+        "mos": 4,
+        "jabba": 0,
+        "textures": [
+          "Side_Blk",
+          "Side_Gry",
+          "TrRn_BlkDr",
+          "TrRn_BluDr",
+          "TrRn_GryDr"
+        ]
+      },
+      "2835": {
+        "mos": 2,
+        "jabba": 8,
+        "textures": [],
+        "note": "no TEX0 - uses a shared texture bank"
+      }
+    }
+  },
+  "id_space_correction": {
+    "finding": "archive_model_asset really is an archive entry id - 3923.nsbmd exists and decodes. The level record fields are a different id space: bsp 325, script 326 and texture_bank 329 for Mos have no archive entries at all.",
+    "consequence": "The turret family 332-343 recorded in the earlier arena entity-logic analysis is NOT a list of archive ids - none of those files exist. That list came from scanning the ARM9 for halfwords and must not be treated as models.",
+    "so_the_renders_are_valid": "The models rendered are genuinely the ones the level slots name, so the texture names are real evidence about those slots."
+  },
+  "render_status": {
+    "reliable": [
+      "2522 GrappleHook",
+      "4504 SPBargeLever",
+      "0292 BargeTurret"
+    ],
+    "why": "These three are the models whose node records carry no rotation, so the unsolved rotation decode cannot damage them.",
+    "removed": "All buildable renders - dispenser 230, flag turret 332, mountable 237, barge buildable 252, elevator 270 - were wrong in both built and unbuilt states and have been moved to out/work/_superseded/wrong_buildable_renders.",
+    "cause": "MDL0 node-record rotation decode, unsolved after five interpretations.",
+    "unaffected": "Entity identification, part names, material colours, animation frame counts and world placements are all independently sound - none of them depend on the model renderer."
+  },
+  "geometry_evidence": {
+    "source": "tools/render_entity_models.py decodes MDL0 shape display lists (DS GPU command streams) and draws an orthographic three-quarter view. out/work/entity_models, 14 models, ALL_MODELS.png and CANDIDATES.png are contact sheets.",
+    "observations": {
+      "3923": "A tall upright box with a tapered front panel and studs on top - unmistakably a gonk/power droid, matching its single PowerDroid texture. This is NOT a turret. Its counts (Mos 3, Jabba 12) fit the dispenser distribution (several / many), so the flag-turret label on this asset is wrong and dispenser is the likely correct reading.",
+      "4835": "A low flat elongated wedge, heavily blue-bricked - the profile of a mounted gun rather than a standing object. Mos 2 / Jabba 2 matches the reported mountable turret count on both maps. This remains the strongest identification in the file.",
+      "1855": "A large flat box on a base plate with a small protrusion at the front, textured Dtectr_Glw plus brown and black sides. Mos 6 / Jabba 6.",
+      "2276 and 2277": "Identical flat layered pads. A pad is what a player stands on, which fits the grapple BASE described in play. 2276 is Mos 1 / Jabba 4; 2277 is Mos 1 only - consistent with one being the static variant and the other buildable.",
+      "4046": "Renders as two clearly separate pieces, a flat disc above and a tapered base below. That is precisely the base-and-hook pair described in play, in a single asset. Mos 2.",
+      "1000": "A tall thin vertical column. A plausible grapple hook post. Mos 3 / Jabba 4.",
+      "3400": "An almost flat platform - consistent with the elevator, which is a platform that travels.",
+      "5310": "Almost no geometry, matching its single FloorWireElec texture - a floor decal rather than an object."
+    },
+    "what_this_changes": "Shape is direct evidence and it overrides count matching where the two disagree. The turret/dispenser assignment on 3923 is contradicted and should be treated as wrong. The grapple family is better understood than before: pads (2276/2277) and a base-plus-hook pair (4046) are all grapple-shaped, which fits several grapple installations across the two maps.",
+    "what_it_does_not_settle": "Which grapple asset is static and which is buildable, and whether 1855 or 3923 is the blue-and-green dispenser - neither renders blue and green, because the flat shading used here is not the model textures."
+  },
+  "earlier_asset_selection_was_wrong": {
+    "confirmed_by": "3923 was identified on sight as a gonk droid. That is what the renderer drew, so the rasteriser is correct and the ASSET SELECTION was wrong. Every entity name derived from handler-4 level slots is therefore void - those slots are scenery (gonk droids and similar), not Bounty Hunter mode entities.",
+    "root_cause": "A zero-padding mistake. Archive files are padded to four digits, so the real filename is 0332.nsbmd. The check looked for 332.nsbmd, found nothing, and concluded that the turret family 332-343 from the arena entity-logic analysis was not archive ids. That conclusion was wrong and it sent the whole identification down the scenery path.",
+    "the_arena_assets_are_real": {
+      "0324.nsbtx": "Jabbas Tower texture bank, matching the level record",
+      "0329.nsbtx": "Mos Eisley texture bank (ArenaSky), matching the level record",
+      "0332.nsbmd": "model carrying a texture literally named FlagColors, alongside Peg_Yel, Side_Orng, Side_Yel, Side_Blk - the player-coloured flag turret",
+      "0333.nsbta and 0340.nsbta": "texture animations",
+      "0334.nsbca, 0336.nsbca, 0339.nsbca": "skeletal animations - the build/repair animations whose frame counts the arena entity-logic analysis decoded",
+      "note": "So the arena entity-logic analysis was right all along about 332-343 being the arena entity family, and the earlier retraction saying otherwise is itself retracted."
+    },
+    "dispenser_search": "Scanning all 5548 archive entries for models carrying BOTH blue and green textures returns only six. Assets 221 and 230 are the plausible ones - 230 has exactly Hole_Blu, Hole_Grn, Hole_Gry, Peg_Blu, Peg_Grn, Peg_Gry, Side_Blu, Side_Grn, matching the blue, green and grey of the reference photo. But 230 renders wide and flat (h 2.5 / w 6.6) while the photo shows a tall spire, so it is NOT confirmed and should not be recorded as the dispenser.",
+    "renderer_status": "Validated. The gonk droid renders with gonk proportions (h 5.0 / w 3.3) and was recognised as such. Object placement via MTX_RESTORE and the objects-block translations is applied, which fixed parts collapsing to the origin.",
+    "next_step": "Work the 0319-0343 arena range directly - render every model in it and match against the photo - rather than going through level slots, which carry scenery. The Bounty Hunter entities are very likely spawned by the mode rather than by the level script, which is why the same Mos Eisley level serves story mode without them."
+  },
+  "RUNTIME_LOADED_ASSETS": {
+    "method": "Scanned the 4 MB main-RAM dump taken during a live Mos Eisley Bounty Hunter match against a signature from every archive entry. 97 assets were resident. This is runtime ground truth and it outranks every inference in this file - an asset the game did not load cannot be an entity in that match.",
+    "count": 97,
+    "validates_entity_logic_analysis": "The asset families in the arena entity-logic analysis, which were wrongly dismissed earlier, are confirmed by loading: 332 (turret) and its animation 334 are resident, 819 from the buildable-grapple family is resident, and 2522 from the static grapple-point family is resident.",
+    "rules_out_scenery_guesses": "None of 3923, 1855, 4835, 2276, 1586, 3400 or 4046 are loaded in the match. Every entity name derived from handler-4 level slots was therefore wrong, which matches what was seen in play: the models were all incorrect.",
+    "confirmed_entities": {
+      "332": "Buildable turret with player-coloured flag. Carries a texture named FlagColors alongside Peg_Yel/Side_Orng/Side_Yel, sits in the arena asset block, and is loaded in the match. Its animations are 0334/0336/0339 (nsbca) and 0333/0340 (nsbta).",
+      "2522": "Static grapple point. In the fixed-grapple family (2522-2525) and loaded. Renders as a downward-pointing spike - the hook half of the base-and-hook pair.",
+      "819": "Buildable grapple. In the buildable-grapple family (818-823) and loaded."
+    },
+    "strong_candidates": {
+      "237, 1922, 2808": "Three models with identical geometry (236-240 verts, 68-69 faces) and identical texture sets differing only in colour - 237 yellow (Hole_Yel/Peg_Yel), 1922 and 2808 red (Hole_Red/Peg_Rd). Same object in per-player colours. These are the per-colour variants the mode needs, and they are all loaded.",
+      "2835, 2836, 2935": "Loaded, no TEX0, so they draw from the shared arena texture bank (0329 ArenaSky) where the blue, green and grey brick textures live. 2836 is tall and narrow (h 4.5 / w 2.9), the closest match so far to the reference photo of the blue-and-green dispenser. Not confirmed."
+    },
+    "not_settled": "Which asset is the heart dispenser. No loaded model carries blue and green textures directly, because the dispenser is one of the shared-bank models whose colours come from 0329 - so texture-name search cannot find it and the shared bank must be resolved instead.",
+    "renderer_caveat": "Model placement uses a guessed MTX_RESTORE-to-object mapping; the true binding is in the MDL0 render command list, which is not parsed. Tall multi-part objects still flatten, so proportions in the renders are not yet reliable.",
+    "where_the_colour_lives": "Not in textures and not in the display lists. Neither arena texture bank (0329 Mos, 0324 Jabba) contains a blue or green texture, and none of the candidate models issue a COLOR or DIF_AMB command - zero colour commands across all of them. So brick colour is carried by the MDL0 material list, which stores diffuse and ambient per material and is bound by the render command list. That block is not parsed yet, which is why no search over textures could ever have found a blue-and-green object, and why the renders are flat-shaded.",
+    "next_step_is_now_specific": "Parse the MDL0 material list for diffuse colour, and the render command list for the material-to-shape and matrix-to-object bindings. Those are the same block and they fix both open problems at once: correct part placement (so tall objects stop flattening) and per-material colour (so the blue-and-green dispenser becomes findable by colour, and the turret flag colour becomes visible)."
+  },
+  "CONFIRMED_BY_POINTER_CHAIN": {
+    "method": "Followed the pointers instead of guessing. For every actor the trace saw in the live Mos Eisley match, the 97 loaded archive assets were first located in main RAM, then each actor struct was scanned for a pointer landing inside one of those regions. Actors carry a model-reference block at +0xD8/+0xDC/+0xE4/+0xF8, and the asset it points at is the model that actor is drawn with. This is the entity-to-model link read from runtime state, not inferred from counts, colours or names.",
+    "model_reference_offsets": [
+      "+0xD8",
+      "+0xDC",
+      "+0xE4",
+      "+0xF8",
+      "+0x104",
+      "+0x148"
+    ],
+    "evidence_files": [
+      "out/work/loaded_asset_regions.json",
+      "out/work/actor_asset_refs.json"
+    ],
+    "entities": {
+      "0x020fdb50": {
+        "model": 332,
+        "live_instances": 3,
+        "entity": "buildable turret with player-coloured flag",
+        "why": "Three instances in the Mos match, matching the reported three flag turrets exactly. Its model 332 carries a texture named FlagColors plus Peg_Yel/Side_Orng/Side_Yel, sits in the arena asset block 0319-0343, and is loaded in the match. Animations 0334/0336/0339 (nsbca) and 0333/0340 (nsbta) are the build/repair sequences. Four independent lines of evidence agree.",
+        "confidence": "confirmed"
+      },
+      "0x020fd6d8": {
+        "models": [
+          4636,
+          2522
+        ],
+        "live_instances": 3,
+        "entity": "grapple point (base + hook)",
+        "why": "One vtable referencing two models is exactly the base-and-hook pair described in play. 4636 renders as a flat plate - the base a player stands on. 2522 renders as a shaft with barbs - the hook - and belongs to the fixed grapple-point family 2522-2525 recorded in the arena entity-logic analysis. The hook identification is confirmed visually.",
+        "confidence": "confirmed"
+      },
+      "0x020fcfb8": {
+        "model": 2522,
+        "live_instances": 16,
+        "entity": "unresolved - references the grapple hook model",
+        "confidence": "open"
+      },
+      "0x020fd468": {
+        "model": 4504,
+        "live_instances": 3,
+        "entity": "bridge lever",
+        "why": "Identified visually from the render. Three instances in the Mos match; two levers were reported, so either a third exists or one instance is a duplicate placement.",
+        "confidence": "confirmed (visual)"
+      },
+      "0x020fd220": {
+        "models": [
+          4716
+        ],
+        "animation": 1461,
+        "live_instances": 2,
+        "entity": "unresolved - an animated entity with two instances",
+        "why": "Model 4716 carries textures named Black and Blue and is small and curved (h1.8/w1.2); animation 1461 is an nsbca. Two instances matches either the mountable turrets or the second lever, and there is no evidence yet to choose.",
+        "confidence": "open"
+      },
+      "0x020fcf28": {
+        "models": [
+          3517,
+          5168,
+          2836
+        ],
+        "entity": "player characters (Leia, Vader models) - not an entity",
+        "confidence": "confirmed"
+      }
+    },
+    "supersedes": "Every naming in the strong/probable/geometry sections above, all of which came from level slots that hold scenery.",
+    "confirmed_in_play": {
+      "2522": "grapple hook - confirmed from the render",
+      "4504": "lever, seen from behind - confirmed from the render"
+    },
+    "reference_block_holds_animations_too": "Assets 1461 and 1462 are .nsbca animation files, not models, yet they appear in the same +0xD8 reference block. So that block is a general asset-reference table - model and animation together - which is why an actor can point at several assets at once. Reading it as models only would misclassify animated entities.",
+    "team_colour_variants": {
+      "assets": [
+        237,
+        1922,
+        2808
+      ],
+      "finding": "Three models with effectively identical geometry (236-240 verts, 68-69 faces) and identical renders, differing only in texture colour - 237 black+yellow, 1922 and 2808 black+red. They are always referenced together by the same actors, including the flag turret vtable 0x020fdb50 alongside model 332. So the turret is model 332 plus a separate coloured part, and these are that part in different colours.",
+      "caveat": "Only three variants exist and two of them are red, so this is not a clean set of four player colours. Combined with the earlier finding that brick colour lives in the MDL0 material list rather than in textures, the likeliest reading is that the flag is one model recoloured per player at runtime, and these three are separate parts rather than a colour set. Not settled."
+    }
+  },
+  "DEFINITIVE_INVENTORY_BY_MODEL_NAME": {
+    "method": "MDL0 stores the model name and every part name as ASCII. Reading them ends the guessing: the arena assets use a BA/Barge/BattleArena prefix and their parts are named for what they are. tools output: out/work/battle_arena_models.json",
+    "why_earlier_attempts_failed": "Colour searches could never work because the brick colours are OBJECT names (Blue, Green, Purple, Red) rather than textures or palettes. Count matching and shape matching were both guessing at something the file states outright.",
+    "entities": {
+      "221": {
+        "model": "BABlastable01",
+        "entity": "NOT an arena entity - not recognisable from either map in play",
+        "confidence": "excluded"
+      },
+      "223": {
+        "model": "BABlastable02",
+        "entity": "not recognised in either arena",
+        "confidence": "excluded"
+      },
+      "237": {
+        "model": "BAMG42",
+        "parts": [
+          "GunBody",
+          "Base",
+          "RotateNode",
+          "GunBlock",
+          "GunLeft",
+          "GunRight",
+          "Handle",
+          "HandleBlock"
+        ],
+        "entity": "mountable buildable turret",
+        "confidence": "confirmed",
+        "why": "It has a Handle and a HandleBlock - the parts a player grips. A turret with a handle is the mountable one."
+      },
+      "332": {
+        "model": "BATurret",
+        "parts": [
+          "Turret",
+          "Base",
+          "TurretRotate",
+          "Flag",
+          "GunBack",
+          "GunBodyLeft",
+          "GunBodyMid",
+          "GunBodyRight"
+        ],
+        "entity": "buildable turret with player-coloured flag",
+        "confidence": "confirmed",
+        "why": "It has a part named Flag. Confirmed independently by the pointer chain (vtable 0x020fdb50, 3 live instances, matching the reported 3 on Mos)."
+      },
+      "252": {
+        "model": "BargeBuildableTurret",
+        "parts": [
+          "Turret",
+          "RotateHorizontal",
+          "RotateVertical"
+        ],
+        "entity": "buildable turret, Jabba barge variant",
+        "confidence": "confirmed"
+      },
+      "292": {
+        "model": "BargeTurret",
+        "parts": [
+          "Turret",
+          "RotateHorizontal",
+          "RotateVertical"
+        ],
+        "entity": "turret, Jabba barge variant",
+        "confidence": "confirmed"
+      },
+      "270": {
+        "model": "BargeElevatorDoor",
+        "parts": [
+          "LeftDoor",
+          "RightDoor"
+        ],
+        "entity": "the buildable elevator",
+        "confidence": "confirmed",
+        "why": "Matches mos_barge_elevator_dood in the arena entity-logic analysis, whose decoded animation is state_a 2 / transition 30 / state_b 7."
+      },
+      "2522": {
+        "model": "GrappleHook",
+        "parts": [
+          "GrappleHook"
+        ],
+        "entity": "grapple hook",
+        "confidence": "confirmed (visual + name + pointer chain)"
+      },
+      "4504": {
+        "entity": "bridge lever",
+        "confidence": "confirmed (visual, from the render)"
+      },
+      "4636": {
+        "entity": "grapple base",
+        "confidence": "probable - referenced by the same vtable as the hook"
+      },
+      "230": {
+        "model": "BALightPost",
+        "parts": [
+          "Post",
+          "Blue01",
+          "Blue02",
+          "Bllue03",
+          "Blue04",
+          "Grey01",
+          "Grey02",
+          "Grey03",
+          "Grey04",
+          "Green01",
+          "Green02",
+          "Green03",
+          "Green04"
+        ],
+        "entity": "the blue and green heart dispenser",
+        "confidence": "confirmed visually"
+      },
+      "226": {
+        "model": "BALightHang",
+        "entity": "not recognised in either arena",
+        "confidence": "excluded"
+      }
+    },
+    "levels_and_scenery": {
+      "322": "BattleArena1_Main - Jabbas Tower, parts include CenterPlatforms, Columns_01..04 and HomeBases. Confirmed visually.",
+      "323": "BattleArena1_Sky - its skybox",
+      "327 and 328": "BattleArena2_Room - Mos Eisley Streets arena",
+      "955": "CantinaArenaLobby - the lobby, with a Hologram part",
+      "226": "BALightHang - hanging light, scenery",
+      "230": "BALightPost - light post, scenery. Earlier wrongly proposed as the dispenser on a colour match.",
+      "263, 278, 285": "BargeDoor, BargeSpawnDoor1, BargeSpawnDoor2 - spawn doors",
+      "293, 300, 307": "BargeVane1-3"
+    }
+  },
+  "ENTITY_STATE_MACHINE_FROM_ANIMATIONS": {
+    "method": "NSBCA animation names and headers, read for every arena asset. The names state each entity state outright and the header gives its exact frame count.",
+    "key_insight": "Brk means broken. Every buildable has BrkIdle1, BrkIdle2 and BrkRepair, so the MODEL BASE POSE IS THE PIECES STATE and the assembled state is the end of the repair animation. That is why every buildable rendered as loose parts while the non-buildables - GrappleHook and SPBargeLever - rendered assembled. The renders were correct; they were showing the unbuilt state.",
+    "states": {
+      "BrkIdle1": "pieces at rest, 1 frame",
+      "BrkIdle2": "pieces jumping while a player is near",
+      "BrkRepair": "the build animation, played while ability is held",
+      "Use": "levers only - operated, never built"
+    },
+    "per_entity": {
+      "BATurret (flag turret)": {
+        "model": 332,
+        "idle1": [
+          334,
+          1
+        ],
+        "jump": [
+          336,
+          29
+        ],
+        "build": [
+          339,
+          81
+        ]
+      },
+      "BAMG42 (mountable turret)": {
+        "model": 237,
+        "idle1": [
+          238,
+          1
+        ],
+        "jump": [
+          239,
+          29
+        ],
+        "build": [
+          242,
+          83
+        ]
+      },
+      "BALightPost (heart dispenser)": {
+        "model": 230,
+        "idle1": [
+          231,
+          1
+        ],
+        "jump": [
+          232,
+          29
+        ],
+        "build": [
+          235,
+          59
+        ],
+        "note": "Confirmed against a reference photo. Its parts are Blue01-04, Grey01-04 and Green01-04 on a Post - the blue spire, grey stud columns and green midsection in the photo. The model name says LightPost, which is misleading and was why earlier name-based reasoning went wrong."
+      },
+      "BargeBuildableTurret": {
+        "model": 252,
+        "idle1": [
+          253,
+          1
+        ],
+        "jump": [
+          255,
+          31
+        ],
+        "build": [
+          258,
+          96
+        ],
+        "extra": [
+          [
+            260,
+            1
+          ],
+          [
+            262,
+            35
+          ]
+        ]
+      },
+      "BuildableGrapple": {
+        "idle1": [
+          819,
+          1
+        ],
+        "jump": [
+          820,
+          31
+        ],
+        "build": [
+          823,
+          47
+        ],
+        "note": "Matches the buildable-grapple frame counts from the arena entity-logic analysis exactly, and 819 was resident in the live match."
+      },
+      "BargeElevatorDoor (elevator)": {
+        "model": 270,
+        "state_a": [
+          272,
+          2
+        ],
+        "transition": [
+          274,
+          30
+        ],
+        "state_b": [
+          276,
+          7
+        ],
+        "note": "Matches the arena entity-logic analysis's mos_barge_elevator_dood counts exactly."
+      },
+      "SPBargeLever (lever)": {
+        "model": 4504,
+        "idle1": [
+          4505,
+          1
+        ],
+        "idle2": [
+          4506,
+          30
+        ],
+        "use": [
+          4507,
+          21
+        ],
+        "use_idle": [
+          4508,
+          1
+        ],
+        "note": "Its third animation is Use, not Repair - operated rather than built, which is why it has no pieces state."
+      }
+    },
+    "corrections_to_the_port": "Two build lengths were wrong when assumed to be 81 for every buildable. The heart dispenser is 59 frames and the mountable turret is 83. Both are now taken from the animation headers.",
+    "evidence_file": "out/work/arena_animations.json"
+  },
+  "NSBCA_FORMAT_PROGRESS": {
+    "status": "Translation solved and validated. Rotation structurally located but NOT interpreted - built renders remain inaccurate.",
+    "how_the_flags_were_solved": "Not by guessing a third time. Each node entry has a known byte size from consecutive offsets, which constrains the encoding, so 20,319 (flags,size) samples were collected across every NSBCA in the archive and fitted by least squares. 75 distinct flag values, ZERO error:\n    payload = 56 - 12*bit1 - 4*(bit3+bit4+bit5+bit6+bit8) - 24*bit9\n56 is seven components at eight bytes each (Tx,Ty,Tz,R,Sx,Sy,Sz). bit1 stores translation as three 4-byte constants instead of tracks; bits 3/4/5 drop the X/Y/Z component entirely; bit9 drops scale; bit0 makes the whole node identity.",
+    "other_fixes": {
+      "node_id": "big-endian in the node entry - little-endian gave 0, 256, 512 instead of 0, 1, 2",
+      "track_values": "fx16, not fx32. The 32-bit reading produced -434262.63 where the same bytes as fx16 give -6.63."
+    },
+    "validation": "The dispenser build (235) final frame places its four brick groups four-fold symmetric about the post - x=-2.17, x=+2.17, z=+2.16, z=-2.16 - with the green group at y=+7.01. That is an assembled object. The elevator (276) closes its two doors into a single panel. Both are the expected result and neither resembles the scattered base pose.",
+    "remaining": "Only translation is overridden from the animation; rotation and scale tracks are parsed for sizing but not evaluated, so parts that are rotated into place during the build are still at their base orientation. Renders are much closer but not yet exact.",
+    "outputs": "out/work/entity_models/ARENA_ENTITIES - *_unbuilt.png and *_built.png per entity, plus BUILT_VS_UNBUILT.png",
+    "rotation_findings": {
+      "track_layout": "A node with animated rotation carries a fourth track after the three translation tracks. Translation tracks use fmt=0x20, rotation tracks fmt=0x00 - that byte distinguishes them.",
+      "values": "Rotation track values are u16. Bit 15 appears to be a flag and the low bits an index: the dispenser groups read 0x8001, 0x000D, 0x8006, 0x800F at frame 0 and ALL read 0x8000 at the final frame.",
+      "implication_not_yet_resolved": "If 0x8000 means identity, the built pose leaves every group axis-aligned, which would not by itself orient four groups around a post. Either the value is an index into the pool at header+0x10 whose entry 0 is not identity, or the base MDL0 rotation is meant to persist and only some nodes are overridden. This is undecided and is the reason the built renders are still wrong.",
+      "honest_status": "Built renders are NOT accurate. Translation is correct; rotation is decoded structurally but not interpreted, so parts sit at wrong orientations."
+    }
+  },
+  "RENDER_ACCURACY_MEASURED": {
+    "metric": "Part interpenetration - summed pairwise bounding-box intersection over total part volume. LEGO parts should not pass through each other, so this scores placement without needing an eye. It came from noticing in play that parts were clipping.",
+    "three_fixes_found_by_scoring_against_it": {
+      "1_matrix_stack": "The 0x20/0x40 flag arguments on the node command were being routed through a matrix stack. Removing that improved the total from 2.40 to 1.70 and took BargeTurret from 0.184 to exactly 0.",
+      "2_parent_chaining": "Node transforms were being accumulated through parents. The records already hold world-space transforms, so chaining applied each ancestor twice. Removing it took the total to 1.33.",
+      "3_rotation": "The nine values read as rotation make placement WORSE - total 1.329 with them against 0.879 without. BATurret goes from 0.282 to 0.016 and BargeBuildableTurret from 0.084 to 0.001, which is essentially zero overlap. They are therefore being misparsed somewhere in the object record read, and are omitted until that is corrected."
+    },
+    "scores_now": {
+      "292 BargeTurret": 0.0,
+      "2522 GrappleHook": 0.0,
+      "252 BargeBuildableTurret": 0.001,
+      "332 BATurret": 0.016,
+      "237 BAMG42": 0.168,
+      "4504 SPBargeLever": 0.175,
+      "230 BALightPost": 0.52
+    },
+    "total": "0.879, down from 2.402 at the start of this pass",
+    "remaining": "230 BALightPost at 0.520 is the clear outlier - it is the one model whose four brick groups sit around a post and genuinely need rotation to face outward, so it is the model most damaged by rotation being omitted. Fixing the rotation parse is the next step and this metric will confirm it."
+  },
+  "ENTITY_WORLD_MATRICES_FROM_RAM": {
+    "finding": "Each entity actor stores its own world 4x3 matrix, normally at +0x08C. It was found by scanning the live match RAM for 12-value blocks whose upper 3x3 is orthonormal - a real rotation matrix - and then checking which actor struct each one fell inside. 58 of the 76 hits are in the 0x0212xxxx actor region.",
+    "why_this_matters": "This is the games own placement, not something derived from level records or inferred from counts. It supplies both position and orientation, and it corrects the earlier retraction: +0xB0 is indeed not position for these classes, but the matrix translation at +0x08C+0x24 is.",
+    "validation": "Three BATurret instances at (112,49,-142), (113,33,149) and (103,52,55) - exactly the three flag turrets reported on Mos Eisley, arrived at independently of the count matching that first suggested it.",
+    "placements": {
+      "flag_turret_332": [
+        [
+          112,
+          49,
+          -142,
+          0
+        ],
+        [
+          113,
+          33,
+          149,
+          0
+        ],
+        [
+          103,
+          52,
+          55,
+          0
+        ]
+      ],
+      "grapple_2522_4636": [
+        [
+          -13,
+          -4,
+          107,
+          180
+        ],
+        [
+          -13,
+          -4,
+          28,
+          0
+        ],
+        [
+          98,
+          47,
+          -78,
+          90
+        ]
+      ],
+      "lever_4504": [
+        [
+          99,
+          49,
+          -69,
+          -90
+        ],
+        [
+          -39,
+          -1,
+          21,
+          -90
+        ],
+        [
+          21,
+          -1,
+          92,
+          0
+        ]
+      ]
+    },
+    "format": "[x, y, z, yaw degrees]",
+    "output": "config/arena_entity_placements.json"
+  },
+  "ENTITY_CLASS_METHOD_MAP": {
+    "note": "Virtual method tables for the arena entity classes, from the ARM9. This is the map for decoding interaction parameters - it says exactly which routine to read for which entity, instead of searching.",
+    "shared_slots": {
+      "slot2": "0x02001CE8",
+      "slot4": "0x02010644",
+      "slot5": "0x02017E3C",
+      "slot6": "0x02010AA4",
+      "slot7": "0x02017E88",
+      "slot8": "0x02010C04",
+      "slot9": "0x020107C8",
+      "slot10": "0x02010828",
+      "slot11": "0x02015E04",
+      "slot12": "0x020101E8",
+      "slot13": "0x02010338",
+      "slot15": "0x020122BC",
+      "meaning": "Slots 4 through 13 are identical across every entity class, so they are the base world-object behaviour. Only slots 0, 1, 3 and sometimes 14 are overridden."
+    },
+    "per_class": {
+      "0x020FDB50": {
+        "entity": "flag turret BATurret",
+        "ctor": "0x020265B4",
+        "dtor": "0x020265C8",
+        "tick": "0x020265E4",
+        "slot14": "0x0201214C",
+        "tick_note": "Only 20 instructions and it calls the base tick 0x02012744 - the turret behaviour is mostly inherited or lives in a routine the base tick reaches."
+      },
+      "0x020FD6D8": {
+        "entity": "grapple",
+        "ctor": "0x020216B0",
+        "dtor": "0x020216C4",
+        "tick": "0x020216E0",
+        "slot14": "0x0201214C",
+        "tick_note": "127 instructions calling 0x02016664 three times and 0x02016248 once before the base tick. Carries a 2048 immediate, which is 0.5 in 20.12."
+      },
+      "0x020FD468": {
+        "entity": "lever SPBargeLever",
+        "ctor": "0x0201F664",
+        "dtor": "0x0201F678",
+        "tick": "0x0201F6F0",
+        "slot14": "0x0201F694",
+        "tick_note": "The ONLY class that overrides slot 14, which fits the lever being used rather than built. 134 instructions calling 0x02017800, 0x020675D8 and 0x0201270C."
+      },
+      "0x020FCFB8": {
+        "entity": "base world object",
+        "ctor": "0x02011F64",
+        "dtor": "0x02012004",
+        "tick": "0x02012744",
+        "slot14": "0x0201214C"
+      },
+      "0x020FD220": {
+        "entity": "animated, 2 live instances",
+        "ctor": "0x0201D0D4",
+        "dtor": "0x0201D10C",
+        "tick": "0x0201D1E0",
+        "note": "14 slots rather than 16, and slot 11 differs - 0x02010C08 instead of 0x02015E04."
+      },
+      "0x020FD538": {
+        "entity": "singleton",
+        "ctor": "0x0202028C",
+        "dtor": "0x020202A0",
+        "tick": "0x0202052C",
+        "slot14": "0x0201214C"
+      }
+    },
+    "next_routines_to_read": {
+      "0x02016664": "called three times by the grapple tick",
+      "0x02016248": "called once by the grapple tick",
+      "0x02017800": "called twice by the lever tick",
+      "0x020675D8": "called by the lever tick",
+      "0x0201270C": "called by the lever tick",
+      "0x02012744": "the base world-object tick that every entity delegates to"
+    },
+    "status": "Addresses mapped, behaviour not yet read. Interaction parameters - radii, rates, damage, travel speed - are in these routines.",
+    "base_tick_analysis": {
+      "routine": "0x02012744 - the base world-object tick every entity class delegates to. 200 instructions.",
+      "fields_it_touches": [
+        "+0x00",
+        "+0x08",
+        "+0x10",
+        "+0x12",
+        "+0x24",
+        "+0x4E",
+        "+0xBE",
+        "+0xC1",
+        "+0x194",
+        "+0x1C0",
+        "+0x1C1",
+        "+0x1D0"
+      ],
+      "note": "+0xBE and +0xC1 are read most often (6 and 5 times), so they are the likely state bytes for the four-state buildable machine.",
+      "constants": {
+        "values": [
+          307,
+          357,
+          435
+        ],
+        "pointer": "0x020F03AE",
+        "ruled_out": "Not archive asset ids in any consistent way - 0307 is an nsbmd but 0357 and 0435 are .bin. They also do not appear as u16 anywhere within 0x400 bytes of the pointer, so they are not indices into the table it points at.",
+        "still_unknown": "What they select. They are the most concrete unexplained constants in the entity path."
+      },
+      "data_at_0x020F03AE": "A record table of small u16s - 0,0,1,0,0,12,8,37,3,0,1,0,0,0,8,38 - with repeating (8,37) and (8,38) pairs suggesting fixed-size indexed records.",
+      "calls": {
+        "0x02016664": "also called three times by the grapple tick; itself calls 0x02017800, 0x020675D8 and 0x02091DC4",
+        "0x0201F58C": "called by the base tick"
+      }
+    },
+    "shared_lookup_0x02017800": {
+      "routine": "0x02017800 - called by both the grapple and lever ticks, so a shared accessor.",
+      "what_it_does": "Takes the actor in r0 and an index in r1, computes actor + 0x1DE + index*2, and passes that to 0x020508B4. So actors carry a u16 array at +0x1DE.",
+      "read_from_live_ram": {
+        "flag turret 0x020FDB50": "all three instances read 0, 255, 255, 255, ... identically",
+        "grapple 0x020FD6D8": "all three instances read 0, 255, 255, 255, ... identically",
+        "lever 0x020FD468": "all three instances read 0, 255, 255, 255, ... identically",
+        "players and other classes": "carry varied values - 65280, 4096, 545, 57036 and so on - so the array is genuinely used elsewhere"
+      },
+      "conclusion": "255 is an empty-slot sentinel, and every arena entity instance has the table empty. Two things follow. First, the lever-to-bridge binding is NOT stored here, which rules out the most obvious place to look for it. Second, all three arena entity classes hold identical state in this table, which independently supports them being one family - the same conclusion the vtable layout gave.",
+      "status": "Negative result, recorded so the +0x1DE array is not searched again for entity links."
+    }
+  },
+  "MOS_SPAWN_TABLE": {
+    "source": "Archive asset 0326.bin, the Mos Eisley level script named by the level record table. Found by searching it for the exact entity positions read out of live match RAM - 22 of 24 matched.",
+    "record": {
+      "size": 20,
+      "layout": {
+        "+0x00": "x, s16",
+        "+0x02": "y, s16",
+        "+0x04": "z, s16",
+        "+0x06": "type, u16 - 4 for every arena entity",
+        "+0x08": "entity type id, u16",
+        "+0x0A..0x13": "8 bytes, usually zero"
+      }
+    },
+    "type_ids_confirmed_against_ram": {
+      "94": {
+        "entity": "flag turret, BATurret model 332",
+        "count": 3,
+        "positions": [
+          [
+            112,
+            49,
+            -142
+          ],
+          [
+            113,
+            33,
+            149
+          ],
+          [
+            103,
+            52,
+            55
+          ]
+        ],
+        "why": "All three instances the pointer chain identified as vtable 0x020FDB50 sit at these records, and exactly three flag turrets are seen on Mos in play."
+      },
+      "227": {
+        "entity": "grapple, base 4636 + hook 2522",
+        "count": 3,
+        "why": "Matches the three vtable 0x020FD6D8 actors, including the one at (98,47,-78) with yaw 90."
+      },
+      "220": {
+        "entity": "lever, SPBargeLever model 4504",
+        "count": 1,
+        "note": "Only one lever falls inside the scanned window; the other two are at 0x02DC and 0x02F0."
+      }
+    },
+    "type_ids_probable": {
+      "91": {
+        "count": 6,
+        "candidate": "the blue and green heart dispenser",
+        "why": "Six instances, and the dispenser was reported as several on Mos Eisley. It is the most common entity id in the table, which fits."
+      },
+      "92": {
+        "count": 2,
+        "candidate": "mountable turret BAMG42 - two were reported on Mos"
+      },
+      "7 and 8": {
+        "count": "2 each",
+        "note": "Records with id 8 carry non-zero tail bytes (00 10 and 00 13), so the tail is a per-instance parameter."
+      },
+      "386": {
+        "count": 1,
+        "candidate": "the elevator - exactly one was reported"
+      }
+    },
+    "significance": "This overturns the earlier conclusion that arena entities are spawned by the mode rather than the level. They ARE in the level script; the earlier slot parse simply mapped the wrong records. It also supplies the per-entity configuration bytes that the ARM9 search kept failing to find, because they are data, not code.",
+    "next": "Confirm 91 as the dispenser by cross-referencing its six positions against the live RAM actors, then read the tail bytes on ids 8 and 220 - the lever record has 07 at +0x0C, which is a candidate for the lever-to-bridge link.",
+    "full_table": {
+      "note": "All 21 type-4 records on the 20-byte grid in 0326.bin, with the live-RAM vtable each id resolves to.",
+      "ids": {
+        "94": {
+          "count": 3,
+          "vtable": "0x020FDB50",
+          "entity": "flag turret",
+          "confidence": "confirmed - all three RAM actors sit on these three records, and three flag turrets were reported on Mos"
+        },
+        "227": {
+          "count": 3,
+          "vtable": "0x020FD6D8",
+          "entity": "grapple",
+          "confidence": "confirmed - all three RAM actors match, including the yaw-90 one at (98,47,-78)"
+        },
+        "220": {
+          "count": 1,
+          "vtable": "0x020FD468",
+          "entity": "lever",
+          "confidence": "confirmed by RAM match; the other levers sit outside the scanned grid window"
+        },
+        "91": {
+          "count": 6,
+          "entity": "heart dispenser",
+          "confidence": "strong - six instances is the most common id in the table and the dispenser was reported as several on Mos",
+          "positions": [
+            [
+              159,
+              2,
+              100
+            ],
+            [
+              87,
+              5,
+              -30
+            ],
+            [
+              70,
+              17,
+              -111
+            ],
+            [
+              6,
+              0,
+              -26
+            ]
+          ]
+        },
+        "92": {
+          "count": 2,
+          "entity": "mountable turret BAMG42",
+          "confidence": "strong - exactly two, matching the reported two mountable turrets",
+          "positions": [
+            [
+              106,
+              0,
+              91
+            ],
+            [
+              -12,
+              17,
+              -159
+            ]
+          ]
+        },
+        "386": {
+          "count": 1,
+          "entity": "elevator",
+          "confidence": "strong - exactly one, matching the single reported elevator",
+          "positions": [
+            [
+              36,
+              0,
+              102
+            ]
+          ]
+        },
+        "7": {
+          "count": 3,
+          "vtable": "0x020FCFB8",
+          "entity": "unidentified world object"
+        },
+        "8": {
+          "count": 2,
+          "entity": "unidentified",
+          "note": "the only ids whose tail bytes are non-zero - 00 10 and 00 13 - so the tail is a per-instance parameter"
+        }
+      }
+    },
+    "why_this_matters": "This is the entity inventory in DATA, cross-checked against live RAM. It supplies what the ARM9 search kept failing to find: the per-entity records, their exact placements and their type ids. The counts independently reproduce the inventory reported from play - 3 flag turrets, 2 mountable turrets, 1 elevator, several dispensers - without any of the count-matching guesswork that went wrong earlier, because each id is anchored to a vtable the pointer chain already identified."
+  },
+  "arena_render_ground_truth": {
+    "capture": "out/work/gpudump_arena/inst0/polygons.json - a GPU dump requested mid-replay while the driver stood in Jabbas Tower.",
+    "evidence_tier": "RUN - the display list the DS actually submitted for one frame.",
+    "polygons": 797,
+    "primitive_mix": {
+      "quads": 516,
+      "triangles": 257,
+      "five_vertex": 24
+    },
+    "translucent": 29,
+    "texture_formats": {
+      "compressed_4x4": 557,
+      "palette256": 183,
+      "untextured": 41,
+      "A5I3": 8,
+      "A3I5": 4,
+      "palette16": 2,
+      "palette4": 2
+    },
+    "distinct_textures": 41,
+    "busiest_textures": [
+      {
+        "vram": "0x04200",
+        "size": "64x64",
+        "polys": 84
+      },
+      {
+        "vram": "0x049B0",
+        "size": "8x8",
+        "polys": 70
+      },
+      {
+        "vram": "0x04710",
+        "size": "8x8",
+        "polys": 62
+      },
+      {
+        "vram": "0x04600",
+        "size": "8x8",
+        "polys": 53
+      },
+      {
+        "vram": "0x30E60",
+        "size": "32x32",
+        "polys": 52
+      }
+    ],
+    "why_it_matters": "Level geometry has been scored low because the arena meshes were never reconstructed. This is the first ground truth for what the arena actually draws: primitive mix, how many textures are live at once, which formats, and how VRAM is laid out. A port frame can now be compared against a DS frame rather than against a guess.",
+    "LIMITATION": "The screen array is POST-projection - vertices are already in screen space, 0..256 by 0..192. It therefore does NOT directly give world transforms, so it does not on its own solve the MDL0 node rotation that blocks entity geometry. Recovering world orientation from this would need the camera matrix as well.",
+    "next_step": "Dump the same frame from two known camera positions, or capture the projection matrix, to invert screen space back to world space."
+  },
+  "gpu3d_matrices_now_captured": {
+    "capability": "GPUDump now emits ProjMatrix, PosMatrix, VecMatrix, TexMatrix and ClipMatrix plus both stack pointers into state.json, all 20.12 fixed point.",
+    "evidence_tier": "BOTH - read straight from GPU3D state, cross-checked against the ROMs 20.12 convention.",
+    "captured": "out/work/gpudump_mat/inst0/state.json, Jabbas Tower, 820 polygons.",
+    "LIMITATION_end_of_frame": "The dump fires at GPU::FinishFrame, so the matrices hold whatever the LAST draw left behind. The captured proj is orthographic - 0.008 = 2/256 and -0.010 = -2/192 - which is the 2D overlay pass, and pos is identity. So this is NOT the arena camera.",
+    "what_is_usable": "ClipMatrix still holds 3D content - rows like (-221.9, 0, 0, 0), (0, 281.8, -52.6, -52.6), (0, 127.0, 116.7, 116.7), (-163.0, 162.1, 114.7, 115.6) - a genuine view-projection left over from the 3D pass. It is real data, but which draw call it belongs to is unknown, so it cannot yet be attached to a specific entity.",
+    "next_step": "Capture the matrix stack at VERTEX SUBMISSION rather than once per frame - snapshot ClipMatrix alongside each polygon as it is emitted. That pairs every polygon with the transform that produced it, which is what actually inverts screen space back to world space and reads an entitys orientation without decoding MDL0.",
+    "why_this_matters": "MDL0 node rotation has blocked entity geometry through six approaches. This is the first route that does not require decoding the model format at all.",
+    "per_polygon_capture": {
+      "status": "WORKING. Built, deployed, captured and verified.",
+      "capture": "out/work/gpudump_mat2/inst0/state.json - Jabbas Tower, 819 polygons, 851 matrices.",
+      "result": "104 DISTINCT clip matrices across 851 polygons.",
+      "what_that_means": "Each distinct transform is one drawn object. 282 polygons share a single matrix - the static arena mesh, submitted under one transform. The remaining 103 groups are individual objects, and several carry genuine rotation: a 55-polygon group with rows like (-0.07, 2.08, -0.51) and a 27-polygon group with (-0.19, 2.24, -0.36) are clearly rotated, not axis-aligned.",
+      "WHY_THIS_MATTERS": "MDL0 node rotation has blocked entity geometry through six approaches. It no longer has to be decoded. The engine computes each object s orientation every frame and now that orientation is captured directly, per polygon, in 20.12 fixed point. The format is bypassed rather than solved.",
+      "evidence_tier": "BOTH - GPU3D state read at the point GPU3D.cpp allocates each Polygon, cross-checked against the 20.12 convention used throughout the ROM.",
+      "how": "GPUDumpNotePolyMatrix snapshots ClipMatrix where Polygon* poly = &CurPolygonRAM[NumPolygons++] runs, and the table is emitted as polygon_matrices in state.json.",
+      "still_to_do": [
+        "Attach each of the 103 object transforms to a NAMED entity - match polygon groups against the known spawn tables and model assets.",
+        "Decompose each matrix into translation, rotation and scale.",
+        "Confirm the static-mesh group really is the arena by checking its polygon count against the level model."
+      ],
+      "lesson_recorded": "The emitter only compiled once written from a file. Five failures in this project trace to authoring C string literals through shell quoting; that is now a rule, not a preference."
+    },
+    "decomposition_attempt_FAILED": {
+      "tool": "tools/decompose_polygon_matrices.py",
+      "assumption": "The largest polygon group (282 of 851) is the static level mesh, so its clip matrix IS world-to-clip and every other objects model matrix is inverse(base) times its own clip matrix.",
+      "result": "NEGATIVE. 103 object transforms were recovered and NONE of the top 25 landed within 12 units of any of the 63 decoded Jabba spawn positions; nearest misses ranged from 18 to 1577 units.",
+      "what_is_still_true": "The capture itself is sound - 851 matrices, 104 distinct transforms, groups of 282 / 55 / 27 / 23 polygons that clearly correspond to separate drawn objects. The recovered positions are also internally coherent, clustering rather than scattering, so the inversion is doing something meaningful.",
+      "why_it_probably_failed": [
+        "The 282-polygon group may not be the static mesh with an identity model - it could be one large transformed object, in which case every recovered position is relative to it rather than to the world.",
+        "Row-major with translation in row 3 is assumed for the DS matrix layout; if that is transposed, translations come out of the wrong slots.",
+        "The spawn table positions may be in a different space or unit from the render, having been read from level scripts rather than from the renderer."
+      ],
+      "next_step": "Anchor on something already known rather than guessing the base. The two player actors have positions confirmed every frame at actor +0xB0/B4/B8, so find the polygon groups whose recovered translation tracks a player across two dumps taken at different moments - that identifies both the correct base matrix and the correct layout convention at once, with a moving reference instead of a static assumption.",
+      "parity_note": "Entity models trimmed from 45 to 40: the capture capability is real and verified, but placement in world space is not, and the previous figure credited the unblock slightly ahead of the evidence."
+    },
+    "decomposition_sweep_ALSO_FAILED": {
+      "method": "Swept six candidate base groups x transpose on/off x translation in row 3 or column 3, against 63 decoded Jabba spawn positions, all on data already captured.",
+      "apparent_result": "103/103 matches - from FIVE different base groups at once.",
+      "verdict": "SPURIOUS, and caught by that impossibility. A real anchoring cannot be independent of which object is used as the base.",
+      "root_cause": "Two faults compounding. Transposing moves translation into the last COLUMN, so reading row 3 returns the affine bottom row (0,0,0,1) - every recovered translation was exactly (0,0,0), one distinct value across all 103 objects. And the spawn table contains a (0,0,0) entry, so every zero vector matched it within tolerance.",
+      "what_this_invalidates": "The 2-21 match counts from the non-transposed configurations are also treated as noise; none is above what a 63-target set would produce by chance at 12 units.",
+      "standing_rule_added": "A position matcher must exclude the origin from its target set and require that distinct objects map to DISTINCT targets. A configuration that matches everything matches nothing.",
+      "status": "World-space anchoring of the captured transforms remains UNSOLVED. The capture itself is unaffected and still verified.",
+      "next_step": "Anchor on a moving reference as already planned - track the two player actors, whose positions are confirmed each frame at +0xB0/B4/B8, across two dumps taken at different moments. A reference that MOVES cannot be satisfied by a degenerate transform."
+    },
+    "player_anchor_test_DEFINITIVE_NEGATIVE": {
+      "method": "Captured a dump WITH PLAYER_TICK running, so the two actors world positions at the dumped frame are known exactly: Boba Fett (-94.00, 191.45, -93.00) and Greedo (96.00, 191.45, -98.00), about 190 units apart. Then searched 12 candidate base groups x transpose x translation row for any configuration placing some polygon group within 40 units of BOTH players, rejecting any configuration whose recovered translations collapsed to fewer than five distinct values.",
+      "result": "NO non-degenerate configuration matches both players.",
+      "why_this_test_is_trustworthy": "Two references at different positions cannot both be satisfied by a degenerate transform, which is precisely what invalidated the previous 103/103 result. A negative here is informative in a way that sweep was not.",
+      "conclusion": "The captured clip matrices do not resolve to the actor coordinate space by any simple choice of base group, transpose, or translation slot. Inferring the view matrix from the largest polygon group does not work. Likely causes: characters are drawn with skinned per-bone matrices, so a character polygon group carries a bone transform rather than the actor origin; and the 282-polygon group is probably not an identity-model static mesh.",
+      "what_remains_true": "851 matrices, 104 distinct transforms, clean per-object grouping. The capture is real structure; only its mapping to world space is unresolved.",
+      "honest_assessment": "Three consecutive attempts on this thread have returned negatives. The per-polygon capture was worth building and is backed up, but converting it into named world placements needs the matrix COMMAND STREAM - MTX_MODE, push, pop, restore - not an inferred base. That is a larger instrumentation job than the capture was, and it should be weighed against cheaper targets before being started.",
+      "cheaper_alternatives": [
+        "The action-to-sound path, working forward from the confirmed jump handler 0x02046D84.",
+        "Which artwork sits on each of the four bottom-screen BG layers.",
+        "The tenth Bounty Hunter and the character-select spinner order."
+      ]
+    }
+  },
+  "DS_CAMERA_PROJECTION_MEASURED": {
+    "capture": "out/work/gpudump_cam/inst0/state.json - Jabbas Tower, 801 polygons, projection snapshotted per polygon at submission.",
+    "evidence_tier": "BOTH - GPU3D ProjMatrix read at the point GPU3D.cpp allocates each Polygon, in the ROM 20.12 convention.",
+    "matrix": [
+      [
+        1.7339,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2.4148,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -1.0002,
+        -1.0
+      ],
+      [
+        0,
+        0,
+        -1.0002,
+        0
+      ]
+    ],
+    "distinct_projections_in_the_frame": 1,
+    "note": "ONE projection served all 851 polygons, so this is unambiguous - not an average or a guess.",
+    "vertical_fov_deg": 45.0,
+    "derivation": "tan(fovy/2) = 1/m11 = 1/2.4148 = 0.41412, fovy/2 = 22.50, fovy = 45.00 degrees.",
+    "horizontal_fov_deg": 59.95,
+    "aspect_from_matrix": 1.3927,
+    "aspect_note": "m11/m00 = 1.3927, against 256/192 = 1.3333 for the screen. The small excess is recorded, not explained; it may be a deliberate widening or a non-square pixel assumption.",
+    "depth_terms": "m22 = m32 = -1.0002 indicates a far plane far beyond the near plane; the exact near/far pair has not been separated.",
+    "applied_to_the_port": "main.gd camera.fov was 44.0 - close but arbitrary. Now 45.0, measured.",
+    "still_unknown": "The camera DISTANCE and height. The projection gives field of view only; the view half of the transform is what carries the offset, and that still needs the model matrix separated out.",
+  "where_it_is_NOT": "NARROWED 2026-08-30, by rebuilding main RAM from out/work/gpudump_arena/inst0 with tools/reconstruct_ram.py at frame 7620 and reading the camera manager. [0x021092F4] resolves to 0x021DDD18, and the four view records at +0x240, stride 0x70, hold: record 0 and record 1 populated IDENTICALLY, records 2 and 3 all zero. Two populated records is an independent confirmation of a two-player capture - the OAM overlay reading in bounty_hud_layout.json says the same from the sprites, since only two portrait slots carry the occupied-slot overlay. But within each record only four words are non-zero (+0x60 = 0x000C1E4E, +0x64 = 0x00030000, +0x68 = 0x80000065 which is where the yaw halfword 0x8000 at +0x6A lives, +0x6C = 0x00870100); the first 0x60 bytes are entirely zero. So whatever carries the view offset is NOT in this record in this frame, and the two views sharing identical values argues these four words are configuration rather than live per-view state. Recorded as a narrowing, not an answer: reading 0x000C1E4E as 12.118 and 0x00030000 as 3.0 in 16.16 would be a plausible distance and height and is exactly the kind of guess this file exists to avoid.",
+  "what_would_settle_it": "The MODELVIEW matrix at polygon submission, captured the way DS_CAMERA_PROJECTION_MEASURED captured the projection - GPU3D.cpp has both to hand at the same moment. The existing gpudump_cam capture took ProjMatrix only.",
+    "camera_distance_MEASURED": {
+      "method": "The DS submits geometry already in CAMERA space - no world coordinates appear in the display list, which is why every attempt to recover a world camera position returned near-zero. Reading the translation of inverse(proj) x clip therefore gives each object origin AS AN OFFSET FROM THE CAMERA directly.",
+      "finding": "Four polygon groups cluster tightly at Z 43.0 to 44.7 with X near zero: 52 polys at (1.81, 0.47, 43.51), 35 at (0.00, -21.99, 43.58), 26 at (1.44, 1.81, 43.04) and 12 at (1.98, -7.20, 44.73). A LEGO figure is built from separate pieces, each with its own matrix, so these are the player character - 125 polygons at one distance, centred horizontally, spread vertically across torso, legs and head.",
+      "camera_distance": 43.5,
+      "camera_height_above_feet": 22.0,
+      "derivation": "Distance is the shared Z of the character pieces. Height comes from the lowest piece sitting 22 units below camera level.",
+      "evidence_tier": "BOTH - GPU3D matrices captured at polygon submission, decomposed with the measured projection.",
+      "what_the_port_had": "Vector3(0, 7, 16) - magnitude 17.5, roughly 2.7x too close, which matches the visual exactly: the DS player fills about 15 percent of screen height and the port player filled about 70.",
+      "applied": "capture_ui.gd camera_offset is now Vector3(0, 22, 43.5).",
+      "fixed_or_spring_SETTLED": {
+        "test": "Two GPU dumps taken 40 seconds apart during a driven match with the player moving, both decomposed the same way.",
+        "dump_A": "character groups at Z 42.72 to 44.58, mean 43.66",
+        "dump_B": "character groups at Z 42.93 to 45.40, mean 44.40",
+        "conclusion": "The camera distance is CONSTANT. Means differ by 0.74 units - under two percent - and the spread within each dump is wider than the difference between them, because the character pieces sit at slightly different depths. A spring camera would show a much larger swing between a standing frame and a moving one.",
+        "verdict": "FIXED OFFSET, not a spring. The port can use a rigid offset and be correct.",
+        "value": "Vector3(0, 22, 43.5), with distance good to about plus or minus 1 unit.",
+        "incidental": "One group sits at exactly (0.00, -21.99, 43.58) in BOTH dumps, byte-identical. Something is pinned to the camera rather than to the world - possibly a shadow or a camera-anchored effect. Not identified."
+      }
+    }
+  },
+  "open_defects": {
+    "reported": "Observed while running the port.",
+    "items": [
+      {
+        "defect": "A generic YELLOW MINIFIG HEAD renders beneath Greedo's own head",
+        "area": "character assembly",
+        "reading": "Two head parts are being attached to the same node - the generic yellow minifig head and the character head. Only one should be. Not yet investigated.",
+        "status": "OPEN"
+      },
+      {
+        "defect": "Animation speeds look too fast",
+        "area": "character animation",
+        "reading": "Very likely the same 30Hz fault already found and fixed elsewhere. ANIM_TICK was MEASURED at 30Hz - every traced routine fires once per two emulator frames - but the exported clips and the AnimationPlayer have not been checked against that. If the clips were authored assuming 60fps they play exactly twice too fast, which matches the report.",
+        "status": "OPEN, strong hypothesis, the 30Hz tick-rate measurement is already in hand"
+      },
+      {
+        "defect": "Movement does not match the DS when nudging the stick",
+        "area": "locomotion",
+        "reading": "Per-character speeds are wired and the tank scheme is regression-tested, but the ACCELERATION BLEND has not been verified against a recording. The blend is (desired*w + old*(256-w)) >> 8 at weight 60, decoded from 0x02017EE4. A partial stick nudge exercises exactly that path and it has never been compared frame by frame against a gameplay recording.",
+        "status": "OPEN"
+      },
+      {
+        "defect": "Mos Eisley may also have a sky",
+        "area": "level rendering",
+        "reading": "Jabba is already confirmed to have one the port lacks. Mos Eisley is not verified either way - it has never been captured from the DS at all.",
+        "status": "OPEN, needs a capture"
+      }
+    ],
+    "commitment": "These are staged, not deferred. Each has a named next action rather than an intention.",
+    "greedo_double_head_DIAGNOSED": {
+      "symptom": "A yellow minifig head sits under Greedo s own head.",
+      "ruled_out": "The synthesised head cap. Its condition is correct - it fires only when a character has neither a \"head\" nor a \"gear\" attachment. Across the ten Bounty Hunters only IG-88 qualifies, having no attachments at all. Greedo has a \"head\" attachment, so the cap never runs for him.",
+      "actual_cause": "The BODY mesh already contains a default yellow minifig head - the node the assembler calls Lego_Head, which the code comment confirms \"gear\" rides alongside. When a character supplies its own head attachment, that built-in head is never hidden, so both render and the yellow one shows underneath.",
+      "who_is_affected": "The four hunters with a \"head\" attachment: 4-LOM (0), Bossk (8), Greedo (20), Zuckuss (71). The gear-wearers - Boba Fett, Dengar, Jango, Lando, Leia - attach helmets that presumably cover it, which is why only Greedo was noticed.",
+      "fix": "When an attachment occupies the \"head\" slot, hide the body s built-in Lego_Head mesh before attaching. Not yet applied - the exact node name in the exported GLB has not been confirmed.",
+      "evidence": "out/exported/godot_runtime/roster.json attachment slots for all ten hunters, listed and checked.",
+      "FIXED": {
+        "root_cause_confirmed_from_the_glb": "runtime_020/Human_Model.glb has ONE mesh with THREE primitives, materials Face, Legs1 and Torso1. The default yellow minifig head is part of the body mesh itself, not a separate node - which is why hunting for a stray head node found nothing. Lego_Head is a BONE, not a mesh.",
+        "fix": "character_assembler now hides the Face surface whenever the profile has a \"head\" attachment, by setting a fully transparent surface override. The mesh resource is shared between characters so it is never mutated.",
+        "affects": "4-LOM, Bossk, Greedo, Zuckuss - the four with a head attachment.",
+        "verified": "out/work/godot_ui_capture/05_mos_eisley_greedo_hud.png - Greedo renders with his own head only."
+      }
+    },
+    "mos_eisley_sky": {
+      "observation": "The re-rendered Mos Eisley shot shows no sky either - dark brown background behind the geometry.",
+      "status": "The DS Mos Eisley has NEVER been captured, so whether it has a sky is still unverified. Jabba is confirmed to have one the port lacks.",
+      "next_action": "Drive a match on Mos Eisley and dump screen0. The driver currently reaches Jabba only; reaching Mos Eisley needs the arena option changed, which is one arrow press on the settings screen."
+    },
+    "camera_offset_not_applied_everywhere": {
+      "observation": "05_mos_eisley still frames the character close, filling much of the screen, despite the measured offset (0, 22, 43.5) being applied.",
+      "reading": "That capture likely passes its own camera offset rather than using the default. The measured value reached one call site, not all of them.",
+      "status": "OPEN, not yet chased."
+    }
+  }
+}

@@ -1,0 +1,9428 @@
+{
+ "schema": 1,
+ "source": {
+  "dispatcher": "0x01FFAD3C (ITCM)",
+  "handler": "0x0209FA28",
+  "record": {
+   "+0x00": "u16 frame",
+   "+0x02": "u16 opcode",
+   "+0x04": "u16 param"
+  },
+  "stride": 6,
+  "terminator": "FFFF FFFF FFFF",
+  "no_sound_sentinel": "0xC9",
+  "opcodes": {
+   "0": "flag_7a_swap",
+   "1": "stop",
+   "2": "sound_positional",
+   "3": "sound",
+   "4": "nop",
+   "5": "nop",
+   "6": "weapon_toggle",
+   "7": "set_b2_04",
+   "8": "clear_b2_04",
+   "9": "set_b2_08",
+   "10": "set_b2_100",
+   "11": "clear_b2_100",
+   "12": "stop",
+   "13": "stop_if",
+   "14": "set_b2_10",
+   "15": "set_b2_20",
+   "16": "set_b2_40",
+   "17": "set_7a_02",
+   "18": "nop",
+   "19": "latch_b0",
+   "20": "loop_b0",
+   "21": "attach_show",
+   "22": "attach_hide",
+   "23": "nop",
+   "24": "fire",
+   "25": "call_02005698",
+   "26": "call_b68_9",
+   "27": "call_b68_10",
+   "28": "call_a95d4"
+  },
+  "sound_opcodes": [
+   2,
+   3
+  ],
+  "fire_opcode": 24,
+  "fire_note": "opcode 24 calls FUN_02005854 with the action row's +0x04 kind and passes param as the MUZZLE SELECTOR"
+ },
+ "note": "Decode the ANIMATION EVENT TRACKS - where the game's sounds actually live.\n\nWHY THIS EXISTS. The port was silent apart from the jetpack, and the reason was\nnot a missing binding table: it is that MOST SOUNDS ARE NOT TRIGGERED BY CODE AT\nALL. They are events on the animation, fired at a specific frame. Searching the\nARM9 for constant sound ids finds 29 call sites - the jetpack, the grapple, the\npunch - and none of them is a footstep or a blaster shot, because those are in\nthe animation data.\n\nTHE TRACK. Every descriptor record is (state, anim, attached, events, queued),\nand `events` is an archive asset holding 6-BYTE RECORDS:\n\n    +0x00  u16  frame\n    +0x02  u16  opcode\n    +0x04  u16  param\n\nterminated by FFFF FFFF FFFF. The layout is the dispatcher's own, from the ITCM\nroutine at 0x01FFAD3C - a function that did not exist in this project's Ghidra\ncorpus until the ITCM section was imported:\n\n    iVar5 = *(int *)(param_1 + 0xa0);                 the track\n    iVar4 = *(u8 *)(param_1 + 0xb1) * 6;              CURSOR * 6\n    if (*(u16 *)(iVar5 + iVar4) <= currentFrame)      +0 is the FRAME\n        FUN_0209FA28(param_1, *(u16 *)(iVar5 + iVar4 + 2),   +2 OPCODE\n                              *(u16 *)(iVar5 + iVar4 + 4),   +4 PARAM\n                     param_3);\n\nTHE OPCODES, from FUN_0209FA28's switch:\n\n    0   clear bit 0 / set bit 1 of +0x7A\n    1   stop the track\n    2   PLAY A POSITIONAL SOUND, param, if param < 0xC9   (FUN_020B95BC)\n    3   PLAY A SOUND, param, if param < 0xC9              (FUN_020B8F70)\n    6   weapon draw/holster, FUN_02005654(actor, param)\n    7   set +0xB2 bit 0x04          8   clear it\n    9   set bit 0x08               10   set bit 0x100      11  clear bit 0x100\n    12  stop                       13   conditional stop\n    14  set 0x10                   15   set 0x20           16  set 0x40\n    17  set +0x7A bit 1\n    19  latch +0xB0 to param when it is -1     20  loop counter, decrement\n    21  SHOW attachment slot param  (FUN_0200C848)\n    22  HIDE attachment slot param  (FUN_0200C834)\n    24  FIRE THE WEAPON from muzzle `param`\n    25  FUN_02005698(actor)        26/27  FUN_02004B68 with 9 / 10\n    28  FUN_020A95D4(..., 2, param)\n\n`0xC9` = 201 is the no-sound sentinel, one past the 201 sound events - the same\nsentinel the projectile-kind table uses at its +0x09.\n\nTWO THINGS THIS SETTLES BEYOND SOUND.\n\n**Opcode 24 is the shot.** It calls FUN_02005854 with the action row's +0x04\nprojectile kind and passes `param` as the MUZZLE SELECTOR. BlstrShootGun's track\nis a single record - frame 1, opcode 24, param 5 - so the bolt leaves muzzle 5\none frame into the fire animation. That is an independent corroboration of the\nmuzzle decode, which was read out of FUN_02005854 from the other end.\n\n**Opcodes 21 and 22 are the weapon show/hide**, on slots 4 and 5 - the same two\nslots the dual-wield attach uses.\n\nUsage:  python tools/export_animation_events.py",
+ "tracks": {
+  "3206": {
+   "asset": 3206,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 1,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 2,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 3,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 4,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 5,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 7,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 13,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 29,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ]
+  },
+  "3199": {
+   "asset": 3199,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ]
+  },
+  "3164": {
+   "asset": 3164,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ]
+  },
+  "3161": {
+   "asset": 3161,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ]
+  },
+  "3170": {
+   "asset": 3170,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 10,
+     "name": "set_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 16,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 11,
+     "name": "clear_b2_100",
+     "param": 0
+    }
+   ]
+  },
+  "3173": {
+   "asset": 3173,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 10,
+     "name": "set_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 16,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 11,
+     "name": "clear_b2_100",
+     "param": 0
+    }
+   ]
+  },
+  "3176": {
+   "asset": 3176,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 10,
+     "name": "set_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 141
+    },
+    {
+     "frame": 18,
+     "opcode": 11,
+     "name": "clear_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 20,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ]
+  },
+  "3179": {
+   "asset": 3179,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 10,
+     "name": "set_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 11,
+     "name": "clear_b2_100",
+     "param": 0
+    }
+   ]
+  },
+  "3182": {
+   "asset": 3182,
+   "events": [
+    {
+     "frame": 9,
+     "opcode": 10,
+     "name": "set_b2_100",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 146
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 11,
+     "name": "clear_b2_100",
+     "param": 0
+    }
+   ]
+  },
+  "3185": {
+   "asset": 3185,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 146
+    }
+   ]
+  },
+  "3083": {
+   "asset": 3083,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3088": {
+   "asset": 3088,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3093": {
+   "asset": 3093,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3098": {
+   "asset": 3098,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3103": {
+   "asset": 3103,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3108": {
+   "asset": 3108,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "3151": {
+   "asset": 3151,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 21,
+     "opcode": 12,
+     "name": "stop",
+     "param": 9
+    }
+   ]
+  },
+  "3154": {
+   "asset": 3154,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 138
+    },
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 139
+    }
+   ]
+  },
+  "3123": {
+   "asset": 3123,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 156
+    }
+   ]
+  },
+  "3129": {
+   "asset": 3129,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 138
+    },
+    {
+     "frame": 15,
+     "opcode": 12,
+     "name": "stop",
+     "param": 16
+    }
+   ]
+  },
+  "3078": {
+   "asset": 3078,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ]
+  },
+  "3076": {
+   "asset": 3076,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ]
+  },
+  "1454": {
+   "asset": 1454,
+   "events": [
+    {
+     "frame": 14,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 19,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "3188": {
+   "asset": 3188,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 7,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    },
+    {
+     "frame": 19,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 21,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 22,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 23,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ]
+  },
+  "3194": {
+   "asset": 3194,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 19,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 29,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "3113": {
+   "asset": 3113,
+   "events": [
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ]
+  },
+  "2125": {
+   "asset": 2125,
+   "events": [
+    {
+     "frame": 43,
+     "opcode": 26,
+     "name": "call_b68_9",
+     "param": 0
+    },
+    {
+     "frame": 93,
+     "opcode": 27,
+     "name": "call_b68_10",
+     "param": 0
+    }
+   ]
+  },
+  "499": {
+   "asset": 499,
+   "events": [
+    {
+     "frame": 17,
+     "opcode": 12,
+     "name": "stop",
+     "param": 11
+    }
+   ]
+  },
+  "3132": {
+   "asset": 3132,
+   "events": [
+    {
+     "frame": 5,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 139
+    }
+   ]
+  },
+  "521": {
+   "asset": 521,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 5,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 6,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 7,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 8,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 9,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 10,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 11
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 12,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 13,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 14,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 11
+    },
+    {
+     "frame": 15,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 11
+    }
+   ]
+  },
+  "558": {
+   "asset": 558,
+   "events": []
+  },
+  "535": {
+   "asset": 535,
+   "events": [
+    {
+     "frame": 14,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 68
+    },
+    {
+     "frame": 17,
+     "opcode": 25,
+     "name": "call_02005698",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    }
+   ]
+  },
+  "3522": {
+   "asset": 3522,
+   "events": [
+    {
+     "frame": 71,
+     "opcode": 12,
+     "name": "stop",
+     "param": 12
+    },
+    {
+     "frame": 72,
+     "opcode": 12,
+     "name": "stop",
+     "param": 12
+    }
+   ]
+  },
+  "3481": {
+   "asset": 3481,
+   "events": [
+    {
+     "frame": 156,
+     "opcode": 12,
+     "name": "stop",
+     "param": 79
+    }
+   ]
+  },
+  "2844": {
+   "asset": 2844,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 135
+    },
+    {
+     "frame": 24,
+     "opcode": 4,
+     "name": "nop",
+     "param": 0
+    }
+   ]
+  },
+  "2601": {
+   "asset": 2601,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ]
+  },
+  "2528": {
+   "asset": 2528,
+   "events": [
+    {
+     "frame": 39,
+     "opcode": 12,
+     "name": "stop",
+     "param": 75
+    }
+   ]
+  },
+  "4027": {
+   "asset": 4027,
+   "events": [
+    {
+     "frame": 17,
+     "opcode": 24,
+     "name": "fire",
+     "param": 0
+    }
+   ]
+  },
+  "4028": {
+   "asset": 4028,
+   "events": [
+    {
+     "frame": 17,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 117
+    }
+   ]
+  },
+  "4039": {
+   "asset": 4039,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 123
+    },
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 47
+    }
+   ]
+  },
+  "2557": {
+   "asset": 2557,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ]
+  },
+  "2565": {
+   "asset": 2565,
+   "events": [
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 81
+    }
+   ]
+  },
+  "2568": {
+   "asset": 2568,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 81
+    }
+   ]
+  },
+  "3834": {
+   "asset": 3834,
+   "events": [
+    {
+     "frame": 29,
+     "opcode": 12,
+     "name": "stop",
+     "param": 50
+    }
+   ]
+  },
+  "2966": {
+   "asset": 2966,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 197
+    }
+   ]
+  },
+  "2956": {
+   "asset": 2956,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 196
+    }
+   ]
+  },
+  "4218": {
+   "asset": 4218,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 27
+    }
+   ]
+  },
+  "5406": {
+   "asset": 5406,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 12,
+     "name": "stop",
+     "param": 109
+    }
+   ]
+  },
+  "5382": {
+   "asset": 5382,
+   "events": []
+  },
+  "5384": {
+   "asset": 5384,
+   "events": [
+    {
+     "frame": 31,
+     "opcode": 12,
+     "name": "stop",
+     "param": 141
+    }
+   ]
+  },
+  "5390": {
+   "asset": 5390,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "5392": {
+   "asset": 5392,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "4925": {
+   "asset": 4925,
+   "events": []
+  },
+  "4927": {
+   "asset": 4927,
+   "events": [
+    {
+     "frame": 25,
+     "opcode": 12,
+     "name": "stop",
+     "param": 96
+    }
+   ]
+  },
+  "4931": {
+   "asset": 4931,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "4933": {
+   "asset": 4933,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "5521": {
+   "asset": 5521,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 12,
+     "name": "stop",
+     "param": 99
+    }
+   ]
+  },
+  "5507": {
+   "asset": 5507,
+   "events": [
+    {
+     "frame": 31,
+     "opcode": 12,
+     "name": "stop",
+     "param": 164
+    }
+   ]
+  },
+  "5509": {
+   "asset": 5509,
+   "events": [
+    {
+     "frame": 31,
+     "opcode": 12,
+     "name": "stop",
+     "param": 132
+    }
+   ]
+  },
+  "5511": {
+   "asset": 5511,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "5513": {
+   "asset": 5513,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    }
+   ]
+  },
+  "3716": {
+   "asset": 3716,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 12,
+     "name": "stop",
+     "param": 110
+    }
+   ]
+  },
+  "3703": {
+   "asset": 3703,
+   "events": []
+  },
+  "3705": {
+   "asset": 3705,
+   "events": []
+  },
+  "4468": {
+   "asset": 4468,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 12,
+     "name": "stop",
+     "param": 155
+    }
+   ]
+  },
+  "4470": {
+   "asset": 4470,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 12,
+     "name": "stop",
+     "param": 184
+    }
+   ]
+  },
+  "4955": {
+   "asset": 4955,
+   "events": []
+  },
+  "4957": {
+   "asset": 4957,
+   "events": [
+    {
+     "frame": 25,
+     "opcode": 12,
+     "name": "stop",
+     "param": 96
+    }
+   ]
+  },
+  "4382": {
+   "asset": 4382,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 12,
+     "name": "stop",
+     "param": 109
+    }
+   ]
+  },
+  "4339": {
+   "asset": 4339,
+   "events": []
+  },
+  "4341": {
+   "asset": 4341,
+   "events": [
+    {
+     "frame": 31,
+     "opcode": 12,
+     "name": "stop",
+     "param": 141
+    }
+   ]
+  },
+  "165": {
+   "asset": 165,
+   "events": []
+  },
+  "154": {
+   "asset": 154,
+   "events": [
+    {
+     "frame": 36,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 47
+    }
+   ]
+  },
+  "217": {
+   "asset": 217,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ]
+  },
+  "4871": {
+   "asset": 4871,
+   "events": []
+  },
+  "4873": {
+   "asset": 4873,
+   "events": [
+    {
+     "frame": 25,
+     "opcode": 12,
+     "name": "stop",
+     "param": 96
+    }
+   ]
+  },
+  "4572": {
+   "asset": 4572,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 12,
+     "name": "stop",
+     "param": 92
+    }
+   ]
+  },
+  "4563": {
+   "asset": 4563,
+   "events": [
+    {
+     "frame": 17,
+     "opcode": 12,
+     "name": "stop",
+     "param": 128
+    }
+   ]
+  },
+  "4565": {
+   "asset": 4565,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 12,
+     "name": "stop",
+     "param": 92
+    },
+    {
+     "frame": 18,
+     "opcode": 12,
+     "name": "stop",
+     "param": 110
+    }
+   ]
+  },
+  "4825": {
+   "asset": 4825,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 12,
+     "name": "stop",
+     "param": 0
+    }
+   ]
+  },
+  "4818": {
+   "asset": 4818,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 12,
+     "name": "stop",
+     "param": 0
+    }
+   ]
+  },
+  "4820": {
+   "asset": 4820,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 12,
+     "name": "stop",
+     "param": 0
+    }
+   ]
+  },
+  "5337": {
+   "asset": 5337,
+   "events": []
+  },
+  "5331": {
+   "asset": 5331,
+   "events": [
+    {
+     "frame": 19,
+     "opcode": 12,
+     "name": "stop",
+     "param": 0
+    }
+   ]
+  },
+  "5333": {
+   "asset": 5333,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 12,
+     "name": "stop",
+     "param": 0
+    }
+   ]
+  },
+  "4201": {
+   "asset": 4201,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 14,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 57,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 66,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 83,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 84,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "5192": {
+   "asset": 5192,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 57,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1807": {
+   "asset": 1807,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 46,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1424": {
+   "asset": 1424,
+   "events": [
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 73,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "247": {
+   "asset": 247,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 46,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1834": {
+   "asset": 1834,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 54,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1858": {
+   "asset": 1858,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4836": {
+   "asset": 4836,
+   "events": [
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 73,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4843": {
+   "asset": 4843,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "1001": {
+   "asset": 1001,
+   "events": [
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 49,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 73,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "453": {
+   "asset": 453,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "821": {
+   "asset": 821,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 46,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "5090": {
+   "asset": 5090,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 46,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "233": {
+   "asset": 233,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "240": {
+   "asset": 240,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 48,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 72,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 80,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    },
+    {
+     "frame": 81,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    },
+    {
+     "frame": 82,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "337": {
+   "asset": 337,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 63,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 71,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 79,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    }
+   ]
+  },
+  "1925": {
+   "asset": 1925,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 48,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 72,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 80,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    },
+    {
+     "frame": 81,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    },
+    {
+     "frame": 82,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "736": {
+   "asset": 736,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 30
+    }
+   ]
+  },
+  "730": {
+   "asset": 730,
+   "events": [
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 37,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    },
+    {
+     "frame": 72,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 83
+    }
+   ]
+  },
+  "749": {
+   "asset": 749,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "751": {
+   "asset": 751,
+   "events": [
+    {
+     "frame": 14,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 30,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 42,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 61,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 70,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 95,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 107,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 108,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4059": {
+   "asset": 4059,
+   "events": []
+  },
+  "4052": {
+   "asset": 4052,
+   "events": [
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    }
+   ]
+  },
+  "4071": {
+   "asset": 4071,
+   "events": []
+  },
+  "4064": {
+   "asset": 4064,
+   "events": [
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    }
+   ]
+  },
+  "2281": {
+   "asset": 2281,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 35,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 44,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 52,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "2313": {
+   "asset": 2313,
+   "events": [
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 144
+    },
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 138
+    }
+   ]
+  },
+  "3686": {
+   "asset": 3686,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "2703": {
+   "asset": 2703,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "2705": {
+   "asset": 2705,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 46,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "2690": {
+   "asset": 2690,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "2692": {
+   "asset": 2692,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 20,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 29,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 38,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 65,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "2769": {
+   "asset": 2769,
+   "events": [
+    {
+     "frame": 29,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4454": {
+   "asset": 4454,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "4456": {
+   "asset": 4456,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 29,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 35,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 43,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 59,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 78,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 79,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "3661": {
+   "asset": 3661,
+   "events": [
+    {
+     "frame": 109,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "5070": {
+   "asset": 5070,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 34,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 41,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 69,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 80,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 132
+    },
+    {
+     "frame": 81,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "3007": {
+   "asset": 3007,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 22,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 42,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 59,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 67,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 75,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 95,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 103,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 110,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 124,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "3693": {
+   "asset": 3693,
+   "events": [
+    {
+     "frame": 50,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "1271": {
+   "asset": 1271,
+   "events": [
+    {
+     "frame": 52,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1331": {
+   "asset": 1331,
+   "events": [
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "923": {
+   "asset": 923,
+   "events": [
+    {
+     "frame": 187,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    },
+    {
+     "frame": 225,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 241,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 257,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "917": {
+   "asset": 917,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 29,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 30,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "919": {
+   "asset": 919,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 27,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 29,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 43,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 66,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 79,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    },
+    {
+     "frame": 80,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1306": {
+   "asset": 1306,
+   "events": [
+    {
+     "frame": 70,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "1392": {
+   "asset": 1392,
+   "events": [
+    {
+     "frame": 5,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "1394": {
+   "asset": 1394,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 35,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 43,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 53,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 61,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 71,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 80,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 81,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "254": {
+   "asset": 254,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "256": {
+   "asset": 256,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 37,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 53,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 78,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 94,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 95,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4617": {
+   "asset": 4617,
+   "events": [
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    }
+   ]
+  },
+  "4624": {
+   "asset": 4624,
+   "events": [
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    }
+   ]
+  },
+  "4546": {
+   "asset": 4546,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "4534": {
+   "asset": 4534,
+   "events": []
+  },
+  "4536": {
+   "asset": 4536,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 42,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 69,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 78,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 96,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 105,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 114,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 128,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 129,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4560": {
+   "asset": 4560,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "4553": {
+   "asset": 4553,
+   "events": []
+  },
+  "4555": {
+   "asset": 4555,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 42,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 69,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 78,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 96,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 105,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 114,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 128,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 129,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4631": {
+   "asset": 4631,
+   "events": [
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "133": {
+   "asset": 133,
+   "events": [
+    {
+     "frame": 22,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 46
+    },
+    {
+     "frame": 22,
+     "opcode": 28,
+     "name": "call_a95d4",
+     "param": 30
+    }
+   ]
+  },
+  "138": {
+   "asset": 138,
+   "events": [
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 47
+    },
+    {
+     "frame": 18,
+     "opcode": 28,
+     "name": "call_a95d4",
+     "param": 20
+    }
+   ]
+  },
+  "146": {
+   "asset": 146,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    },
+    {
+     "frame": 20,
+     "opcode": 28,
+     "name": "call_a95d4",
+     "param": 10
+    }
+   ]
+  },
+  "3232": {
+   "asset": 3232,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "3234": {
+   "asset": 3234,
+   "events": [
+    {
+     "frame": 20,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 36,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 44,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 52,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 59,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 66,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 73,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4227": {
+   "asset": 4227,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "4229": {
+   "asset": 4229,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 19,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 27,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 35,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 43,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 50,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 54,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 74,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 75,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "837": {
+   "asset": 837,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "839": {
+   "asset": 839,
+   "events": [
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 20,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 36,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 44,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 52,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 68,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 76,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 83,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 103,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 104,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "3340": {
+   "asset": 3340,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "3342": {
+   "asset": 3342,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 48,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 71,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 72,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "2041": {
+   "asset": 2041,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 9,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 48,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 57,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "2306": {
+   "asset": 2306,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 30
+    },
+    {
+     "frame": 28,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "2017": {
+   "asset": 2017,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "2019": {
+   "asset": 2019,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 25,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 41,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 65,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "1339": {
+   "asset": 1339,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "1341": {
+   "asset": 1341,
+   "events": [
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 26,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 34,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 42,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 50,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 58,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 66,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "4780": {
+   "asset": 4780,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "4787": {
+   "asset": 4787,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 22,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "4794": {
+   "asset": 4794,
+   "events": [
+    {
+     "frame": 17,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "4801": {
+   "asset": 4801,
+   "events": [
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    }
+   ]
+  },
+  "780": {
+   "asset": 780,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "782": {
+   "asset": 782,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 55,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 63,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 71,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 76,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 94,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 95,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "857": {
+   "asset": 857,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "859": {
+   "asset": 859,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 19,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 27,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 35,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 43,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 51,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 59,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 75,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 76,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "790": {
+   "asset": 790,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "792": {
+   "asset": 792,
+   "events": [
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 27,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 37,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 53,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 61,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 69,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 89,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "827": {
+   "asset": 827,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "829": {
+   "asset": 829,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 31,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 39,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 54,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 62,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 70,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 90,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 91,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "847": {
+   "asset": 847,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "849": {
+   "asset": 849,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 23,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 30,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 36,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 44,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 52,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 60,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 68,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 76,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 84,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 105,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 106,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "867": {
+   "asset": 867,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "869": {
+   "asset": 869,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 24,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 32,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 40,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 48,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 56,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 64,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 87,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "801": {
+   "asset": 801,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 88
+    }
+   ]
+  },
+  "803": {
+   "asset": 803,
+   "events": [
+    {
+     "frame": 21,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 27,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 37,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 45,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 53,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 61,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 69,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 3
+    },
+    {
+     "frame": 88,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 167
+    },
+    {
+     "frame": 89,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 102
+    }
+   ]
+  },
+  "603": {
+   "asset": 603,
+   "events": [
+    {
+     "frame": 49,
+     "opcode": 12,
+     "name": "stop",
+     "param": 21
+    }
+   ]
+  },
+  "3943": {
+   "asset": 3943,
+   "events": [
+    {
+     "frame": 44,
+     "opcode": 12,
+     "name": "stop",
+     "param": 15
+    }
+   ]
+  },
+  "4921": {
+   "asset": 4921,
+   "events": [
+    {
+     "frame": 6,
+     "opcode": 12,
+     "name": "stop",
+     "param": 70
+    }
+   ]
+  },
+  "2218": {
+   "asset": 2218,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 47
+    }
+   ]
+  },
+  "4729": {
+   "asset": 4729,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4753": {
+   "asset": 4753,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4756": {
+   "asset": 4756,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4759": {
+   "asset": 4759,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4762": {
+   "asset": 4762,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4765": {
+   "asset": 4765,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4768": {
+   "asset": 4768,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4771": {
+   "asset": 4771,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4774": {
+   "asset": 4774,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4732": {
+   "asset": 4732,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4735": {
+   "asset": 4735,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4738": {
+   "asset": 4738,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4741": {
+   "asset": 4741,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4744": {
+   "asset": 4744,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4747": {
+   "asset": 4747,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4750": {
+   "asset": 4750,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4973": {
+   "asset": 4973,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4979": {
+   "asset": 4979,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4982": {
+   "asset": 4982,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4985": {
+   "asset": 4985,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4988": {
+   "asset": 4988,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4991": {
+   "asset": 4991,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4994": {
+   "asset": 4994,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4997": {
+   "asset": 4997,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5000": {
+   "asset": 5000,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4976": {
+   "asset": 4976,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "571": {
+   "asset": 571,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "577": {
+   "asset": 577,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "580": {
+   "asset": 580,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "583": {
+   "asset": 583,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "586": {
+   "asset": 586,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "589": {
+   "asset": 589,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "592": {
+   "asset": 592,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "595": {
+   "asset": 595,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "598": {
+   "asset": 598,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "574": {
+   "asset": 574,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1758": {
+   "asset": 1758,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1764": {
+   "asset": 1764,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1767": {
+   "asset": 1767,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1770": {
+   "asset": 1770,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1773": {
+   "asset": 1773,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1776": {
+   "asset": 1776,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1779": {
+   "asset": 1779,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1782": {
+   "asset": 1782,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1785": {
+   "asset": 1785,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "1761": {
+   "asset": 1761,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2890": {
+   "asset": 2890,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2896": {
+   "asset": 2896,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2899": {
+   "asset": 2899,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2902": {
+   "asset": 2902,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2905": {
+   "asset": 2905,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2908": {
+   "asset": 2908,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2911": {
+   "asset": 2911,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2914": {
+   "asset": 2914,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2917": {
+   "asset": 2917,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2893": {
+   "asset": 2893,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3028": {
+   "asset": 3028,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3034": {
+   "asset": 3034,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3037": {
+   "asset": 3037,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3040": {
+   "asset": 3040,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3043": {
+   "asset": 3043,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3046": {
+   "asset": 3046,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3049": {
+   "asset": 3049,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3052": {
+   "asset": 3052,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3055": {
+   "asset": 3055,
+   "events": [
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3031": {
+   "asset": 3031,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4889": {
+   "asset": 4889,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4895": {
+   "asset": 4895,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4898": {
+   "asset": 4898,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4901": {
+   "asset": 4901,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4904": {
+   "asset": 4904,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4907": {
+   "asset": 4907,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 12,
+     "name": "stop",
+     "param": 96
+    },
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4910": {
+   "asset": 4910,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4913": {
+   "asset": 4913,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4916": {
+   "asset": 4916,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "4892": {
+   "asset": 4892,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 2
+    }
+   ]
+  },
+  "180": {
+   "asset": 180,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "186": {
+   "asset": 186,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "189": {
+   "asset": 189,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "192": {
+   "asset": 192,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "195": {
+   "asset": 195,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "198": {
+   "asset": 198,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "201": {
+   "asset": 201,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "204": {
+   "asset": 204,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "207": {
+   "asset": 207,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "183": {
+   "asset": 183,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4352": {
+   "asset": 4352,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4358": {
+   "asset": 4358,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4361": {
+   "asset": 4361,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4364": {
+   "asset": 4364,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4367": {
+   "asset": 4367,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4370": {
+   "asset": 4370,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4373": {
+   "asset": 4373,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4376": {
+   "asset": 4376,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4379": {
+   "asset": 4379,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "4355": {
+   "asset": 4355,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "639": {
+   "asset": 639,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "645": {
+   "asset": 645,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "648": {
+   "asset": 648,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "651": {
+   "asset": 651,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "654": {
+   "asset": 654,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "657": {
+   "asset": 657,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "660": {
+   "asset": 660,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "663": {
+   "asset": 663,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "666": {
+   "asset": 666,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "642": {
+   "asset": 642,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2423": {
+   "asset": 2423,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2429": {
+   "asset": 2429,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2432": {
+   "asset": 2432,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2435": {
+   "asset": 2435,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2438": {
+   "asset": 2438,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2441": {
+   "asset": 2441,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2444": {
+   "asset": 2444,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2447": {
+   "asset": 2447,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2450": {
+   "asset": 2450,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2426": {
+   "asset": 2426,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2486": {
+   "asset": 2486,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2492": {
+   "asset": 2492,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2495": {
+   "asset": 2495,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2498": {
+   "asset": 2498,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2501": {
+   "asset": 2501,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2504": {
+   "asset": 2504,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2507": {
+   "asset": 2507,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2510": {
+   "asset": 2510,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2513": {
+   "asset": 2513,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "2489": {
+   "asset": 2489,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5346": {
+   "asset": 5346,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5352": {
+   "asset": 5352,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5355": {
+   "asset": 5355,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5358": {
+   "asset": 5358,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5361": {
+   "asset": 5361,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5364": {
+   "asset": 5364,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5367": {
+   "asset": 5367,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5370": {
+   "asset": 5370,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5373": {
+   "asset": 5373,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5349": {
+   "asset": 5349,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3873": {
+   "asset": 3873,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3879": {
+   "asset": 3879,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3882": {
+   "asset": 3882,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3885": {
+   "asset": 3885,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3888": {
+   "asset": 3888,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3891": {
+   "asset": 3891,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3894": {
+   "asset": 3894,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3897": {
+   "asset": 3897,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3900": {
+   "asset": 3900,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3876": {
+   "asset": 3876,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "696": {
+   "asset": 696,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "702": {
+   "asset": 702,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "705": {
+   "asset": 705,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "708": {
+   "asset": 708,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "711": {
+   "asset": 711,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "714": {
+   "asset": 714,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "717": {
+   "asset": 717,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "720": {
+   "asset": 720,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "723": {
+   "asset": 723,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "699": {
+   "asset": 699,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "5": {
+   "asset": 5,
+   "events": [
+    {
+     "frame": 4,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "11": {
+   "asset": 11,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "14": {
+   "asset": 14,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "17": {
+   "asset": 17,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "20": {
+   "asset": 20,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "23": {
+   "asset": 23,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "26": {
+   "asset": 26,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "29": {
+   "asset": 29,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "32": {
+   "asset": 32,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "8": {
+   "asset": 8,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 48
+    }
+   ]
+  },
+  "3414": {
+   "asset": 3414,
+   "events": [
+    {
+     "frame": 16,
+     "opcode": 3,
+     "name": "sound",
+     "param": 93
+    },
+    {
+     "frame": 136,
+     "opcode": 3,
+     "name": "sound",
+     "param": 93
+    }
+   ]
+  },
+  "538": {
+   "asset": 538,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "552": {
+   "asset": 552,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 11,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "504": {
+   "asset": 504,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 1,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 2,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 3,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 4,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 5,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 7,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 13,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "507": {
+   "asset": 507,
+   "events": [],
+   "note": "found by the array-region sweep"
+  },
+  "2093": {
+   "asset": 2093,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3506": {
+   "asset": 3506,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3509": {
+   "asset": 3509,
+   "events": [],
+   "note": "found by the array-region sweep"
+  },
+  "525": {
+   "asset": 525,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5125": {
+   "asset": 5125,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5100": {
+   "asset": 5100,
+   "events": [
+    {
+     "frame": 14,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    },
+    {
+     "frame": 14,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5102": {
+   "asset": 5102,
+   "events": [
+    {
+     "frame": 12,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 12,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2410": {
+   "asset": 2410,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2395": {
+   "asset": 2395,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2398": {
+   "asset": 2398,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    },
+    {
+     "frame": 18,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2401": {
+   "asset": 2401,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    },
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 81
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2599": {
+   "asset": 2599,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "515": {
+   "asset": 515,
+   "events": [
+    {
+     "frame": 15,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 69
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "517": {
+   "asset": 517,
+   "events": [
+    {
+     "frame": 11,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 11,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 69
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "542": {
+   "asset": 542,
+   "events": [
+    {
+     "frame": 12,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 27,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "527": {
+   "asset": 527,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "531": {
+   "asset": 531,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "47": {
+   "asset": 47,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "41": {
+   "asset": 41,
+   "events": [
+    {
+     "frame": 14,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 14,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2087": {
+   "asset": 2087,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    },
+    {
+     "frame": 13,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2090": {
+   "asset": 2090,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 13,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 157
+    },
+    {
+     "frame": 17,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "679": {
+   "asset": 679,
+   "events": [
+    {
+     "frame": 58,
+     "opcode": 12,
+     "name": "stop",
+     "param": 30
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "674": {
+   "asset": 674,
+   "events": [
+    {
+     "frame": 5,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "626": {
+   "asset": 626,
+   "events": [
+    {
+     "frame": 8,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    },
+    {
+     "frame": 8,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "629": {
+   "asset": 629,
+   "events": [
+    {
+     "frame": 5,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 5,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "1466": {
+   "asset": 1466,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "1460": {
+   "asset": 1460,
+   "events": [
+    {
+     "frame": 216,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 20
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "1468": {
+   "asset": 1468,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "487": {
+   "asset": 487,
+   "events": [
+    {
+     "frame": 5,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "489": {
+   "asset": 489,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 3,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "565": {
+   "asset": 565,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "563": {
+   "asset": 563,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3021": {
+   "asset": 3021,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 4
+    },
+    {
+     "frame": 9,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "611": {
+   "asset": 611,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "540": {
+   "asset": 540,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 18,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5113": {
+   "asset": 5113,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5116": {
+   "asset": 5116,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5122": {
+   "asset": 5122,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5110": {
+   "asset": 5110,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5108": {
+   "asset": 5108,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3014": {
+   "asset": 3014,
+   "events": [
+    {
+     "frame": 19,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 21,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 4
+    },
+    {
+     "frame": 21,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3016": {
+   "asset": 3016,
+   "events": [
+    {
+     "frame": 9,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 4
+    },
+    {
+     "frame": 11,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "3061": {
+   "asset": 3061,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 8,
+     "opcode": 24,
+     "name": "fire",
+     "param": 4
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "502": {
+   "asset": 502,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "497": {
+   "asset": 497,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "529": {
+   "asset": 529,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "511": {
+   "asset": 511,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 1,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 2,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 3,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 4,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 5,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 7,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 8,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 9,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 10,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 13,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 14,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 16,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 17,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 18,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 19,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 20,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 21,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 22,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 23,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 24,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 25,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 26,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 27,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 28,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 29,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2876": {
+   "asset": 2876,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2878": {
+   "asset": 2878,
+   "events": [
+    {
+     "frame": 2,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2926": {
+   "asset": 2926,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 2,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2930": {
+   "asset": 2930,
+   "events": [
+    {
+     "frame": 24,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 30,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 36,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 42,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 48,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 54,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 60,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 66,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 72,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 78,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 84,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 90,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    },
+    {
+     "frame": 95,
+     "opcode": 12,
+     "name": "stop",
+     "param": 43
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2881": {
+   "asset": 2881,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 132
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 11,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 81
+    },
+    {
+     "frame": 16,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "2884": {
+   "asset": 2884,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 5,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 132
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 81
+    },
+    {
+     "frame": 25,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5475": {
+   "asset": 5475,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5471": {
+   "asset": 5471,
+   "events": [],
+   "note": "found by the array-region sweep"
+  },
+  "5473": {
+   "asset": 5473,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5503": {
+   "asset": 5503,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 22,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 40,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5495": {
+   "asset": 5495,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 22,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 23,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 33,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 38,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 39,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    },
+    {
+     "frame": 47,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 47,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 139
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5498": {
+   "asset": 5498,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    },
+    {
+     "frame": 27,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 4
+    },
+    {
+     "frame": 33,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5500": {
+   "asset": 5500,
+   "events": [
+    {
+     "frame": 9,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 4
+    },
+    {
+     "frame": 20,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5447": {
+   "asset": 5447,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 156
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5420": {
+   "asset": 5420,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5428": {
+   "asset": 5428,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5436": {
+   "asset": 5436,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5468": {
+   "asset": 5468,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 139
+    },
+    {
+     "frame": 5,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 156
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5478": {
+   "asset": 5478,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 9,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 15,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5481": {
+   "asset": 5481,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 7,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 10,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 16,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5484": {
+   "asset": 5484,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 7,
+     "name": "set_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 6,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    },
+    {
+     "frame": 12,
+     "opcode": 8,
+     "name": "clear_b2_04",
+     "param": 0
+    },
+    {
+     "frame": 16,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 141
+    },
+    {
+     "frame": 21,
+     "opcode": 9,
+     "name": "set_b2_08",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5451": {
+   "asset": 5451,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 145
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "5418": {
+   "asset": 5418,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4410": {
+   "asset": 4410,
+   "events": [
+    {
+     "frame": 10,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    },
+    {
+     "frame": 12,
+     "opcode": 22,
+     "name": "attach_hide",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4412": {
+   "asset": 4412,
+   "events": [
+    {
+     "frame": 7,
+     "opcode": 21,
+     "name": "attach_show",
+     "param": 5
+    },
+    {
+     "frame": 8,
+     "opcode": 6,
+     "name": "weapon_toggle",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4417": {
+   "asset": 4417,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 80
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4419": {
+   "asset": 4419,
+   "events": [
+    {
+     "frame": 3,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 78
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4425": {
+   "asset": 4425,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    },
+    {
+     "frame": 10,
+     "opcode": 2,
+     "name": "sound_positional",
+     "param": 201
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4428": {
+   "asset": 4428,
+   "events": [
+    {
+     "frame": 1,
+     "opcode": 24,
+     "name": "fire",
+     "param": 5
+    }
+   ],
+   "note": "found by the array-region sweep"
+  },
+  "4437": {
+   "asset": 4437,
+   "events": [
+    {
+     "frame": 0,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    },
+    {
+     "frame": 16,
+     "opcode": 5,
+     "name": "nop",
+     "param": 0
+    }
+   ],
+   "note": "found by the array-region sweep"
+  }
+ },
+ "anim_to_track": {
+  "6": 5,
+  "9": 8,
+  "12": 11,
+  "15": 14,
+  "18": 17,
+  "21": 20,
+  "24": 23,
+  "27": 26,
+  "30": 29,
+  "33": 32,
+  "42": 41,
+  "48": 47,
+  "135": 133,
+  "140": 138,
+  "148": 146,
+  "156": 154,
+  "167": 165,
+  "181": 180,
+  "184": 183,
+  "187": 186,
+  "190": 189,
+  "193": 192,
+  "196": 195,
+  "199": 198,
+  "202": 201,
+  "205": 204,
+  "208": 207,
+  "219": 217,
+  "235": 233,
+  "242": 240,
+  "249": 247,
+  "255": 254,
+  "258": 256,
+  "260": 923,
+  "339": 337,
+  "455": 453,
+  "488": 487,
+  "490": 489,
+  "498": 497,
+  "501": 499,
+  "503": 502,
+  "506": 504,
+  "509": 507,
+  "513": 511,
+  "516": 515,
+  "518": 517,
+  "523": 521,
+  "526": 525,
+  "528": 527,
+  "530": 529,
+  "532": 531,
+  "537": 535,
+  "539": 538,
+  "541": 540,
+  "543": 542,
+  "551": 552,
+  "553": 552,
+  "559": 558,
+  "564": 563,
+  "566": 565,
+  "572": 571,
+  "575": 574,
+  "578": 577,
+  "581": 580,
+  "584": 583,
+  "587": 586,
+  "590": 589,
+  "593": 592,
+  "596": 595,
+  "599": 598,
+  "604": 603,
+  "609": 3199,
+  "610": 3199,
+  "613": 611,
+  "616": 3206,
+  "628": 626,
+  "631": 629,
+  "640": 639,
+  "643": 642,
+  "646": 645,
+  "649": 648,
+  "652": 651,
+  "655": 654,
+  "658": 657,
+  "661": 660,
+  "664": 663,
+  "667": 666,
+  "676": 674,
+  "680": 679,
+  "697": 696,
+  "700": 699,
+  "703": 702,
+  "706": 705,
+  "709": 708,
+  "712": 711,
+  "715": 714,
+  "718": 717,
+  "721": 720,
+  "724": 723,
+  "731": 730,
+  "737": 736,
+  "750": 749,
+  "753": 751,
+  "781": 780,
+  "784": 782,
+  "791": 790,
+  "794": 792,
+  "802": 801,
+  "805": 803,
+  "823": 821,
+  "828": 827,
+  "831": 829,
+  "838": 837,
+  "841": 839,
+  "848": 847,
+  "851": 849,
+  "858": 857,
+  "861": 859,
+  "868": 867,
+  "871": 869,
+  "918": 917,
+  "921": 919,
+  "924": 923,
+  "1002": 1001,
+  "1272": 1271,
+  "1307": 1306,
+  "1332": 1331,
+  "1340": 1339,
+  "1343": 1341,
+  "1393": 1392,
+  "1396": 1394,
+  "1398": 923,
+  "1425": 1424,
+  "1455": 1454,
+  "1458": 487,
+  "1459": 489,
+  "1461": 1460,
+  "1467": 1466,
+  "1469": 1468,
+  "1470": 3206,
+  "1471": 3206,
+  "1479": 1466,
+  "1759": 1758,
+  "1762": 1761,
+  "1765": 1764,
+  "1768": 1767,
+  "1771": 1770,
+  "1774": 1773,
+  "1777": 1776,
+  "1780": 1779,
+  "1783": 1782,
+  "1786": 1785,
+  "1809": 1807,
+  "1836": 1834,
+  "1860": 1858,
+  "1927": 1925,
+  "2018": 2017,
+  "2021": 2019,
+  "2042": 2041,
+  "2048": 2306,
+  "2089": 2087,
+  "2092": 2090,
+  "2095": 2093,
+  "2106": 3199,
+  "2109": 3206,
+  "2113": 2125,
+  "2126": 2125,
+  "2213": 2218,
+  "2219": 2218,
+  "2282": 2281,
+  "2307": 2306,
+  "2314": 2313,
+  "2397": 2395,
+  "2400": 2398,
+  "2403": 2401,
+  "2411": 2410,
+  "2415": 3206,
+  "2424": 2423,
+  "2427": 2426,
+  "2430": 2429,
+  "2433": 2432,
+  "2436": 2435,
+  "2439": 2438,
+  "2442": 2441,
+  "2445": 2444,
+  "2448": 2447,
+  "2451": 2450,
+  "2487": 2486,
+  "2490": 2489,
+  "2493": 2492,
+  "2496": 2495,
+  "2499": 2498,
+  "2502": 2501,
+  "2505": 2504,
+  "2508": 2507,
+  "2511": 2510,
+  "2514": 2513,
+  "2529": 2528,
+  "2559": 2557,
+  "2567": 2565,
+  "2569": 2568,
+  "2593": 3199,
+  "2600": 2599,
+  "2602": 2601,
+  "2613": 3206,
+  "2691": 2690,
+  "2694": 2692,
+  "2704": 2703,
+  "2707": 2705,
+  "2770": 2769,
+  "2846": 2844,
+  "2877": 2876,
+  "2879": 2878,
+  "2883": 2881,
+  "2886": 2884,
+  "2891": 2890,
+  "2894": 2893,
+  "2897": 2896,
+  "2900": 2899,
+  "2903": 2902,
+  "2906": 2905,
+  "2909": 2908,
+  "2912": 2911,
+  "2915": 2914,
+  "2918": 2917,
+  "2927": 2926,
+  "2932": 2930,
+  "2957": 2956,
+  "2967": 2966,
+  "3009": 3007,
+  "3015": 3014,
+  "3017": 3016,
+  "3023": 3021,
+  "3029": 3028,
+  "3032": 3031,
+  "3035": 3034,
+  "3038": 3037,
+  "3041": 3040,
+  "3044": 3043,
+  "3047": 3046,
+  "3050": 3049,
+  "3053": 3052,
+  "3056": 3055,
+  "3063": 3061,
+  "3077": 3076,
+  "3079": 3078,
+  "3085": 3083,
+  "3090": 3088,
+  "3095": 3093,
+  "3100": 3098,
+  "3105": 3103,
+  "3110": 3108,
+  "3115": 3113,
+  "3125": 3123,
+  "3131": 3129,
+  "3134": 3132,
+  "3153": 3151,
+  "3156": 3154,
+  "3163": 3161,
+  "3166": 3164,
+  "3172": 3170,
+  "3175": 3173,
+  "3178": 3176,
+  "3181": 3179,
+  "3184": 3182,
+  "3187": 3185,
+  "3189": 3188,
+  "3195": 3194,
+  "3200": 3199,
+  "3201": 3199,
+  "3207": 3206,
+  "3208": 3206,
+  "3233": 3232,
+  "3235": 3234,
+  "3341": 3340,
+  "3344": 3342,
+  "3415": 3414,
+  "3418": 3414,
+  "3421": 3414,
+  "3482": 3481,
+  "3508": 3506,
+  "3511": 3509,
+  "3519": 3199,
+  "3520": 3199,
+  "3521": 3199,
+  "3523": 3522,
+  "3531": 3206,
+  "3587": 3129,
+  "3588": 3132,
+  "3662": 3661,
+  "3688": 3686,
+  "3694": 3693,
+  "3704": 3703,
+  "3706": 3705,
+  "3717": 3716,
+  "3835": 3834,
+  "3874": 3873,
+  "3877": 3876,
+  "3880": 3879,
+  "3883": 3882,
+  "3886": 3885,
+  "3889": 3888,
+  "3892": 3891,
+  "3895": 3894,
+  "3898": 3897,
+  "3901": 3900,
+  "3945": 3943,
+  "4030": 4027,
+  "4041": 4039,
+  "4053": 4052,
+  "4060": 4059,
+  "4065": 4064,
+  "4072": 4071,
+  "4203": 4201,
+  "4219": 4218,
+  "4228": 4227,
+  "4231": 4229,
+  "4340": 4339,
+  "4342": 4341,
+  "4353": 4352,
+  "4356": 4355,
+  "4359": 4358,
+  "4362": 4361,
+  "4365": 4364,
+  "4368": 4367,
+  "4371": 4370,
+  "4374": 4373,
+  "4377": 4376,
+  "4380": 4379,
+  "4383": 4382,
+  "4411": 4410,
+  "4413": 4412,
+  "4418": 4417,
+  "4420": 4419,
+  "4426": 4425,
+  "4427": 4425,
+  "4429": 4428,
+  "4438": 4437,
+  "4439": 4437,
+  "4455": 4454,
+  "4458": 4456,
+  "4469": 4468,
+  "4471": 4470,
+  "4535": 4534,
+  "4538": 4536,
+  "4547": 4546,
+  "4554": 4553,
+  "4557": 4555,
+  "4561": 4560,
+  "4564": 4563,
+  "4566": 4565,
+  "4573": 4572,
+  "4618": 4617,
+  "4625": 4624,
+  "4632": 4631,
+  "4730": 4729,
+  "4733": 4732,
+  "4736": 4735,
+  "4739": 4738,
+  "4742": 4741,
+  "4745": 4744,
+  "4748": 4747,
+  "4751": 4750,
+  "4754": 4753,
+  "4757": 4756,
+  "4760": 4759,
+  "4763": 4762,
+  "4766": 4765,
+  "4769": 4768,
+  "4772": 4771,
+  "4775": 4774,
+  "4781": 4780,
+  "4788": 4787,
+  "4795": 4794,
+  "4802": 4801,
+  "4819": 4818,
+  "4821": 4820,
+  "4826": 4825,
+  "4837": 4836,
+  "4845": 4843,
+  "4872": 4871,
+  "4874": 4873,
+  "4890": 4889,
+  "4893": 4892,
+  "4896": 4895,
+  "4899": 4898,
+  "4902": 4901,
+  "4905": 4904,
+  "4908": 4907,
+  "4911": 4910,
+  "4914": 4913,
+  "4917": 4916,
+  "4922": 4921,
+  "4926": 4925,
+  "4928": 4927,
+  "4932": 4931,
+  "4934": 4933,
+  "4956": 4955,
+  "4958": 4957,
+  "4974": 4973,
+  "4977": 4976,
+  "4980": 4979,
+  "4983": 4982,
+  "4986": 4985,
+  "4989": 4988,
+  "4992": 4991,
+  "4995": 4994,
+  "4998": 4997,
+  "5001": 5000,
+  "5072": 5070,
+  "5092": 5090,
+  "5101": 5100,
+  "5103": 5102,
+  "5109": 5108,
+  "5111": 5110,
+  "5115": 5113,
+  "5118": 5116,
+  "5123": 5122,
+  "5124": 525,
+  "5126": 5125,
+  "5128": 3206,
+  "5129": 3206,
+  "5194": 5192,
+  "5332": 5331,
+  "5334": 5333,
+  "5338": 5337,
+  "5347": 5346,
+  "5350": 5349,
+  "5353": 5352,
+  "5356": 5355,
+  "5359": 5358,
+  "5362": 5361,
+  "5365": 5364,
+  "5368": 5367,
+  "5371": 5370,
+  "5374": 5373,
+  "5376": 4572,
+  "5383": 5382,
+  "5385": 5384,
+  "5391": 5390,
+  "5393": 5392,
+  "5407": 5406,
+  "5419": 5418,
+  "5422": 5420,
+  "5425": 5420,
+  "5427": 5420,
+  "5430": 5428,
+  "5433": 5428,
+  "5435": 5428,
+  "5438": 5436,
+  "5441": 5436,
+  "5443": 5436,
+  "5448": 5447,
+  "5453": 5451,
+  "5470": 5468,
+  "5472": 5471,
+  "5474": 5473,
+  "5476": 5475,
+  "5480": 5478,
+  "5483": 5481,
+  "5486": 5484,
+  "5497": 5495,
+  "5499": 5498,
+  "5501": 5500,
+  "5504": 5503,
+  "5508": 5507,
+  "5510": 5509,
+  "5512": 5511,
+  "5514": 5513,
+  "5522": 5521,
+  "5539": 3199,
+  "5540": 3199,
+  "5543": 3206,
+  "5544": 3206
+ },
+ "clip_to_track": {
+  "LOMMiniKit_PiecJ": 32,
+  "LOM_GunOut": 41,
+  "LOM_ShootGun": 47,
+  "AsteroidLargeColJ": 133,
+  "AsteroidMediumCoJ": 138,
+  "AsteroidSmallColJ": 146,
+  "ATATDie": 154,
+  "ATATWalk": 165,
+  "ATSTMiniKit_PiecJ": 207,
+  "JNT0t": 5481,
+  "JNT0l": 3414,
+  "JNT0p": 5473,
+  "JNT0x": 4370,
+  "BAMG42BrkRpr": 240,
+  "BarConsoleNChairJ": 247,
+  "BargeBuildableTuJ": 256,
+  "BATurretBrkRepaiJ": 337,
+  "BlockadeConsoleBJ": 453,
+  "BlstrGunIn": 487,
+  "BlstrGunOut": 489,
+  "BlstrJumpLand": 497,
+  "BlstrJumpRoll": 499,
+  "JNT0P": 5503,
+  "BlstrMelee1": 504,
+  "BlstrMelee2": 507,
+  "JNT08": 5390,
+  "BlstrPistolIn": 515,
+  "BlstrPistolOut": 517,
+  "BlstrRollUp": 521,
+  "JNT00": 5513,
+  "BlstrRunPistol": 527,
+  "BlstrShootGun": 529,
+  "BlstrShootPistolJ": 531,
+  "BlstrThrowDetonaJ": 535,
+  "BlstrWalk": 538,
+  "BlstrWalkGun": 540,
+  "BlstrWalkPistol": 542,
+  "JNT04": 4916,
+  "BobaFettGunOut": 552,
+  "JNT0H": 4957,
+  "BobaFettJumpLandJ": 563,
+  "BobaFettMiniKit_J": 598,
+  "JNT0h": 4454,
+  "BobaFettPackJetsJ": 603,
+  "BobaFettRun": 3199,
+  "BobaFettRunGun": 3199,
+  "BobaFettShootGunJ": 611,
+  "JNT0D": 5436,
+  "BosskGunIn": 626,
+  "BosskMiniKit_PieJ": 666,
+  "BosskShootGun": 674,
+  "BosskWalkGun": 679,
+  "BousshMiniKit_PiJ": 723,
+  "JNT0T": 5361,
+  "BoxPlatformFrce": 730,
+  "BoxPlatformShot": 736,
+  "BridgeBrkRpr": 751,
+  "BuildableCouchBrJ": 782,
+  "BuildableElevatoJ": 803,
+  "BuildableGrappleJ": 821,
+  "BuildableLongTabJ": 829,
+  "BuildableSkeletoJ": 839,
+  "BuildableSnackMaJ": 849,
+  "BuildableStepBrkJ": 859,
+  "BuildLgoManSkeleJ": 867,
+  "C3POPartsBrkIdleJ": 917,
+  "C3POPartsUse": 923,
+  "CantinaTanksForcJ": 1001,
+  "CCCenterpieceForJ": 1271,
+  "CCEForceDoorForcJ": 1306,
+  "JNT0hQ": 1331,
+  "CCForcePlatformBJ": 1341,
+  "CCTableBrkIdle2": 1392,
+  "CCTableBrkRpr": 1394,
+  "CCTableIdle": 923,
+  "JNT0X": 4738,
+  "ChewbaccaGunOut": 489,
+  "ChewbaccaIdle": 1460,
+  "ChewbaccaShoot": 1468,
+  "ChewbaccaWalk": 3206,
+  "ChewbaccaWalkGunJ": 3206,
+  "ChewRunGun": 1466,
+  "DengarMiniKit_PiJ": 1785,
+  "DispenserRepair": 1834,
+  "DroidDetectorBrkJ": 1858,
+  "DSTurretBrkRpr": 1925,
+  "EBTripWireBaseBrJ": 2019,
+  "EFMiniCatwalkFrcJ": 2306,
+  "EmperorGuardAttaJ": 2093,
+  "EmperorGuardRun": 3199,
+  "EmperorGuardWalkJ": 3206,
+  "EmperorHoverLighJ": 2125,
+  "EmperorUseLightnJ": 2125,
+  "ExpOrangeMed": 2218,
+  "ExpPurpleMed": 2218,
+  "FlowerFrce": 2281,
+  "ForceableCatwalkJ": 2306,
+  "ForceableGraveDoJ": 2313,
+  "GamGuardAttack1": 2395,
+  "GamGuardAttack3": 2401,
+  "GamGuardRun": 2410,
+  "JNT0L": 5428,
+  "GAnakinMiniKit_PJ": 2450,
+  "GObiWanMiniKit_PJ": 2513,
+  "GreedoLook": 2528,
+  "HanCarboniteHop": 2557,
+  "HanCarboniteJumpJ": 2565,
+  "HanRunGun": 3199,
+  "HanShootGun": 2599,
+  "HanSitShoot": 2601,
+  "HanWalkGun": 3206,
+  "HothBuildableLevJ": 2690,
+  "HothConsoleBrkReJ": 2705,
+  "HothForceableBarJ": 2769,
+  "IceCollapseFall": 2844,
+  "IG88JumpLand": 2876,
+  "IG88JumpUp": 2878,
+  "IG88Melee1": 2881,
+  "IG88Melee2": 2884,
+  "IG88MiniKit_PiecJ": 2917,
+  "IG88ShootGun": 2926,
+  "IG88TurboShootGuJ": 2930,
+  "JabbaLaugh": 2956,
+  "JabbaSleepIdle": 2966,
+  "JailLeverBrkRpr": 3007,
+  "JangoFettGunIn": 3014,
+  "JangoFettGunOut": 3016,
+  "JangoFettMiniKitJ": 3055,
+  "JangoFettShootGuJ": 3061,
+  "JediBackflipUp": 3078,
+  "JNT0d": 5436,
+  "JediBlock2In": 3088,
+  "JediBlock4In": 3098,
+  "JediBlock5In": 3103,
+  "JediBlock6In": 3108,
+  "JediClashIn": 3113,
+  "JediDJump": 3123,
+  "JediDJumpAttIn": 3129,
+  "JediDJumpAttLandJ": 3132,
+  "JediJumpAttIn": 3151,
+  "JediJumpAttLand": 3154,
+  "JediJumpLand": 3161,
+  "JediJumpUp": 3164,
+  "JediLSAttack1": 3170,
+  "JediLSAttack2": 3173,
+  "JediLSAttack3": 3176,
+  "JediLSAttack4": 3179,
+  "JediLSAttack6": 3185,
+  "JediLSAway": 3188,
+  "JediLSOut": 3194,
+  "JediRun": 3199,
+  "JediRunSaber": 3199,
+  "JediWalkSaber": 3206,
+  "JPBuildablePushBJ": 3234,
+  "JPYellowPushBlocJ": 3342,
+  "Legal2": 3414,
+  "Legal3": 3414,
+  "LeiaDance": 3481,
+  "LeiaMelee1": 3506,
+  "LeiaMelee2": 3509,
+  "LeiaRun": 3199,
+  "LeiaRunGun": 3199,
+  "LeiaRunPistol": 3199,
+  "LeiaSlaveDance": 3522,
+  "LeiaWalk": 3206,
+  "LSJediDJAttIn": 3129,
+  "LSJediDJAttLand": 3132,
+  "MEDarkForceDoorFJ": 3661,
+  "MedTankConsoleBrJ": 3686,
+  "MEPipesFrce": 3693,
+  "MilFalconBankL": 3703,
+  "MilFalconBankR": 3705,
+  "PDroidMove": 3834,
+  "PLandoMiniKit_PiJ": 3900,
+  "ProtonBomb": 3943,
+  "R2D2UseStun": 4027,
+  "R5D4SelfDestructJ": 4039,
+  "JNT0t5": 4052,
+  "RaiderPlatformLeJ": 4059,
+  "RaiderPlatformRiJ": 4064,
+  "JNT007": 4071,
+  "RprCnslBrkRpr": 4201,
+  "JNT0hG": 4218,
+  "SalaciousWheelBrJ": 4229,
+  "SlaveIBankL": 4339,
+  "SlaveIMiniKit_PiJ": 4376,
+  "SlaveIMove": 4382,
+  "SmallGunIn": 4410,
+  "SmallGunOut": 4412,
+  "SmallJumpLand": 4417,
+  "SmallJumpUp": 4419,
+  "SmallRun": 4425,
+  "SmallRunGun": 4425,
+  "SmallShootGun": 4428,
+  "SmallWalk": 4437,
+  "SmallWalkGun": 4437,
+  "SnowmanBrkRpr": 4456,
+  "SnowSpeederBankLJ": 4468,
+  "SnowSpeederBankRJ": 4470,
+  "SPDoorJam1BrkIdlJ": 4534,
+  "SPDoorJam1BrkRprJ": 4536,
+  "SPDoorJam1Shot": 4546,
+  "JNT00V": 4555,
+  "SPDoorJam2Shot": 4560,
+  "SpeederBikeBankLJ": 4563,
+  "SpeederBikeBankRJ": 4565,
+  "SpeederBikeMove": 4572,
+  "SPForceablePlatfJ": 4624,
+  "JNT0Do": 4631,
+  "SuperKit_Piece1": 4729,
+  "SuperKit_Piece10J": 4732,
+  "SuperKit_Piece11J": 4735,
+  "SuperKit_Piece13J": 4741,
+  "SuperKit_Piece14J": 4744,
+  "SuperKit_Piece15J": 4747,
+  "SuperKit_Piece2": 4753,
+  "SuperKit_Piece3": 4756,
+  "SuperKit_Piece4": 4759,
+  "SuperKit_Piece5": 4762,
+  "SuperKit_Piece6": 4765,
+  "SuperKit_Piece7": 4768,
+  "SuperKit_Piece8": 4771,
+  "SuspBlock1Use": 4780,
+  "SuspBlock2Use": 4787,
+  "SuspBlock3Use": 4794,
+  "SuspBlock4Use": 4801,
+  "T16BankL": 4818,
+  "T16BankR": 4820,
+  "T16Move": 4825,
+  "Table1Force": 4836,
+  "Table2BrkRepair": 4843,
+  "TieAdvMiniKit_PiJ": 4913,
+  "TieAdvSuperShotSJ": 4921,
+  "TieFighterFlipTuJ": 4933,
+  "TieIntMiniKit_PiJ": 5000,
+  "TurnstileBrkRpr": 5090,
+  "TuskenRaiderJumpJ": 5110,
+  "TuskenRaiderMeleJ": 5116,
+  "TuskenRaiderRun": 5122,
+  "TuskenRaiderRunGJ": 525,
+  "TuskenRaiderShooJ": 5125,
+  "TuskenRaiderWalkJ": 3206,
+  "WallCnslRpr": 5192,
+  "X34BankL": 5331,
+  "X34BankR": 5333,
+  "X34Idle": 5337,
+  "X34MiniKit_PieceJ": 5373,
+  "X34Move": 4572,
+  "XWingBankL": 5382,
+  "XWingBankR": 5384,
+  "XWingFlipTurn2": 5392,
+  "XWingMove": 5406,
+  "YodaBackflipUp": 5418,
+  "YodaBlock1": 5420,
+  "YodaBlock1In": 5420,
+  "YodaBlock2": 5428,
+  "YodaBlock3": 5436,
+  "YodaDJump": 5447,
+  "YodaDJumpAttackLJ": 5451,
+  "YodaJumpAttackLaJ": 5468,
+  "YodaJumpFall": 5471,
+  "YodaJumpUp": 5475,
+  "YodaLSAttack1": 5478,
+  "YodaLSAttack3": 5484,
+  "YodaRun": 5495,
+  "YodaSaberIn": 5498,
+  "YodaSaberOut": 5500,
+  "YWingBankL": 5507,
+  "YWingBankR": 5509,
+  "YWingFlipTurn1": 5511,
+  "YWingMove": 5521,
+  "ZuckussRun": 3199,
+  "ZuckussRunGun": 3199,
+  "ZuckussWalk": 3206,
+  "ZuckussWalkGun": 3206
+ },
+ "sounds_raised": {
+  "2": {
+   "tracks": [
+    730,
+    1306,
+    1331,
+    2281,
+    2769,
+    3661,
+    3693,
+    4052,
+    4064,
+    4617,
+    4624,
+    4631
+   ],
+   "wav": "out/snd/samples/sample_112.wav"
+  },
+  "3": {
+   "tracks": [
+    233,
+    240,
+    247,
+    256,
+    337,
+    453,
+    730,
+    751,
+    782,
+    792,
+    803,
+    821
+   ],
+   "wav": "out/snd/samples/sample_116.wav"
+  },
+  "20": {
+   "tracks": [
+    1460
+   ],
+   "wav": "out/snd/samples/sample_138.wav"
+  },
+  "27": {
+   "tracks": [
+    4218
+   ],
+   "wav": "out/snd/samples/sample_148.wav"
+  },
+  "30": {
+   "tracks": [
+    736,
+    2306
+   ],
+   "wav": "out/snd/samples/sample_151.wav"
+  },
+  "46": {
+   "tracks": [
+    133
+   ],
+   "wav": "out/snd/samples/sample_169.wav"
+  },
+  "47": {
+   "tracks": [
+    138,
+    154,
+    2218,
+    4039
+   ],
+   "wav": "out/snd/samples/sample_170.wav"
+  },
+  "48": {
+   "tracks": [
+    5,
+    8,
+    11,
+    14,
+    17,
+    20,
+    23,
+    26,
+    29,
+    32,
+    146,
+    180
+   ],
+   "wav": "out/snd/samples/sample_171.wav"
+  },
+  "68": {
+   "tracks": [
+    535
+   ],
+   "wav": "out/snd/samples/sample_191.wav"
+  },
+  "69": {
+   "tracks": [
+    515,
+    517
+   ],
+   "wav": "out/snd/samples/sample_192.wav"
+  },
+  "78": {
+   "tracks": [
+    502,
+    565,
+    2878,
+    3078,
+    3164,
+    4419,
+    5110,
+    5418,
+    5475
+   ],
+   "wav": "out/snd/samples/sample_205.wav"
+  },
+  "80": {
+   "tracks": [
+    563,
+    2557,
+    2876,
+    3076,
+    4417,
+    5108,
+    5473
+   ],
+   "wav": "out/snd/samples/sample_211.wav"
+  },
+  "81": {
+   "tracks": [
+    2401,
+    2565,
+    2568,
+    2881,
+    2884
+   ],
+   "wav": "out/snd/samples/sample_213.wav"
+  },
+  "83": {
+   "tracks": [
+    730
+   ],
+   "wav": "out/snd/samples/sample_215.wav"
+  },
+  "88": {
+   "tracks": [
+    254,
+    749,
+    780,
+    790,
+    801,
+    827,
+    837,
+    847,
+    857,
+    867,
+    923,
+    1001
+   ],
+   "wav": "out/snd/samples/sample_218.wav"
+  },
+  "93": {
+   "tracks": [
+    3414
+   ],
+   "wav": "out/snd/samples/sample_233.wav"
+  },
+  "102": {
+   "tracks": [
+    233,
+    240,
+    247,
+    256,
+    453,
+    751,
+    782,
+    792,
+    803,
+    821,
+    829,
+    839
+   ],
+   "wav": "out/snd/samples/sample_236.wav"
+  },
+  "117": {
+   "tracks": [
+    4028
+   ],
+   "wav": "out/snd/samples/sample_252.wav"
+  },
+  "123": {
+   "tracks": [
+    4039
+   ],
+   "wav": "out/snd/samples/sample_258.wav"
+  },
+  "132": {
+   "tracks": [
+    2881,
+    2884,
+    5070
+   ],
+   "wav": "out/snd/samples/sample_268.wav"
+  },
+  "135": {
+   "tracks": [
+    2844
+   ],
+   "wav": "out/snd/samples/sample_274.wav"
+  },
+  "138": {
+   "tracks": [
+    2313,
+    3129,
+    3154
+   ],
+   "wav": "out/snd/samples/sample_279.wav"
+  },
+  "139": {
+   "tracks": [
+    3132,
+    3154,
+    5468,
+    5495
+   ],
+   "wav": "out/snd/samples/sample_280.wav"
+  },
+  "141": {
+   "tracks": [
+    3176,
+    5484
+   ],
+   "wav": "out/snd/samples/sample_282.wav"
+  },
+  "144": {
+   "tracks": [
+    2313
+   ],
+   "wav": "out/snd/samples/sample_285.wav"
+  },
+  "145": {
+   "tracks": [
+    3083,
+    3088,
+    3093,
+    3098,
+    3103,
+    3108,
+    3113,
+    3129,
+    3151,
+    3170,
+    3173,
+    3176
+   ],
+   "wav": "out/snd/samples/sample_286.wav"
+  },
+  "146": {
+   "tracks": [
+    3182,
+    3185
+   ],
+   "wav": "out/snd/samples/sample_289.wav"
+  },
+  "156": {
+   "tracks": [
+    3123,
+    5447,
+    5468
+   ],
+   "wav": "out/snd/samples/sample_299.wav"
+  },
+  "157": {
+   "tracks": [
+    2087,
+    2090,
+    2093,
+    2395,
+    2398,
+    2401
+   ],
+   "wav": "out/snd/samples/sample_301.wav"
+  },
+  "167": {
+   "tracks": [
+    233,
+    247,
+    256,
+    337,
+    453,
+    751,
+    782,
+    792,
+    803,
+    821,
+    829,
+    839
+   ],
+   "wav": "out/snd/samples/sample_314.wav"
+  },
+  "196": {
+   "tracks": [
+    2956
+   ],
+   "wav": "out/snd/samples/sample_198.wav"
+  },
+  "197": {
+   "tracks": [
+    2966
+   ],
+   "wav": "out/snd/samples/sample_199.wav"
+  }
+ }
+}

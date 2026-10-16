@@ -1,0 +1,36 @@
+# Your game, BIOS and saves - never committed
+rom/
+*.nds
+*.srl
+*.dsi
+port/bios/
+port/saves/*
+!port/saves/README.md
+!port/saves/unlocked-template.sav
+port/settings*.json
+port/settings.ini
+
+# The framework checkout (tools/fetch_ndsrecomp.sh), or a pointer to one
+third_party/
+.ndsrecomp_root
+
+# Everything the build extracts or generates from your ROM
+out/
+
+# Build products, packages and logs
+build/
+dist/
+*.log
+*.dmp
+__pycache__/
+*.py[cod]
+node_modules/
+.wrangler/
+services/master-server-selfhost/dist/
+services/master-server-selfhost/*.sqlite3
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

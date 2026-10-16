@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "purpose": "Audio bindings for the Godot port. Module-to-cue identification is UNRESOLVED.",
+  "identification_status": "PARTIALLY SUPERSEDED. The trigger side IS in the ARM9 (see ROM_TRIGGER_PATH) and sound state IS present in the existing RAM recordings. What remains unresolved is which field carries the sound id and the module-to-cue naming for music.",
+  "how_to_resolve": "Play modules in-game with the module browser and compare by ear against an emulator capture of a real match, or trace the ARM7 audio command path.",
+  "music_modules": [
+    {
+      "module": 0,
+      "wav": "out/snd/music/module_00.wav",
+      "seconds": 69.7,
+      "channels": 2,
+      "pattern_count": 11,
+      "order_count": 12,
+      "sample_count": 22
+    },
+    {
+      "module": 1,
+      "wav": "out/snd/music/module_01.wav",
+      "seconds": 90.52,
+      "channels": 2,
+      "pattern_count": 9,
+      "order_count": 12,
+      "sample_count": 12
+    },
+    {
+      "module": 2,
+      "wav": "out/snd/music/module_02.wav",
+      "seconds": 36.72,
+      "channels": 2,
+      "pattern_count": 6,
+      "order_count": 7,
+      "sample_count": 27
+    },
+    {
+      "module": 3,
+      "wav": "out/snd/music/module_03.wav",
+      "seconds": 34.09,
+      "channels": 2,
+      "pattern_count": 4,
+      "order_count": 5,
+      "sample_count": 22
+    },
+    {
+      "module": 4,
+      "wav": "out/snd/music/module_04.wav",
+      "seconds": 25.03,
+      "channels": 2,
+      "pattern_count": 3,
+      "order_count": 4,
+      "sample_count": 19
+    },
+    {
+      "module": 5,
+      "wav": "out/snd/music/module_05.wav",
+      "seconds": 30.19,
+      "channels": 2,
+      "pattern_count": 4,
+      "order_count": 5,
+      "sample_count": 22
+    },
+    {
+      "module": 6,
+      "wav": "out/snd/music/module_06.wav",
+      "seconds": 49.92,
+      "channels": 2,
+      "pattern_count": 7,
+      "order_count": 11,
+      "sample_count": 22
+    },
+    {
+      "module": 7,
+      "wav": "out/snd/music/module_07.wav",
+      "seconds": 30.32,
+      "channels": 2,
+      "pattern_count": 8,
+      "order_count": 9,
+      "sample_count": 11
+    },
+    {
+      "module": 8,
+      "wav": "out/snd/music/module_08.wav",
+      "seconds": 26.64,
+      "channels": 2,
+      "pattern_count": 5,
+      "order_count": 6,
+      "sample_count": 25
+    },
+    {
+      "module": 9,
+      "wav": "out/snd/music/module_09.wav",
+      "seconds": 32.47,
+      "channels": 2,
+      "pattern_count": 7,
+      "order_count": 10,
+      "sample_count": 40
+    },
+    {
+      "module": 10,
+      "wav": "out/snd/music/module_10.wav",
+      "seconds": 23.03,
+      "channels": 2,
+      "pattern_count": 5,
+      "order_count": 6,
+      "sample_count": 25
+    },
+    {
+      "module": 11,
+      "wav": "out/snd/music/module_11.wav",
+      "seconds": 6.86,
+      "channels": 2,
+      "pattern_count": 1,
+      "order_count": 2,
+      "sample_count": 17
+    },
+    {
+      "module": 12,
+      "wav": "out/snd/music/module_12.wav",
+      "seconds": 15.98,
+      "channels": 2,
+      "pattern_count": 3,
+      "order_count": 4,
+      "sample_count": 21
+    },
+    {
+      "module": 13,
+      "wav": "out/snd/music/module_13.wav",
+      "seconds": 21.84,
+      "channels": 2,
+      "pattern_count": 8,
+      "order_count": 11,
+      "sample_count": 22
+    },
+    {
+      "module": 14,
+      "wav": "out/snd/music/module_14.wav",
+      "seconds": 29.79,
+      "channels": 2,
+      "pattern_count": 7,
+      "order_count": 11,
+      "sample_count": 18
+    },
+    {
+      "module": 15,
+      "wav": "out/snd/music/module_15.wav",
+      "seconds": 55.25,
+      "channels": 2,
+      "pattern_count": 16,
+      "order_count": 17,
+      "sample_count": 19
+    },
+    {
+      "module": 16,
+      "wav": "out/snd/music/module_16.wav",
+      "seconds": 10.4,
+      "channels": 2,
+      "pattern_count": 2,
+      "order_count": 3,
+      "sample_count": 15
+    },
+    {
+      "module": 17,
+      "wav": "out/snd/music/module_17.wav",
+      "seconds": 111.82,
+      "channels": 2,
+      "pattern_count": 24,
+      "order_count": 26,
+      "sample_count": 22
+    },
+    {
+      "module": 18,
+      "wav": "out/snd/music/module_18.wav",
+      "seconds": 54.98,
+      "channels": 2,
+      "pattern_count": 16,
+      "order_count": 17,
+      "sample_count": 33
+    },
+    {
+      "module": 19,
+      "wav": "out/snd/music/module_19.wav",
+      "seconds": 10.83,
+      "channels": 2,
+      "pattern_count": 16,
+      "order_count": 5,
+      "sample_count": 19
+    },
+    {
+      "module": 20,
+      "wav": "out/snd/music/module_20.wav",
+      "seconds": 74.37,
+      "channels": 2,
+      "pattern_count": 19,
+      "order_count": 19,
+      "sample_count": 30
+    },
+    {
+      "module": 21,
+      "wav": "out/snd/music/module_21.wav",
+      "seconds": 6.57,
+      "channels": 2,
+      "pattern_count": 6,
+      "order_count": 3,
+      "sample_count": 24
+    },
+    {
+      "module": 22,
+      "wav": "out/snd/music/module_22.wav",
+      "seconds": 29.21,
+      "channels": 2,
+      "pattern_count": 5,
+      "order_count": 5,
+      "sample_count": 31
+    },
+    {
+      "module": 23,
+      "wav": "out/snd/music/module_23.wav",
+      "seconds": 23.76,
+      "channels": 2,
+      "pattern_count": 4,
+      "order_count": 5,
+      "sample_count": 23
+    },
+    {
+      "module": 24,
+      "wav": "out/snd/music/module_24.wav",
+      "seconds": 12.66,
+      "channels": 2,
+      "pattern_count": 2,
+      "order_count": 3,
+      "sample_count": 16
+    },
+    {
+      "module": 25,
+      "wav": "out/snd/music/module_25.wav",
+      "seconds": 55.83,
+      "channels": 2,
+      "pattern_count": 12,
+      "order_count": 19,
+      "sample_count": 34
+    },
+    {
+      "module": 26,
+      "wav": "out/snd/music/module_26.wav",
+      "seconds": 31.39,
+      "channels": 2,
+      "pattern_count": 6,
+      "order_count": 7,
+      "sample_count": 24
+    },
+    {
+      "module": 27,
+      "wav": "out/snd/music/module_27.wav",
+      "seconds": 73.93,
+      "channels": 2,
+      "pattern_count": 19,
+      "order_count": 19,
+      "sample_count": 30
+    },
+    {
+      "module": 28,
+      "wav": "out/snd/music/module_28.wav",
+      "seconds": 29.98,
+      "channels": 2,
+      "pattern_count": 8,
+      "order_count": 9,
+      "sample_count": 11
+    }
+  ],
+  "sfx": {
+    "sample_count": 344,
+    "wav_dir": "out/snd/samples",
+    "event_map": {
+      "move_loop": "sample_013.wav",
+      "move_alt": "sample_016.wav",
+      "move_alt2": "sample_007.wav"
+    },
+    "event_map_status": "THREE BINDINGS RECOVERED, all movement. Derived from the windowed combat capture (out/work/gpudump_snd3) where each manifest window pins exactly one button, and resolved through the bank by id -> record -> instrument -> sample map -> sample. No longer guesswork.",
+    "event_map_provenance": {
+      "move_loop": {
+        "runtime_id": "0x00E2",
+        "bank_record": 226,
+        "instrument": 197,
+        "sample_map": 12,
+        "sample": 13,
+        "evidence": "10 plays, 10/10 inside RIGHT-held windows, never during an idle window"
+      },
+      "move_alt": {
+        "runtime_id": "0x0153",
+        "bank_record": 339,
+        "instrument": 310,
+        "sample_map": 15,
+        "sample": 16,
+        "evidence": "8 plays, 7/8 inside RIGHT-held windows"
+      },
+      "move_alt2": {
+        "runtime_id": "0x0137",
+        "bank_record": 311,
+        "instrument": 282,
+        "sample_map": 6,
+        "sample": 7,
+        "evidence": "4 plays, 3/4 inside LEFT-held windows"
+      }
+    },
+    "unverified": "The retrigger CADENCE. Ten plays in a 45-frame window is one per ~4.5 frames, too fast for footfalls, so these are treated as a sustained movement sound rather than a per-step one-shot. A slower isolated-walk capture would settle it.",
+    "sample_map_warning": "sample_map_id is an index into mapping_7 (43 records of 120 bytes, one byte per note), NOT a sample number. For instrument 197 it is 12 and the record reads 13 throughout, so the sample is 13. Reading the id directly would pick the wrong file every time the two differ."
+  },
+  "ROM_TRIGGER_PATH": "0x020D0700 issues the per-channel play command: r0 is a 16-bit channel mask and r1 the bank record index. Its two callers are 0x020B82A8 (the only one seen firing) and 0x020BB014. It sits one level ABOVE 0x020D07FC, which is the register-write dispatcher every earlier trace was watching and which carries no trigger information.",
+  "sound_api": {
+    "status": "LOCATED. The enqueue function, its signature and the record layout are decoded. Individual sound-to-action bindings are NOT yet established.",
+    "evidence_tier": "BOTH - a write watchpoint on the voice pool named the writers, and the routine is disassembled in the ROM.",
+    "found_by": "Watchpoint on the first voice record at 0x02115AE0 during a driven match. 2,560 writes came from a tight cluster at 0x020D08xx-0x020D0Bxx, which disassembles into a single enqueue routine.",
+    "enqueue": {
+      "address": "0x020D07FC",
+      "prologue": "push {r3,r4,r5,r6,r7,lr}; r7=r0, r6=r1, r5=r2, r4=r3",
+      "allocator": "0x020D0A5C - returns a free record in r0, or 0 when the pool is exhausted",
+      "start": "0x020D0AE4 - called once the record is filled",
+      "signature": {
+        "r0": "command or category code, stored to record +0x04",
+        "r1": "parameter, stored to +0x08",
+        "r2": "parameter, stored to +0x0C",
+        "r3": "parameter, stored to +0x10",
+        "stack +0x18": "fifth parameter, stored to +0x14"
+      },
+      "failure_path": "cmp r0,#0 then popeq - if the pool is full the call returns silently, which is the concurrency cap already ported from 0x020D0B4C."
+    },
+    "record_layout": {
+      "size": 24,
+      "fields": {
+        "+0x00": "free-list link, cleared on release at 0x020D0B0C",
+        "+0x04": "r0 command/category",
+        "+0x08": "r1",
+        "+0x0C": "r2",
+        "+0x10": "r3",
+        "+0x14": "fifth argument"
+      },
+      "confirms": "The 256 x 24-byte pool at 0x02115AE0 recorded earlier from RAM structure alone is now confirmed from the code that fills it."
+    },
+    "wrappers_seen": {
+      "0x020D07C0": "calls the enqueue with r0 = 0x17",
+      "0x020D07D4": "calls the enqueue with r0 = 0x19",
+      "reading": "Thin wrappers that pin the command code, so r0 is a category selector and the distinct wrappers correspond to distinct kinds of sound request."
+    },
+    "next_step": "Trace 0x020D07FC as a named event so r0-r3 are logged per call, then run the driven ability sweep - whose button windows are already in a manifest - and correlate. That binds a sound command to a specific action, which is the one thing audio parity has always lacked. The machinery for both halves already exists; this is a run, not new code.",
+    "NOT_YET_KNOWN": [
+      "Which command code corresponds to which sound.",
+      "Whether r1-r3 carry a sample id, a position, a volume or a voice priority.",
+      "Any mapping from a sound to a game action."
+    ],
+    "command_codes_observed": {
+      "capture": "100,664 calls to 0x020D07FC across one driven run, frames 24-6560.",
+      "distribution": {
+        "0x14": 44302,
+        "0x15": 44301,
+        "0x13": 3209,
+        "0x0C": 3124,
+        "0x0E": 3122,
+        "0x0D": 2600,
+        "0x17": 2,
+        "0x19": 2,
+        "0x1A": 2
+      },
+      "reading": "Three tiers. 0x14 and 0x15 fire about seven times a frame each and in near-equal numbers - per-frame mixer or stream maintenance, not discrete sounds. 0x0C, 0x0D, 0x0E and 0x13 sit in the low thousands. 0x17, 0x19 and 0x1A fire twice each in a whole run, and 0x17 and 0x19 are exactly the codes the two thin wrappers at 0x020D07C0 and 0x020D07D4 pin - so those are discrete, deliberate sound requests.",
+      "consequence_for_the_port": "A faithful audio layer must not treat every call to this routine as a sound. The overwhelming majority are housekeeping. Only the rare codes are events worth binding."
+    },
+    "binding_run_COMPLETED_NEGATIVE": {
+      "run": "Full-length driven run over the whole ability sweep, frames 6400-10480. Input replayed at 100.0% exact across 4,080 frames; alignment offset -3, unambiguous.",
+      "result": "NEGATIVE. None of the traced sound commands are action-bound.",
+      "what_the_numbers_show": "Codes 0x0C, 0x0D, 0x0E and 0x13 fire in EVERY window, in counts proportional to window LENGTH rather than to what button was held. The 45-frame ability probes each produced roughly 20-50 calls while the 300-frame speed windows produced 160-250 - a flat rate against time. They are periodic, not events.",
+      "RETRACTION": "The previous entry read 0x17, 0x19 and 0x1A as discrete deliberate sound requests because they fired only twice in a short run. Across the full sweep they appear in NO ability window at all. Rarity alone was not evidence of being an action sound, and that reading is withdrawn.",
+      "conclusion": "0x020D07FC is a low-level voice/mixer API. Per-action sound triggers live at a higher level that calls into it, so binding a sound to a jump or a blaster shot cannot be done at this layer no matter how well the run is aligned.",
+      "next_step": "Find the CALLERS of 0x020D07FC that fire only on discrete events - trace the routine and log lr rather than r0, so the call site is captured instead of the command code. The caller is the action-bound layer.",
+      "what_survives": "The function signature, the 24-byte record layout, the allocator and start routines, and the fact that the overwhelming majority of calls are housekeeping. All still Tier BOTH."
+    },
+    "caller_trace_ALSO_NEGATIVE": {
+      "method": "Re-read the same capture using the lr column, which the event log already records, so no new run was needed. Call sites were bucketed into ability-probe frames (810), top-speed frames (1440) and everything else.",
+      "result": "NEGATIVE, and more conclusive than the command-code test.",
+      "call_sites": 9,
+      "evidence": "The six busy call sites fire at 10.06 per frame during ability probes against 8.08 per frame during plain movement - the same order, with the small difference explained by more actors being animated. Not one site is gated on an action. The three rare sites (0x020D07D0, 0x020D07F8, 0x020D06FC) fired exactly twice each and ALWAYS outside the probe windows; those two are the return addresses of the r0=0x17 and r0=0x19 wrappers, so they are one-off events near match start, not per-action sounds.",
+      "conclusion": "Action sound effects do not pass through 0x020D07FC at all. The whole subtree is periodic mixer maintenance. Binding a sound to a jump or a blaster shot needs a different entry point entirely - this one is ruled out at both the command-code and the call-site level.",
+      "next_step": "Stop working downward from the voice pool. Work forward from a known action instead: watchpoint the ability handler 0x02046D84 (jump, confirmed) and follow what it calls, or diff the ARM9 call graph for routines reachable from the ability handlers that also touch the sound subsystem.",
+      "cost_saved": "Two full experiment designs are now excluded, at both layers, rather than being retried."
+    }
+  }
+}

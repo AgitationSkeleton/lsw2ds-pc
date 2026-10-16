@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "coordinate_scale": "signed level units; Godot arena transform calibration pending",
+  "jabbas_tower": {
+    "carbonite_spawn": {"runtime_character_id": 23, "position": [0, 44, 0], "source": "level handler 2"},
+    "team_capture_corners": [
+      {"team": 0, "position": [-116, 196, -116], "extent": [20, 25, 20]},
+      {"team": 1, "position": [117, 197, -115], "extent": [20, 25, 20]},
+      {"team": 2, "position": [115, 197, 118], "extent": [20, 25, 20]},
+      {"team": 3, "position": [-119, 197, 117], "extent": [20, 25, 20]}
+    ],
+    "type5_timed_actor_volume": {"position": [0, -55, 0], "extent_or_config": [9000, 15, 9000, 0], "configuration": [2, 1, 0, 0, 2]}
+  },
+  "mos_eisley_streets": {
+    "ctf_clone_authored": {
+      "status": "project addition; no handler-18 volumes or Carbonite spawn exist in vanilla Mos data",
+      "carbonite_spawn": {"position": [157, 5, -28], "source": "global locator 1, generic selector 4"},
+      "team_capture_corners": [
+        {"team": 0, "position": [145, 17, -183], "extent": [16, 12, 16], "source": "global locator 4, selector 0"},
+        {"team": 1, "position": [43, 5, 26], "extent": [16, 12, 16], "source": "global locator 2, selector 1"},
+        {"team": 2, "position": [2, 0, 0], "extent": [16, 12, 16], "source": "global locator 0, selector 2"},
+        {"team": 3, "position": [144, 0, 183], "extent": [16, 12, 16], "source": "global locator 3, selector 3"}
+      ]
+    },
+    "type5_timed_actor_volume": {"position": [-12, -20, 66], "extent_or_config": [80, 10, 100, 0], "configuration": [2, 1, 0, 0, 2]},
+    "mechanism_command_graph": {
+      "open_or_start": {"command": 150, "virtual_slot": "0x40", "targets": [[0, 7], [0, 8], [2, 1], [2, 2], [0, 9]]},
+      "close_or_reverse": {"command": 151, "virtual_slot": "0x44", "targets": [[2, 2], [2, 1]]},
+      "third_transition": {"command": 163, "virtual_slot": "0x48", "targets": [[0, 7], [0, 8], [2, 1], [2, 2], [0, 9], [0, 20]]}
+    }
+  },
+  "asset_families": {
+    "turret": [332, 333, 334, 336, 339, 340, 341, 342, 343],
+    "bridge": [747, 748, 750, 753, 755],
+    "buildable_grapple": [818, 819, 820, 823],
+    "grapple_point": [2522, 2523, 2524, 2525],
+    "lever_candidate": [1312, 1313, 1314, 1315, 1316, 1317, 1318, 1319, 1320],
+    "carbonite": [2551, 2552, 2553, 2559],
+    "medieval_weapon": [1494],
+    "old_west_weapon_and_hat": [1483, 1555]
+  },
+  "animation_frame_counts": {
+    "turret": {"broken_idle_1": 1, "broken_idle_2": 29, "repair_or_build": 81},
+    "buildable_grapple": {"idle": 1, "transition_a": 31, "transition_b": 47},
+    "bridge": {"broken_idle_1": 1, "broken_idle_2": 31, "repair": 108, "idle": 1},
+    "mos_barge_elevator_dood": {"state_a": 2, "transition": 30, "state_b": 7}
+  },
+  "evidence_note": "Capture corners and Han spawn are directly decoded. Handler 9 is a timed actor-affecting type-5 volume, not a shared CTF objective. Mos mechanism command virtual slots are exact, while command-to-animation direction remains open. Grapple placement records are not yet identified."
+}

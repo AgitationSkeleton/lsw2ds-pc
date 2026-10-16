@@ -1,0 +1,14 @@
+config_version=5
+
+[application]
+config/name="LSW2 DS Runtime Composite Preview"
+run/main_scene="res://preview.tscn"
+
+[display]
+window/size/viewport_width=960
+window/size/viewport_height=720
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.035, 0.045, 0.065, 1)

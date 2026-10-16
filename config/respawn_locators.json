@@ -1,0 +1,193 @@
+{
+ "note": "Respawn locators, read from recorded RAM. Not present in the ARM9 image - they are built at level load.",
+ "picker": {
+  "address": "0x0206704C",
+  "count": "[manager+0xC16]",
+  "array": "[manager], stride 4, an array of POINTERS",
+  "record": "three s16 in WHOLE WORLD UNITS, shifted <<12 into 20.12",
+  "selection": "uniform over the whole list via 0x02062A7C(0, count-1)",
+  "gate": "0x0203814C - only game mode 0x11 relocates on respawn",
+  "chain": "[[0x0210930C+0x68]+0x38C]"
+ },
+ "source": "out/work/archive/gpudump_3matches/inst0",
+ "arenas": {
+  "cantina_arena_lobby": {
+   "count": 4,
+   "frames": [
+    6000,
+    34500
+   ],
+   "locators": [
+    [
+     25,
+     8,
+     -3
+    ],
+    [
+     24,
+     8,
+     4
+    ],
+    [
+     28,
+     6,
+     -8
+    ],
+    [
+     27,
+     5,
+     10
+    ]
+   ]
+  },
+  "mos_eisley_streets": {
+   "count": 8,
+   "frames": [
+    16500,
+    33000
+   ],
+   "locators": [
+    [
+     2,
+     0,
+     0
+    ],
+    [
+     157,
+     5,
+     -28
+    ],
+    [
+     43,
+     5,
+     26
+    ],
+    [
+     144,
+     0,
+     183
+    ],
+    [
+     145,
+     17,
+     -183
+    ],
+    [
+     46,
+     37,
+     -167
+    ],
+    [
+     61,
+     33,
+     149
+    ],
+    [
+     24,
+     47,
+     -166
+    ]
+   ]
+  },
+  "jabbas_tower": {
+   "count": 15,
+   "frames": [
+    36000,
+    63000
+   ],
+   "locators": [
+    [
+     -94,
+     199,
+     -93
+    ],
+    [
+     96,
+     195,
+     -98
+    ],
+    [
+     97,
+     200,
+     96
+    ],
+    [
+     -98,
+     197,
+     97
+    ],
+    [
+     0,
+     136,
+     0
+    ],
+    [
+     126,
+     72,
+     0
+    ],
+    [
+     -126,
+     72,
+     0
+    ],
+    [
+     0,
+     72,
+     -126
+    ],
+    [
+     0,
+     72,
+     126
+    ],
+    [
+     -80,
+     110,
+     0
+    ],
+    [
+     83,
+     109,
+     2
+    ],
+    [
+     62,
+     135,
+     0
+    ],
+    [
+     -63,
+     135,
+     0
+    ],
+    [
+     38,
+     193,
+     0
+    ],
+    [
+     -36,
+     193,
+     -1
+    ]
+   ]
+  }
+ },
+ "other_lists_seen": [
+  {
+   "count": 16,
+   "frames": [
+    3000,
+    3000
+   ]
+  },
+  {
+   "count": 12,
+   "frames": [
+    4500,
+    4500
+   ]
+  }
+ ]
+}

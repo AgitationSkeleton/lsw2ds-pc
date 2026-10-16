@@ -1,0 +1,221 @@
+--- a/runner/src/main.cpp	2026-08-26 06:06:10.835144900 -0700
++++ b/runner/src/main.cpp	2026-08-26 06:06:10.880831200 -0700
+@@ -16,6 +16,13 @@
+ #include <string>
+ #include <vector>
+ 
++// LSW2 PORT PATCH: SDL_GetBasePath/SDL_setenv for the no-arguments path
++// below. SDL_MAIN_HANDLED first, because SDL.h otherwise redefines main
++// to SDL_main and the linker then goes looking for a WinMain this
++// program does not have.
++#define SDL_MAIN_HANDLED
++#include <SDL.h>
++
+ #include "state.h"
+ #include "scheduler.h"
+ #include "direct_boot.h"
+@@ -40,6 +47,16 @@
+ #include "profile_report.h"
+ #include "sha1.h"
+ #include "title_banks.h"
++
++// LSW2 PORT PATCH: the port's dispatch-override hook, called before the title
++// banks are registered. Defined weakly here so the runner links standalone; the
++// port's own definition wins when it is in the link.
++// extern "C" on BOTH, or the weak definition mangles as C++ and the two are
++// different symbols - the declaration would stay unresolved and the port's
++// definition would never be the one called.
++extern "C" void lsw2_register_dispatch_overrides(const char* rom_sha1);
++extern "C" __attribute__((weak))
++void lsw2_register_dispatch_overrides(const char*) {}
+ #include "coverage_manifest.h"
+ #include "title_patches.h"
+ #if defined(NDS_HAVE_COMPUTE_RENDERER)
+@@ -317,6 +334,166 @@
+     }
+     std::atexit(nds_net_platform_shutdown);
+ 
++    // LSW2 PORT PATCH: publish WHICH BUILD THIS IS, for the whole process.
++    //
++    // lsw2.exe and lsw2_bountyhunter.exe are one binary under two names. The
++    // name already chose the save file; the Bounty Hunter build needs the
++    // same distinction in the shell - a hidden cheats tab, a restricted
++    // roster, a different pause menu - and the shell has no argv.
++    //
++    // This is computed here, unconditionally, rather than inside the
++    // no-arguments path below: launch.sh --mode bountyhunter passes arguments,
++    // so a detection that only ran for a bare double-click would report the
++    // wrong build for the launcher that names the mode explicitly.
++    //
++    // _putenv_s and NOT SDL_setenv. On Windows those write two different
++    // environments - SDL_setenv goes to the Win32 block and std::getenv reads
++    // the CRT's copy - and this port has already lost an afternoon to that
++    // exact mismatch. Writer and reader are both CRT, in one executable.
++    // THE BASENAME, not the whole path. Matching anywhere in argv[0] meant a
++    // BASELINE install under any directory containing "bountyhunter" would run
++    // as the fork - precisely the accident the rule above warns against, since
++    // the fork grants unlocks and restricts the roster.
++    const std::string lsw2_argv0(argv[0] ? argv[0] : "");
++    const size_t lsw2_slash = lsw2_argv0.find_last_of("/\\");
++    const std::string lsw2_exe_name =
++        lsw2_slash == std::string::npos ? lsw2_argv0
++                                        : lsw2_argv0.substr(lsw2_slash + 1);
++    const bool lsw2_fork_build =
++        lsw2_exe_name.find("bountyhunter") != std::string::npos;
++#ifdef _WIN32
++    _putenv_s("LSW2_FORK", lsw2_fork_build ? "1" : "0");
++#else
++    setenv("LSW2_FORK", lsw2_fork_build ? "1" : "0", 1);
++#endif
++
++    // LSW2 PORT PATCH: make the executable runnable on its own.
++    //
++    // Without arguments this printed usage and exited, which as a double-click
++    // is a console window that flashes and vanishes. The port shipped a batch
++    // file to supply the arguments, and that worked, but "run the exe" is what
++    // people do and it should not need a wrapper.
++    //
++    // The layout assumed is the one the port ships: the executable beside
++    // ../rom/ and ../port/. Anything explicit on the command line is untouched
++    // - this only fills in a completely empty argument list.
++    //
++    // WHICH BUILD THIS IS comes from the executable's own name. A copy called
++    // lsw2_bountyhunter.exe uses the fork's save; anything else uses the
++    // baseline's. Keying off the name rather than a separate binary keeps the
++    // two from drifting apart while they are still the same code.
++    std::vector<std::string> synthesized;
++    std::vector<char*> synthesized_argv;
++    if (argc <= 1) {
++        namespace fs = std::filesystem;
++        std::error_code ec;
++        fs::path exe;
++        if (char* base = SDL_GetBasePath()) {
++            exe = fs::path(base);
++            SDL_free(base);
++        }
++        if (exe.empty()) exe = fs::path(argv[0]).parent_path();
++        // SDL_GetBasePath ends in a separator, so the path's final component is
++        // empty and parent_path() would strip that rather than the directory -
++        // leaving `root` pointing at the executable's own folder. Drop the
++        // empty component first.
++        if (exe.filename().empty()) exe = exe.parent_path();
++        const fs::path root = exe.parent_path();
++        const fs::path port = root / "port";
++
++        // The ROM is the one thing the player has to supply, so its absence
++        // gets a real explanation rather than a usage dump - in a window, with
++        // a file picker, because a double-click has no console to read
++        // (lsw2_first_run.cpp). The dump is verified against game.toml before
++        // anything boots, and copied into rom/ so it is asked for once.
++        const fs::path rom = lsw2_first_run_rom(
++            root / "rom", lsw2_expected_rom_sha1(port / "game.toml"));
++        if (rom.empty()) {
++            std::fprintf(stderr,
++                "No ROM found in %s\n\n"
++                "Put a LEGO Star Wars II: The Original Trilogy (USA) cartridge\n"
++                "dump there and run this again. That is the only thing this\n"
++                "port needs.\n",
++                (root / "rom").string().c_str());
++            return 1;
++        }
++
++        const char* save_name =
++            lsw2_fork_build ? "bountyhunter.sav" : "baseline.sav";
++        fs::create_directories(port / "saves", ec);
++
++        // LSW2 PORT PATCH: SEED THE FORK'S SAVE (everything unlocked).
++        //
++        // The fork is meant to start with every character, customisation part,
++        // weapon and Extra unlocked. port/launch.sh already did this by copying
++        // an unlocked template, but lsw2_bountyhunter.exe has to work on its
++        // own - and a bare double-click never went through launch.sh, so the
++        // most common way to start it was the one way that started locked.
++        // This closes that.
++        //
++        // WHY A TEMPLATE RATHER THAN WRITING FLAGS. The unlock state's location
++        // in RAM is still not established (two earlier readings of it were
++        // wrong). The template is a real save the game itself produced after
++        // the four unlock codes were entered, so it is ROM-derived evidence
++        // rather than a guess: save flags that unlock every character.
++        //
++        // ONLY WHEN THE SAVE DOES NOT EXIST. Copying over a live save would
++        // destroy the player's customisation and settings, which must
++        // persist.
++        if (lsw2_fork_build) {
++            const fs::path save = port / "saves" / save_name;
++            const fs::path tmpl = port / "saves" / "unlocked-template.sav";
++            if (!fs::exists(save, ec) && fs::exists(tmpl, ec)) {
++                std::error_code copy_ec;
++                fs::copy_file(tmpl, save, copy_ec);
++                if (copy_ec) {
++                    // Not fatal: the fork still runs, just locked. Saying so is
++                    // the point - a silently locked fork looks like the unlock
++                    // feature was never implemented.
++                    std::fprintf(stderr,
++                        "[fork] could not seed %s from the unlocked template: "
++                        "%s\n         The fork will start LOCKED.\n",
++                        save.string().c_str(), copy_ec.message().c_str());
++                } else {
++                    std::fprintf(stderr,
++                        "[fork] seeded %s from the unlocked template\n",
++                        save.string().c_str());
++                }
++            } else if (!fs::exists(tmpl, ec) && !fs::exists(save, ec)) {
++                std::fprintf(stderr,
++                    "[fork] no unlocked template at %s - the fork will start "
++                    "LOCKED.\n", tmpl.string().c_str());
++            }
++        }
++
++        // One settings file for every way of starting the port. Only set when
++        // the caller has not already chosen one.
++        if (!SDL_getenv("LSW2_SETTINGS"))
++            SDL_setenv("LSW2_SETTINGS", (port / "settings.json").string().c_str(), 0);
++
++        synthesized.push_back(argv[0]);
++        synthesized.push_back((port / "bios").string());
++        synthesized.push_back("--rom");
++        synthesized.push_back(rom.string());
++        synthesized.push_back("--config");
++        synthesized.push_back((port / "game.toml").string());
++        synthesized.push_back("--save-path");
++        synthesized.push_back((port / "saves" / save_name).string());
++        synthesized.push_back("--boot");
++        synthesized.push_back("direct");
++        synthesized.push_back("--generated-firmware");
++        // Your own dumps when they are there, FreeBIOS otherwise.
++        if (!fs::exists(port / "bios" / "biosnds9.rom", ec))
++            synthesized.push_back("--freebios");
++        synthesized.push_back("--interactive");
++        synthesized.push_back("--screen-layout");
++        synthesized.push_back("separate");
++
++        for (auto& a : synthesized) synthesized_argv.push_back(a.data());
++        argc = static_cast<int>(synthesized_argv.size());
++        argv = synthesized_argv.data();
++    }
++
+     std::string dir = "bios";
+     std::string rom_path;
+     std::string config_path = "game.toml";
+@@ -1541,6 +1719,20 @@
+                               0x00000000u);
+ #endif
+ #endif
++        // LSW2 PORT PATCH: let the port install dispatch overrides FIRST.
++        //
++        // nds_register_dispatch appends, and lookup returns the FIRST bank that
++        // matches - so a table registered after the title banks is never
++        // reached. The port's HLE (the WH/WM wireless replacement) therefore has
++        // to go in ahead of them, and there is no hook for that without this
++        // one: our shell does not start until main() has finished.
++        //
++        // A no-op unless the port defines it. Kept as a weak-ish opt-in rather
++        // than a required symbol so the runner still builds standalone.
++        //
++        // The ordering matters: overrides must be in place before the banks.
++        lsw2_register_dispatch_overrides(rom_sha1.c_str());
++
+         if (nds_register_configured_title_banks(rom_sha1.c_str())) {
+             std::fprintf(stderr,
+                          "[dispatch] registered configured title banks for %s\n",

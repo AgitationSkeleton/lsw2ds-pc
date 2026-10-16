@@ -1,0 +1,89 @@
+{
+ "source": "Entity type at +0x212 paired with the model asset id at +0xE8, read from gpudump_walk_mos and gpudump_walk_jabba.",
+ "method": "The per-type table at 0x020F03A0 carries only a class byte - 0x1E for both turret kinds, 0x07 for the dispenser - and no model identity, so it cannot name an entity. actor+0xE8 DOES hold the asset id (verified: 0xED=237 barge turret, 0x14C=332 flag turret), so pairing the two fields across captures names the types directly. Entities were gated on a unit-length basis at +0x8C to reject non-actors.",
+ "types": {
+  "0x07": {
+   "asset": 2522,
+   "name": "static grapple point",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - present on both maps"
+  },
+  "0x08": {
+   "asset": 2524,
+   "name": "static grapple point (variant)",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - present on both maps"
+  },
+  "0x4B": {
+   "asset": 818,
+   "name": "BuildableGrapple",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - present on both maps"
+  },
+  "0x5B": {
+   "asset": 230,
+   "name": "health dispenser (BALightPost)",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - previously confirmed"
+  },
+  "0x5C": {
+   "asset": 237,
+   "name": "barge turret (BAMG42), mounted",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - previously confirmed"
+  },
+  "0x5D": {
+   "asset": 237,
+   "name": "barge turret variant - same asset as 0x5C, distinct type",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "medium - identity of the distinction not established"
+  },
+  "0x5E": {
+   "asset": 332,
+   "name": "flag turret (BATurret), buildable",
+   "maps": [
+    "mos",
+    "jabba"
+   ],
+   "confidence": "high - previously confirmed"
+  },
+  "0xDC": {
+   "asset": 4504,
+   "name": "SPBargeLever - the Mos lever",
+   "maps": [
+    "mos"
+   ],
+   "confidence": "high - Mos ONLY, which is correct; Jabba has no levers"
+  },
+  "0x00": {
+   "asset": 2551,
+   "name": "Han carbonite objective",
+   "maps": [
+    "jabba"
+   ],
+   "confidence": "LOW - type 0x00 may be a default/unset value rather than a real id, though Jabba-only presence is correct since Han exists only there"
+  }
+ },
+ "still_unidentified": {
+  "mos_bridges": "Assets 747/748/750/753/755 were guesses and appear in NO capture. The bridge halves remain unidentified.",
+  "mos_elevator": "No candidate asset, never located."
+ }
+}

@@ -1,0 +1,39 @@
+--- a/runner/vendor/melonds/Wifi.cpp	2026-09-20 22:09:38.341025600 -0700
++++ b/runner/vendor/melonds/Wifi.cpp	2026-09-20 22:09:54.129076300 -0700
+@@ -1605,15 +1605,26 @@
+     u16 framectl;
+     u8 txrate, chan;
+     u64 timestamp;
++    // A frame that arrived over the local-wireless (MP) bridge has no real RF
++    // behind it: the loopback carries the sender's stamped channel byte, but
++    // the two instances run on independent host clocks, so a scanning child's
++    // channel-hop phase and the parent's beacon channel never reliably line up
++    // and the beacon is dropped forever (the join stalls at SCANNING). There is
++    // no shared spectrum to police here, so bridge frames skip the RF channel
++    // match below. AP-driver frames (infrastructure Wi-Fi) still honour it.
++    bool from_mp;
+ 
+     for (;;)
+     {
+         timestamp = 0;
++        from_mp = (type != 0);   // MP replies (1) / host frames (2) are bridge
+ 
+         if (type == 0)
+         {
+             rxlen = Platform::MP_RecvPacket(RXBuffer, &timestamp, NDS.UserData);
+-            if ((rxlen <= 0) && (!IsMP))
++            if (rxlen > 0)
++                from_mp = true;            // came from the local MP bridge
++            else if (!IsMP)
+                 rxlen = WifiAP->RecvPacket(RXBuffer);
+         }
+         else
+@@ -1639,7 +1650,7 @@
+         }
+ 
+         chan = RXBuffer[9];
+-        if (chan != CurChannel || CurChannel == 0)
++        if (!from_mp && (chan != CurChannel || CurChannel == 0))
+         {
+             Log(LogLevel::Debug, "received frame but bad channel %d (expected %d)\n", chan, CurChannel);
+             continue;
