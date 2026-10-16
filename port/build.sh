@@ -205,7 +205,7 @@ else
         [ -f "$PORT/lift/$label.toml" ] || die "missing $PORT/lift/$label.toml"
         cp -f "$PORT/lift/$label.toml" "$WORK/$label.toml"
     done
-    echo "   $(cat "$PORT"/lift/*.toml | grep -c '^\[\[entry_point\]\]') entry points"
+    echo "   $(awk '/^\[\[entry_point\]\]/ { n++ } END { print n + 0 }' "$PORT"/lift/*.toml) entry points"
 fi
 
 step "extract and verify the FreeBIOS images"
