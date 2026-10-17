@@ -46,6 +46,20 @@ API = "https://api.github.com"
 UPLOADS = "https://uploads.github.com"
 
 
+def find_bash() -> str:
+    """Git Bash or MSYS2's bash. A bare "bash" on Windows can resolve to
+    System32's WSL launcher, which is not a shell for these scripts."""
+    import shutil
+    candidates = [os.environ.get("LSW2_BASH", ""),
+                  r"C:\Program Files\Git\bin\bash.exe",
+                  r"C:\msys64\usr\bin\bash.exe",
+                  shutil.which("bash") or ""]
+    for c in candidates:
+        if c and Path(c).is_file() and "system32" not in c.lower():
+            return c
+    raise SystemExit("no Git Bash or MSYS2 bash found: set LSW2_BASH to bash.exe")
+
+
 def sh(*args: str, check: bool = True, capture: bool = False) -> str:
     print("$ " + " ".join(args), flush=True)
     r = subprocess.run(list(args), cwd=ROOT, text=True,
@@ -150,8 +164,9 @@ def main() -> int:
         if sh("git", "tag", "--list", tag, capture=True):
             raise SystemExit(f"{tag} already exists")
 
-        sh("bash", "tools/fetch_ndsrecomp.sh")
-        sh("bash", "port/build.sh")
+        bash = find_bash()
+        sh(bash, "tools/fetch_ndsrecomp.sh")
+        sh(bash, "port/build.sh")
         sh(sys.executable, "tools/package_build.py", "--version", tag)
         digest = hashlib.sha256(archive.read_bytes()).hexdigest()
         sums.write_text(f"{digest}  {archive.name}\n", encoding="utf-8")
