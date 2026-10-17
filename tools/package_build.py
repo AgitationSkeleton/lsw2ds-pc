@@ -56,8 +56,11 @@ Build {version}
 =====================================================================
 
 This is a native PC port of the Nintendo DS game, with online play for
-up to four players. It is a TEST build: thank you for playing it, and
-please report anything that goes wrong (see "Reporting a bug" below).
+up to four players. It is an EARLY TEST build: so far it has been
+tested on only one machine, and online play between different PCs has
+not been thoroughly playtested yet - expect desyncs or dropped games.
+Thank you for trying it, and please report anything that goes wrong
+(see "Reporting a bug" below).
 
 
 WHAT YOU NEED

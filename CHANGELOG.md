@@ -10,7 +10,16 @@ land.
 
 ## 0.1.0 - 2026-10-16
 
-The first public release.
+The first public release, and an early one:
+
+- **Tested on one machine only.** All testing so far ran on a single Windows
+  PC.
+- **Online play is not thoroughly playtested.** Two to four players reached
+  matches at 60 fps, with several game instances on that one machine. Play
+  between separate PCs over the internet has had little testing, and so have
+  routers and NAT, joining in progress and disconnects. Expect desyncs and
+  dropped sessions, and please report them with the newest file from
+  `build\logs\`.
 
 ### Bounty Hunter (`lsw2_bountyhunter.exe`)
 - 2–4 players online at 60 fps over a deterministic TCP lockstep, with a

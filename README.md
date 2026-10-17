@@ -96,10 +96,18 @@ bash port/build.sh              # -> build/lsw2.exe and build/lsw2_bountyhunter.
 
 ## Status
 
-The port is playable. Bounty Hunter holds 60 fps with two to four players
-online. This is pre-release software, tested by a small group, and the
-[CHANGELOG](CHANGELOG.md) lists what each release changed. Bug reports should
-include the newest file from `build\logs\`.
+**Early pre-release.**
+
+- **Tested on one machine.** Every build so far has been tested on a single
+  Windows PC. Expect problems on other hardware, GPUs and drivers.
+- **Online play is not thoroughly playtested.** Two to four players have
+  reached matches at 60 fps, with several game instances running on that one
+  machine. Real internet play between different PCs has had little testing,
+  and the same goes for NAT and routers, join-in-progress and disconnects.
+  Desyncs and dropped sessions are likely.
+
+The [CHANGELOG](CHANGELOG.md) lists what each release changed. Bug reports
+are very welcome. Please include the newest file from `build\logs\`.
 
 ## Legal
 
