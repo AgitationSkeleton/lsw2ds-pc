@@ -8,6 +8,13 @@ land.
 
 ## Unreleased
 
+## 0.3.1 - 2026-10-18
+
+Still an early pre-release, and **not thoroughly tested**: these fixes were
+checked on a single PC only, with two players. **Online play is still not
+thoroughly playtested** - play between separate PCs over the internet, and
+matches with three or four players, have had little testing.
+
 - Fixed: "Random All" and "Random Hunter" dealt the same characters in the
   same order every session, and random music followed a fixed order too. Each
   session now starts from a random seed.
