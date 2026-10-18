@@ -103,13 +103,7 @@ constexpr uint32_t kLsw2StockParts = 0x020EEBB8u;
 constexpr uint32_t kLsw2StockStride = 5u;
 constexpr uint32_t kLsw2StockHeadgear = 3u;
 
-/* Does this hat hide the head it is worn over? */
-bool lsw2_headgear_covers(uint32_t part);
 
-/* Is this one of the characters whose head is never normally seen - i.e. whose
- * stock hat covers it? Derived from the two tables above, not from the class
- * byte. Returns false for anything out of range. */
-bool lsw2_character_head_hidden_by_stock(int character);
 
 /* The correction itself: call after the gear applier has run with `part`
  * applied to `actor`. Does nothing unless the enhancement is on, `part` is a

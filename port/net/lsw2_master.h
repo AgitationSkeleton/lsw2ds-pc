@@ -23,7 +23,10 @@
 #ifndef LSW2_MASTER_H
 #define LSW2_MASTER_H
 
+#include <atomic>
 #include <cstdint>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -119,6 +122,15 @@ public:
      * socket but cannot know the game's port. */
     bool register_lobby(const std::string& name, int listen_port, int players);
     bool heartbeat(int players);
+    /* THE SAME BEAT, OFF THE FRAME THREAD. A synchronous beat costs a DNS
+     * lookup, a TCP handshake and an HTTP round trip to the directory: about
+     * a millisecond to a server on this machine, but 100-300 ms to the hosted
+     * one - and for that long the host's frame does not advance, so every
+     * joiner's lockstep holds too. This snapshots the request, runs it on a
+     * worker, and returns at once; directives in the reply arrive through
+     * take_directives() on a later frame. A beat still in flight makes the
+     * next call a no-op (returns false) rather than queueing behind it. */
+    bool heartbeat_async(int players);
     bool unregister();
 
     bool refresh();                       /* fills servers() */
@@ -144,6 +156,17 @@ private:
     std::vector<Lsw2ServerEntry> servers_;
     std::vector<Lsw2RosterEntry> roster_;
     std::vector<Lsw2Directive> directives_;
+
+    /* What an asynchronous beat shares with its worker. Held by shared_ptr so
+     * a worker still running when the client is destroyed writes into memory
+     * that is still alive. */
+    struct AsyncBeat {
+        std::mutex lock;
+        std::vector<Lsw2Directive> directives;
+        std::string error;
+        std::atomic<bool> busy{false};
+    };
+    std::shared_ptr<AsyncBeat> async_ = std::make_shared<AsyncBeat>();
 };
 
 /* Exposed for testing: the flat-JSON readers this client uses. The responses

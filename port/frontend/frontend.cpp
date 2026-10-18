@@ -491,12 +491,18 @@ void sample_camera(SDL_GameController* pad) {
     if (pad) {
         const int rs_threshold =
             32767 * std::clamp(lsw2_ui_right_stick_deadzone(), 5, 90) / 100;
-        int rx = SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_RIGHTX);
-        int ry = SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_RIGHTY);
-        if (rx > -rs_threshold && rx < rs_threshold) rx = 0;
-        if (ry > -rs_threshold && ry < rs_threshold) ry = 0;
-        dx += rx / 128;
-        dy += ry / 128;
+        /* RESCALED PAST THE DEADZONE, so the camera starts from a crawl just
+         * outside it and reaches full speed at full deflection - rather than
+         * jumping straight to the deadzone's own fraction of full speed. */
+        auto shape = [rs_threshold](int v) {
+            const int mag = v < 0 ? -v : v;
+            if (mag <= rs_threshold) return 0;
+            const int span = 32767 - rs_threshold;
+            const int out = (std::min(mag, 32767) - rs_threshold) * kCameraFull / (span > 0 ? span : 1);
+            return v < 0 ? -out : out;
+        };
+        dx += shape(SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_RIGHTX));
+        dy += shape(SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_RIGHTY));
     }
     const Uint8* keys = SDL_GetKeyboardState(nullptr);
     if (camera_binding_held("Camera Left", keys, pad) || (g_camera_injected & 1u))
@@ -509,6 +515,9 @@ void sample_camera(SDL_GameController* pad) {
         dy += kCameraFull;
     dx = std::clamp(dx, -kCameraFull, kCameraFull);
     dy = std::clamp(dy, -kCameraFull, kCameraFull);
+    /* The player's speed settings (Input tab), percent of the base rate. */
+    dx = dx * std::clamp(lsw2_ui_right_stick_speed_x(), 25, 600) / 100;
+    dy = dy * std::clamp(lsw2_ui_right_stick_speed_y(), 25, 600) / 100;
     if (lsw2_ui_right_stick_invert_x()) dx = -dx;
     if (lsw2_ui_right_stick_invert_y()) dy = -dy;
     if (dx != 0) lsw2_ui_push_camera_delta(dx);

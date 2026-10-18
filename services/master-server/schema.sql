@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS servers (
   -- 'lobby' or 'match', as the host reports it; the change is what the
   -- Discord log calls a game starting or ending.
   state TEXT NOT NULL DEFAULT 'lobby',
+  -- The host's own LAN address, handed only to a requester sharing the host's
+  -- public address (src/index.js, reachableAddress). Never listed publicly.
+  lan TEXT NOT NULL DEFAULT '',
 
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,

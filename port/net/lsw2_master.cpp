@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
@@ -235,8 +236,12 @@ bool connect_within(socket_t s, const sockaddr* addr, int len) {
 
 }  // namespace
 
-bool Lsw2MasterClient::request(const char* method, const std::string& path,
-                               const std::string& body, std::string* response) {
+/* One HTTP exchange with the directory. A free function, so the asynchronous
+ * heartbeat's worker can run it on a snapshot of the client's fields. */
+static bool http_request(const std::string& host_, int port_,
+                         const std::string& token_, const char* method,
+                         const std::string& path, const std::string& body,
+                         std::string* response, std::string& error_) {
     error_.clear();
     if (host_.empty() || port_ <= 0 || port_ > 65535) {
         error_ = "no master server configured";
@@ -334,6 +339,11 @@ bool Lsw2MasterClient::request(const char* method, const std::string& path,
     return true;
 }
 
+bool Lsw2MasterClient::request(const char* method, const std::string& path,
+                               const std::string& body, std::string* response) {
+    return http_request(host_, port_, token_, method, path, body, response, error_);
+}
+
 bool Lsw2MasterClient::reachable() {
     std::string body;
     return request("GET", "/v1/health", "", &body) &&
@@ -374,12 +384,62 @@ std::string Lsw2MasterClient::status_json() const {
     return out;
 }
 
+/* THE HEARTBEAT REPLY IS THE ONLY CHANNEL FROM THE DIRECTORY TO A HOST: an
+ * operator's Kick waits at the directory and rides the next beat back. They
+ * are consumed on the service side, so they are appended, never overwritten. */
+static void parse_directives(const std::string& reply,
+                             std::vector<Lsw2Directive>* out) {
+    for (const std::string& chunk : lsw2_json_objects(reply, "directives")) {
+        Lsw2Directive d;
+        d.action = lsw2_json_string(chunk, "action");
+        d.address = lsw2_json_string(chunk, "address");
+        d.slot = int(lsw2_json_number(chunk, "slot", -1));
+        if (!d.action.empty()) out->push_back(d);
+    }
+}
+
+/* THIS MACHINE'S ADDRESS ON THE LOCAL NETWORK: the interface the OS would route
+ * to the internet through. A connected UDP socket sends nothing - connect()
+ * only picks the route - and getsockname() then reads the address chosen. ""
+ * when there is no route. */
+static std::string local_ipv4() {
+    socket_t s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (s == LSW2_INVALID) return {};
+    sockaddr_in to{};
+    to.sin_family = AF_INET;
+    to.sin_port = htons(53);
+    to.sin_addr.s_addr = htonl(0x08080808);   /* any public address will do */
+    std::string out;
+    if (connect(s, reinterpret_cast<sockaddr*>(&to), sizeof to) == 0) {
+        sockaddr_in me{};
+#ifdef _WIN32
+        int len = sizeof me;
+#else
+        socklen_t len = sizeof me;
+#endif
+        if (getsockname(s, reinterpret_cast<sockaddr*>(&me), &len) == 0) {
+            const uint32_t a = ntohl(me.sin_addr.s_addr);
+            if (a != 0)
+                out = std::to_string(a >> 24) + "." + std::to_string((a >> 16) & 255) +
+                      "." + std::to_string((a >> 8) & 255) + "." + std::to_string(a & 255);
+        }
+    }
+    lsw2_close(s);
+    return out;
+}
+
 bool Lsw2MasterClient::register_lobby(const std::string& name, int listen_port,
                                       int players) {
     std::string body =
         "{\"name\":\"" + escape(name) + "\",\"port\":" +
         std::to_string(listen_port) + ",\"players\":" +
         std::to_string(players);
+    /* THE LAN ADDRESS, for players behind the same router. They share this
+     * host's public address, and dialling that from inside the network fails
+     * wherever the router has no hairpin NAT; the directory hands them this
+     * address instead, and to no one else. */
+    const std::string lan = local_ipv4();
+    if (!lan.empty()) body += ",\"lan\":\"" + lan + "\"";
     if (!kind_.empty()) body += ",\"kind\":\"" + kind_ + "\"";
     body += roster_json(roster_);
     body += status_json();
@@ -411,19 +471,38 @@ bool Lsw2MasterClient::heartbeat(int players) {
      * waits at the directory and rides the next beat back. Delivered once -
      * they are consumed on the service side - so they are appended for the
      * caller to drain, not overwritten. */
-    for (const std::string& chunk : lsw2_json_objects(reply, "directives")) {
-        Lsw2Directive d;
-        d.action = lsw2_json_string(chunk, "action");
-        d.address = lsw2_json_string(chunk, "address");
-        d.slot = int(lsw2_json_number(chunk, "slot", -1));
-        if (!d.action.empty()) directives_.push_back(d);
-    }
+    parse_directives(reply, &directives_);
+    return true;
+}
+
+bool Lsw2MasterClient::heartbeat_async(int players) {
+    if (id_.empty()) { error_ = "not registered"; return false; }
+    if (async_->busy.exchange(true)) return false;   /* one in flight */
+    /* THE SAME BEAT, on a snapshot: the worker runs heartbeat() itself on a
+     * copy of this client, so there is one implementation of the request and
+     * the tests that exercise heartbeat() exercise what the game sends. */
+    Lsw2MasterClient snapshot = *this;
+    snapshot.directives_.clear();
+    std::thread([copy = std::move(snapshot), players]() mutable {
+        const bool ok = copy.heartbeat(players);
+        {
+            std::lock_guard<std::mutex> hold(copy.async_->lock);
+            copy.async_->directives.insert(copy.async_->directives.end(),
+                                           copy.directives_.begin(),
+                                           copy.directives_.end());
+            copy.async_->error = ok ? std::string() : copy.error_;
+        }
+        copy.async_->busy = false;
+    }).detach();
     return true;
 }
 
 std::vector<Lsw2Directive> Lsw2MasterClient::take_directives() {
     std::vector<Lsw2Directive> out;
     out.swap(directives_);
+    std::lock_guard<std::mutex> hold(async_->lock);
+    out.insert(out.end(), async_->directives.begin(), async_->directives.end());
+    async_->directives.clear();
     return out;
 }
 

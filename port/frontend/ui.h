@@ -207,12 +207,6 @@ struct UiSettings {
     bool coop_show_room_code = false;
 
     bool enhanced_controls = true;
-    /* THE HELMET-CLASS HEAD FIX, default ON for the same reason the Enhanced
-     * controls are: it is a bug fix, and it applies in BOTH builds. Nine
-     * characters whose
-     * stock hat hides their head go headless when a customize hat replaces it;
-     * see headfix.h. Off restores the cartridge's behaviour exactly. */
-    bool enhanced_heads = true;
     /* DEBUG: a SECOND copy of the
      * game - another instance already running when it started - plays no
      * music, or no sound at all, so testing several clients on one machine is
@@ -230,6 +224,11 @@ struct UiSettings {
     bool right_stick_invert_x = false;
     bool right_stick_invert_y = false;
     int  right_stick_deadzone = 30;  /* percent, same units as the left stick */
+    /* How fast the camera turns and rises, percent of the original rate
+     * (a full turn in about 4 s at full deflection). The original was found
+     * too slow in play, so the defaults are faster. */
+    int  right_stick_speed_x = 250;
+    int  right_stick_speed_y = 150;
 
     /* REMEMBERED WINDOW AND PANEL GEOMETRY.
      *
@@ -429,9 +428,6 @@ float lsw2_ui_arena_hud_scale();
  * setting, and lsw2_enhanced_effective() is where the two meet. */
 bool lsw2_ui_enhanced_controls();
 
-/* The helmet-class head fix's switch, read by headfix.cpp for the same reason: the override
- * writes an actor byte and has no business knowing what a settings struct is. */
-bool lsw2_ui_enhanced_heads();
 
 /* The Debug tab's second-instance mutes, read by instancemute.cpp. */
 bool lsw2_ui_mute_music_second_instance();
@@ -447,6 +443,9 @@ bool lsw2_ui_enhanced_slot_colour();
  * enhanced.cpp for the yaw write. Deadzone is a percentage, 5..90. */
 bool lsw2_ui_right_stick_invert_x();
 int  lsw2_ui_right_stick_deadzone();
+/* Camera turn and height speed, percent (25..600). */
+int  lsw2_ui_right_stick_speed_x();
+int  lsw2_ui_right_stick_speed_y();
 
 /* "inverted up/down and left/right" - the up/down half, live since 2026-09-23.
  *

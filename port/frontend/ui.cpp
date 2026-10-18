@@ -445,17 +445,6 @@ void input_tab(UiSettings& s) {
             "it; the d-pad path does. On, the same refresh runs either way.");
     }
 
-    ImGui::Checkbox("Heads under hats", &s.enhanced_heads);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Nine characters wear a helmet that hides the head underneath -\n"
-            "Boba Fett and Jango Fett among them. Replacing that helmet with\n"
-            "a customize hat leaves them with no head at all, because the\n"
-            "game only asks for the head to be re-attached when the new hat\n"
-            "also covers it.\n\n"
-            "On, the head comes back. Off is the cartridge's behaviour.");
-    }
-
     ImGui::Spacing();
     ImGui::TextUnformatted("Enhanced arena controls");
     ImGui::Separator();
@@ -484,6 +473,8 @@ void input_tab(UiSettings& s) {
      * moves. That is what this inverts. */
     ImGui::Checkbox("Invert camera Y", &s.right_stick_invert_y);
     ImGui::SliderInt("Camera deadzone", &s.right_stick_deadzone, 5, 90, "%d%%");
+    ImGui::SliderInt("Camera turn speed", &s.right_stick_speed_x, 25, 600, "%d%%");
+    ImGui::SliderInt("Camera height speed", &s.right_stick_speed_y, 25, 600, "%d%%");
     ImGui::EndDisabled();
     /* SAY WHAT IS LIVE, and say it precisely - this is the copy the player
      * reads. It said the checkbox gives movement "the camera's heading instead
@@ -1357,7 +1348,6 @@ static bool g_fork_wants_roster = true;
 static bool g_fork_hunters_only = true;
 static bool g_arena_hud_enabled = false;
 static bool g_enhanced_controls = true;   /* Enhanced controls, default on   */
-static bool g_enhanced_heads = true;      /* Head/hat gear, both builds      */
 static bool g_mute_music_second = false;  /* Debug, second-instance mute     */
 static bool g_mute_sound_second = false;  /* Debug, second-instance mute     */
 static bool g_enhanced_portrait = true;   /* Portrait follows, both builds   */
@@ -1365,6 +1355,8 @@ static bool g_enhanced_slot_colour = true;/* Player-colour ring, both builds */
 static bool g_rs_invert_x = false;        /* Enhanced controls camera        */
 static bool g_rs_invert_y = false;        /* the orbit camera's height       */
 static int  g_rs_deadzone = 20;
+static int  g_rs_speed_x = 250;
+static int  g_rs_speed_y = 150;
 static float g_arena_hud_scale = 0.5f;   /* Arena HUD overlay           */
 static int  g_camera_delta = 0;
 static int  g_camera_delta_y = 0;
@@ -1392,7 +1384,6 @@ void ui_draw(UiSettings& s) {
     g_fork_hunters_only = s.bh_roster_only;
     g_arena_hud_enabled = s.arena_hud_overlay;
     g_enhanced_controls = s.enhanced_controls;
-    g_enhanced_heads = s.enhanced_heads;
     g_mute_music_second = s.mute_music_second_instance;
     g_mute_sound_second = s.mute_sound_second_instance;
     g_enhanced_portrait = s.enhanced_portrait;
@@ -1400,6 +1391,8 @@ void ui_draw(UiSettings& s) {
     g_rs_invert_x = s.right_stick_invert_x;
     g_rs_invert_y = s.right_stick_invert_y;
     g_rs_deadzone = s.right_stick_deadzone;
+    g_rs_speed_x = s.right_stick_speed_x;
+    g_rs_speed_y = s.right_stick_speed_y;
     g_arena_hud_scale = s.arena_hud_scale;
 
     /* NO LOADING OVERLAY. There was one - "Bounty Hunter / Skipping boot..." -
@@ -1646,13 +1639,14 @@ bool lsw2_hle_fork_select_range(unsigned* low, unsigned* high) {
 
 bool lsw2_ui_arena_hud_enabled() { return g_arena_hud_enabled; }
 bool lsw2_ui_enhanced_controls() { return g_enhanced_controls; }
-bool lsw2_ui_enhanced_heads() { return g_enhanced_heads; }
 bool lsw2_ui_mute_music_second_instance() { return g_mute_music_second; }
 bool lsw2_ui_mute_sound_second_instance() { return g_mute_sound_second; }
 bool lsw2_ui_enhanced_portrait() { return g_enhanced_portrait; }
 bool lsw2_ui_enhanced_slot_colour() { return g_enhanced_slot_colour; }
 bool lsw2_ui_right_stick_invert_x() { return g_rs_invert_x; }
 int  lsw2_ui_right_stick_deadzone() { return g_rs_deadzone; }
+int  lsw2_ui_right_stick_speed_x() { return g_rs_speed_x; }
+int  lsw2_ui_right_stick_speed_y() { return g_rs_speed_y; }
 float lsw2_ui_arena_hud_scale() { return g_arena_hud_scale; }
 
 void lsw2_ui_push_camera_delta(int dx) { g_camera_delta += dx; }
@@ -1754,7 +1748,6 @@ void ui_load_settings(UiSettings& s, const char* path) {
     s.floating_touch_scale = float(g_store.get_number("floating_touch_scale",
                                                       s.floating_touch_scale));
     s.floating_touch_only  = g_store.get_bool("floating_touch_only", s.floating_touch_only);
-    s.enhanced_heads       = g_store.get_bool("enhanced_heads", s.enhanced_heads);
     s.mute_music_second_instance =
         g_store.get_bool("debug_mute_music_second_instance", s.mute_music_second_instance);
     s.mute_sound_second_instance =
@@ -1897,6 +1890,10 @@ void ui_load_settings(UiSettings& s, const char* path) {
     s.right_stick_invert_y = g_store.get_bool("right_stick_invert_y", s.right_stick_invert_y);
     s.right_stick_deadzone = std::clamp(int(g_store.get_number(
                                  "right_stick_deadzone", s.right_stick_deadzone)), 5, 90);
+    s.right_stick_speed_x = std::clamp(int(g_store.get_number(
+                                "right_stick_speed_x", s.right_stick_speed_x)), 25, 600);
+    s.right_stick_speed_y = std::clamp(int(g_store.get_number(
+                                "right_stick_speed_y", s.right_stick_speed_y)), 25, 600);
     /* MIRRORED AFTER THE READS, not before them. The right-stick mirrors used
      * to be copied three lines above the loads that filled them, so the first
      * frame's stick sampling ran on the defaults and the file's values only
@@ -1904,7 +1901,6 @@ void ui_load_settings(UiSettings& s, const char* path) {
      * order of two blocks was the whole difference between a setting that is
      * loaded and one that is loaded eventually. */
     g_enhanced_controls    = s.enhanced_controls;
-    g_enhanced_heads       = s.enhanced_heads;
     g_mute_music_second    = s.mute_music_second_instance;
     g_mute_sound_second    = s.mute_sound_second_instance;
     g_enhanced_portrait    = s.enhanced_portrait;
@@ -1912,6 +1908,8 @@ void ui_load_settings(UiSettings& s, const char* path) {
     g_rs_invert_x = s.right_stick_invert_x;
     g_rs_invert_y = s.right_stick_invert_y;
     g_rs_deadzone = s.right_stick_deadzone;
+    g_rs_speed_x = s.right_stick_speed_x;
+    g_rs_speed_y = s.right_stick_speed_y;
     g_arena_hud_scale = s.arena_hud_scale;
     s.window_w             = int(g_store.get_number("window_w", s.window_w));
     s.window_h             = int(g_store.get_number("window_h", s.window_h));
@@ -2085,7 +2083,6 @@ void ui_save_settings(const UiSettings& s, const char* path) {
     g_store.set_bool("bh_roster_only", s.bh_roster_only);
     g_store.set_bool("coop_show_room_code", s.coop_show_room_code);
     g_store.set_bool("enhanced_controls", s.enhanced_controls);
-    g_store.set_bool("enhanced_heads", s.enhanced_heads);
     g_store.set_bool("debug_mute_music_second_instance", s.mute_music_second_instance);
     g_store.set_bool("debug_mute_sound_second_instance", s.mute_sound_second_instance);
     g_store.set_bool("enhanced_portrait", s.enhanced_portrait);
@@ -2095,6 +2092,8 @@ void ui_save_settings(const UiSettings& s, const char* path) {
     g_store.set_bool("right_stick_invert_x", s.right_stick_invert_x);
     g_store.set_bool("right_stick_invert_y", s.right_stick_invert_y);
     g_store.set_int("right_stick_deadzone", s.right_stick_deadzone);
+    g_store.set_int("right_stick_speed_x", s.right_stick_speed_x);
+    g_store.set_int("right_stick_speed_y", s.right_stick_speed_y);
     g_store.set_int("window_w", s.window_w);
     g_store.set_int("window_h", s.window_h);
     g_store.set_int("touch_window_w", s.touch_window_w);

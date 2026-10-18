@@ -156,16 +156,17 @@ async function register(request, env, ctx) {
   const name = String(value.name || "Bounty Arena").slice(0, 48);
   const config = sanitiseConfig(value.config);
   const state = normaliseState(value.state);
+  const lan = sanitiseLan(value.lan);
   await env.DB.prepare(
-    "INSERT INTO servers (id,token_hash,name,address,port,code,kind,players,max_players,config_json,roster_json,state,created_at,updated_at,expires_at)" +
-    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    "INSERT INTO servers (id,token_hash,name,address,port,code,kind,players,max_players,config_json,roster_json,state,lan,created_at,updated_at,expires_at)" +
+    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   ).bind(
     id, await sha256(token), name,
     address, value.port, code, kind,
     value.players, 4,
     JSON.stringify(config),
     JSON.stringify(sanitiseRoster(value.roster)),
-    state, now, now, now + TTL_SECONDS
+    state, lan, now, now, now + TTL_SECONDS
   ).run();
 
   const rules = kind === "bounty" ? describeConfig(config, false) : "";
@@ -286,16 +287,17 @@ async function list(request, env) {
   const now = Math.floor(Date.now() / 1000);
   /* Expired rows are filtered here and removed (and reported) by the cron. */
   const kind = new URL(request.url).searchParams.get("kind");
-  let sql = "SELECT id,name,address,port,players,max_players,code,kind,config_json,roster_json,created_at" +
+  let sql = "SELECT id,name,address,port,players,max_players,code,kind,config_json,roster_json,lan,created_at" +
             " FROM servers WHERE expires_at>=?";
   const args = [now];
   if (kind) { sql += " AND kind=?"; args.push(normaliseKind(kind)); }
   sql += " ORDER BY updated_at DESC LIMIT 100";
 
   const {results} = await env.DB.prepare(sql).bind(...args).all();
+  const requester = request.headers.get("cf-connecting-ip") || "";
   const servers = (results || []).map(row => ({
     name: row.name,
-    address: row.address,
+    ...reachableAddress(row, requester),
     port: row.port,
     players: row.players,
     max_players: row.max_players,
@@ -309,16 +311,45 @@ async function list(request, env) {
   return reply({servers});
 }
 
-async function resolveCode(env, raw) {
+async function resolveCode(request, env, raw) {
   const now = Math.floor(Date.now() / 1000);
   const row = await env.DB.prepare(
-    "SELECT name,address,port,players,max_players FROM servers WHERE code=? AND expires_at>=?"
+    "SELECT name,address,port,players,max_players,lan FROM servers WHERE code=? AND expires_at>=?"
   ).bind(normaliseCode(raw), now).first();
   if (!row) return reply({error: "no such room code"}, 404);
+  const requester = request.headers.get("cf-connecting-ip") || "";
   return reply({
-    name: row.name, address: row.address, port: row.port,
+    name: row.name, ...reachableAddress(row, requester), port: row.port,
     players: row.players, max_players: row.max_players,
   });
+}
+
+/* THE ADDRESS THAT WILL ACTUALLY ANSWER. A player behind the same router as
+ * the host shares its public address, and dialling your own public address
+ * from inside the network only works where the router supports hairpin NAT -
+ * many don't. Such a player is given the host's LAN address instead, which the
+ * host reported when it registered. It is never shown to anyone else. The
+ * client then sees the same address as the host's LAN beacon, so the lobby
+ * lists once rather than twice. */
+function reachableAddress(row, requester) {
+  if (row.lan && requester && row.address === requester) {
+    return {address: row.lan, same_network: true};
+  }
+  return {address: row.address};
+}
+
+/* A host's LAN address: a private-range dotted IPv4 (10/8, 172.16/12,
+ * 192.168/16, 100.64/10), or nothing. */
+function sanitiseLan(raw) {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(String(raw || ""));
+  if (!m) return "";
+  const o = m.slice(1).map(Number);
+  if (o.some(n => n > 255)) return "";
+  const priv = o[0] === 10 ||
+               (o[0] === 172 && o[1] >= 16 && o[1] <= 31) ||
+               (o[0] === 192 && o[1] === 168) ||
+               (o[0] === 100 && o[1] >= 64 && o[1] <= 127);
+  return priv ? o.join(".") : "";
 }
 
 async function turnCredentials(request, env) {
@@ -353,7 +384,7 @@ export default {
       if (method === "GET" && url.pathname === "/v1/turn-credentials") return turnCredentials(request, env);
 
       if (parts.length === 3 && parts[0] === "v1" && parts[1] === "codes" && method === "GET") {
-        return resolveCode(env, parts[2]);
+        return resolveCode(request, env, parts[2]);
       }
       if (parts.length === 3 && parts[0] === "v1" && parts[1] === "servers") {
         if (method === "PUT") return heartbeat(request, env, ctx, parts[2]);

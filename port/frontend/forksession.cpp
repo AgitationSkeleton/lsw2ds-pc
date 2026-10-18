@@ -1032,7 +1032,11 @@ void Lsw2ForkSession::tick() {
         if (++heartbeat_ >= 300) {
             heartbeat_ = 0;
             publish_roster();
-            master_.heartbeat(player_count());
+            /* Off the frame thread: a beat to the hosted directory takes
+             * 100-300 ms, and a host frozen that long stalls every joiner's
+             * lockstep with it. Directives from an earlier beat's reply are
+             * drained here; this beat's arrive with the next. */
+            master_.heartbeat_async(player_count());
             apply_directives();
         }
     }
