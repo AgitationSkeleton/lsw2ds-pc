@@ -545,6 +545,19 @@ def main() -> int:
     for sid in (second["id"], host_b["id"], "dupe"):
         service.store.remove(sid, force=True)
 
+    # SAME-NETWORK ADDRESS: a requester sharing the host's public address gets
+    # the host's LAN address; anyone else gets the public one, and a LAN
+    # address outside the private ranges is never stored.
+    lanstore = ms.Store(":memory:")
+    reg = lanstore.register("LanHost", "203.0.113.5", 28550, 1, {}, lan="192.168.1.20")
+    check("same network: the list gives the LAN address",
+          lanstore.listing(requester="203.0.113.5")[0]["address"], "192.168.1.20")
+    check("other networks: the list gives the public address",
+          lanstore.listing(requester="198.51.100.4")[0]["address"], "203.0.113.5")
+    check("same network: a room code gives the LAN address",
+          lanstore.resolve(reg["code"], requester="203.0.113.5")["address"], "192.168.1.20")
+    check("a public 'LAN' address is refused", ms.sanitize_lan("8.8.8.8"), "")
+
     service.shutdown()
     shutil.rmtree(workdir, ignore_errors=True)
     print()

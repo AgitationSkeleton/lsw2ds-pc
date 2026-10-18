@@ -8,6 +8,11 @@ land.
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-17
+
+Still an early pre-release. All testing so far ran on a single PC; play between
+separate PCs over the internet is largely untested.
+
 - Fixed: a host could crash when a second player joined its lobby, if the
   joining player wore a hat over a helmet-class character. The head re-attach
   that caused it never actually showed the head, so it has been removed for
@@ -21,6 +26,9 @@ land.
   screens stop the track in a way the game doesn't record, and the lobby that
   reloads afterwards asks for the same track, so the game skipped it. The
   track is now marked for restart, and the lobby plays it again.
+- The self-hosted master server (`lsw2-master.exe`, `lsw2-master-gui.exe`)
+  gives same-network players the host's local address too, matching the
+  public one.
 - Logs now record every music change. Setting `LSW2_AUDIO_LEVEL=1` also logs
   the output level once a second.
 - Enhanced controls: new camera turn and height speed settings in the Input

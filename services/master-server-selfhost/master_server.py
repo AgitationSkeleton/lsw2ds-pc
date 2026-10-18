@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS servers (
   roster_json TEXT NOT NULL DEFAULT '[]',
   config_json TEXT NOT NULL DEFAULT '{}',
   created_at  INTEGER NOT NULL DEFAULT 0,
+  lan         TEXT NOT NULL DEFAULT '',
   updated_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL
 );
@@ -111,6 +112,7 @@ MIGRATIONS = (
     "ALTER TABLE servers ADD COLUMN kind TEXT NOT NULL DEFAULT 'bounty'",
     "ALTER TABLE servers ADD COLUMN roster_json TEXT NOT NULL DEFAULT '[]'",
     "ALTER TABLE servers ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE servers ADD COLUMN lan TEXT NOT NULL DEFAULT ''",
 )
 
 
@@ -119,6 +121,30 @@ def normalise_kind(raw) -> str:
     what predates the column, so it is the safe default for an old client."""
     kind = str(raw or "").strip().lower()
     return kind if kind in KINDS else KIND_BOUNTY
+
+
+def sanitize_lan(raw) -> str:
+    """A host's LAN address: a private-range dotted IPv4 (10/8, 172.16/12,
+    192.168/16, 100.64/10), or "". The same rule as the hosted directory."""
+    parts = str(raw or "").split(".")
+    if len(parts) != 4 or not all(x.isdigit() and len(x) <= 3 for x in parts):
+        return ""
+    o = [int(x) for x in parts]
+    if any(n > 255 for n in o):
+        return ""
+    private = (o[0] == 10 or (o[0] == 172 and 16 <= o[1] <= 31) or
+               (o[0] == 192 and o[1] == 168) or (o[0] == 100 and 64 <= o[1] <= 127))
+    return ".".join(map(str, o)) if private else ""
+
+
+def reachable(address, lan, requester):
+    """THE ADDRESS THAT WILL ANSWER. A requester behind the same router as the
+    host shares its public address, and dialling that from inside the network
+    only works where the router supports hairpin NAT. Such a requester gets the
+    host's LAN address instead - and no one else ever sees it."""
+    if lan and requester and address == requester:
+        return {"address": lan, "same_network": True}
+    return {"address": address}
 
 
 def sanitize_name(raw: str) -> str:
@@ -288,7 +314,7 @@ class Store:
                 for r in gone]
 
     def register(self, name, address, port, players, config, kind=KIND_BOUNTY,
-                 roster=None):
+                 roster=None, lan=""):
         now = int(time.time())
         port = int(port)
 
@@ -323,12 +349,12 @@ class Store:
         self.db.execute(
             "INSERT INTO servers (id, token_hash, code, kind, name, address,"
             " port, players, max_players, roster_json, config_json,"
-            " created_at, updated_at, expires_at)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " created_at, updated_at, expires_at, lan)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (sid, _hash(token), code, normalise_kind(kind), sanitize_name(name),
              address, port, _clamp_players(players), MAX_PLAYERS,
              json.dumps(sanitize_roster(roster)), json.dumps(config or {}),
-             now, now, now + TTL_SECONDS))
+             now, now, now + TTL_SECONDS, sanitize_lan(lan)))
         self.db.commit()
         # THE TOKEN IS RETURNED ONCE AND STORED ONLY AS A HASH. A leaked
         # database should not let anyone update or delete other people's
@@ -396,7 +422,7 @@ class Store:
         self.pending.pop(sid, None)
         return {"ok": True, "kind": row[1], "name": row[2], "address": row[3]}
 
-    def listing(self, kind=None, operator=False):
+    def listing(self, kind=None, operator=False, requester=None):
         """The lobby list.
 
         `operator` is the GUI's view, called in-process, and is the ONLY view
@@ -413,7 +439,7 @@ class Store:
         further than this machine.
         """
         sql = ("SELECT name, address, port, players, max_players, code,"
-               " config_json, kind, id, roster_json, created_at FROM servers")
+               " config_json, kind, id, roster_json, created_at, lan FROM servers")
         args = ()
         if kind is not None:
             sql += " WHERE kind = ?"
@@ -445,7 +471,10 @@ class Store:
             # CLIENT and the host, and a number measured here would be the
             # distance to this machine instead. The client measures it after
             # resolving the address.
-            out.append({"name": r[0], "address": r[1], "port": r[2],
+            out.append({"name": r[0],
+                        **(reachable(r[1], r[11], requester) if not operator
+                           else {"address": r[1]}),
+                        "port": r[2],
                         "players": r[3], "max_players": r[4], "code": r[5],
                         "config": json.loads(r[6] or "{}"), "kind": r[7],
                         "id": r[8], "roster": roster, "created_at": r[10]})
@@ -457,13 +486,14 @@ class Store:
                 return entry
         return None
 
-    def resolve(self, code):
+    def resolve(self, code, requester=None):
         row = self.db.execute(
-            "SELECT name, address, port, players, max_players FROM servers"
+            "SELECT name, address, port, players, max_players, lan FROM servers"
             " WHERE code = ?", (normalise_code(code),)).fetchone()
         if not row:
             return None
-        return {"name": row[0], "address": row[1], "port": row[2],
+        return {"name": row[0], **reachable(row[1], row[5], requester),
+                "port": row[2],
                 "players": row[3], "max_players": row[4]}
 
 
@@ -612,13 +642,14 @@ class Handler(BaseHTTPRequestHandler):
         path, query = _split_query(self.path)
         if path == "/v1/servers":
             kind = query.get("kind")
-            listing = self.store.listing(normalise_kind(kind) if kind else None)
+            listing = self.store.listing(normalise_kind(kind) if kind else None,
+                                         requester=self.client_address[0])
             self.log.debug("list", "%s asked for %s lobbies, %d returned"
                            % (self.client_address[0], kind or "all", len(listing)))
             return self._send(200, {"servers": listing})
         if path.startswith("/v1/codes/"):
             wanted = path[len("/v1/codes/"):]
-            got = self.store.resolve(wanted)
+            got = self.store.resolve(wanted, requester=self.client_address[0])
             self.log.info("code", "%s looked up room code %s - %s"
                           % (self.client_address[0], normalise_code(wanted),
                              "found" if got else "no match"))
@@ -647,7 +678,7 @@ class Handler(BaseHTTPRequestHandler):
             got = self.store.register(body.get("name"), address,
                                       port, body.get("players", 1),
                                       body.get("config"), kind,
-                                      body.get("roster"))
+                                      body.get("roster"), body.get("lan", ""))
         except RuntimeError as exc:
             self.log.error("lobby", "could not register a lobby for %s: %s"
                            % (address, exc))
