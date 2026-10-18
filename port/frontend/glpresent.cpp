@@ -4,6 +4,7 @@
 
 #include "gpu2d.h"
 #include "gpu3d.h"
+#include "state.h"         /* bus_device_read32 */
 #include "melonds_compute/ComputeHost.h"
 #include "melonds_compute/TextureUpscale.h"
 
@@ -12,6 +13,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 namespace {
 
@@ -153,6 +155,42 @@ bool lsw2_gl_present_top(const uint32_t* pixels, int width,
      * have shown rather than to nothing. */
     NdsGpu2dDirectFrame direct{};
     const bool have_direct = nds_gpu2d_direct_frame(&direct);
+
+    /* WHY THE WIDENED PICTURE DROPPED TO A NATIVE ONE BETWEEN BARS, logged on
+     * every change of reason. The adaptive compositor (gpu2d.cpp) widens a scene
+     * only when the display is in normal mode with 3D on BG0, every other
+     * enabled BG is a text layer, the screen is not force-blanked and no
+     * display capture is running; anything else is drawn as the native
+     * 256-pixel image centred between bars, with 1x 3D. The same conditions,
+     * read from the registers each frame, so a log says which one a scene
+     * failed. (Windows were a reason until patch 0022.) */
+    {
+        const uint32_t dispcnt = bus_device_read32(0, 0x04000000u);
+        const uint32_t capcnt = bus_device_read32(0, 0x04000064u);
+        const uint32_t bg_mode = dispcnt & 7u;
+        const uint32_t display = (dispcnt >> 16) & 3u;
+        const uint32_t bgs = (dispcnt >> 8) & 0xFu;
+        /* Which enabled BG1-3 are not text layers in this BG mode (gpu2d.cpp's
+         * bg_kind): BG2 in modes 2, 4, 5; BG3 in modes 1-5; BG0/1 in mode 6. */
+        uint32_t nontext = 0;
+        if (bg_mode == 6u) nontext |= bgs & 2u;
+        if (bg_mode == 2u || bg_mode >= 4u) nontext |= bgs & 4u;
+        if (bg_mode >= 1u) nontext |= bgs & 8u;
+        char why[160] = "";
+        if (dispcnt & 0x80u) std::snprintf(why + std::strlen(why), 40, " forced-blank");
+        if (display != 1u) std::snprintf(why + std::strlen(why), 40, " display-mode-%u", unsigned(display));
+        if (!((dispcnt & 8u) && (dispcnt & 0x100u))) std::snprintf(why + std::strlen(why), 40, " no-3D-BG0");
+        if (nontext) std::snprintf(why + std::strlen(why), 40, " non-text-BG%X", unsigned(nontext));
+        if (capcnt & 0x80000000u) std::snprintf(why + std::strlen(why), 40, " capture");
+        static char last[160] = "?";
+        static int said = 0;
+        if (std::strcmp(why, last) != 0 && said < 400) {
+            ++said;
+            std::fprintf(stderr, "[gl] widened scene:%s (DISPCNT %08X)\n",
+                         why[0] ? why : " supported", unsigned(dispcnt));
+            std::snprintf(last, sizeof last, "%s", why);
+        }
+    }
 
     /* SDL's y grows downward; GL's grows upward. Flipping here rather than
      * expecting callers to know that keeps the rect in the same coordinates

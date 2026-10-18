@@ -72,6 +72,24 @@ void lsw2_score_lobby_return_begin();
  * mid-match (fork.cpp). */
 void lsw2_lobby_return_pair();
 
+/* THE SCORE SCREEN'S QUIT, IN A SHARED SESSION, RETURNS TO THE LOBBY.
+ *
+ * Its bottom row (0x0209CB94, row 3) sends message 0x0B, whose handler
+ * (0x020B15C0) ends the wireless session (0x02072BC8) and asks for the Cantina,
+ * level 14 - the single-player hub. The fork then warped back to the arena
+ * lobby with the session gone: one player as far as the game knew, two as far
+ * as the fork knew, the cutscene bars still up and Start Game refused. The
+ * fork's rule is the opposite: a concluded match returns everyone to the lobby
+ * proper, still connected.
+ *
+ * Called from the message dispatch override (0x020B1248) with the packet. In a
+ * shared session a 0x0B is consumed here - true - and the session's lobby
+ * return starts on this console. Every console dispatches the same message at
+ * the same step, so every console starts it together, as the host's own
+ * 15-second return does. Offline, or for any other message, false: the game's
+ * own handler runs. */
+bool lsw2_score_quit_message(uint32_t packet);
+
 /* Keys the fork wants held this frame, in KEYINPUT bit order, ORed into the
  * guest's mask by the present loop.
  *

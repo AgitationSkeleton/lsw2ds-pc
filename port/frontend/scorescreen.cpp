@@ -5,6 +5,7 @@
 #include "levels.h"
 #include "lobbyhud.h"
 #include "netcount.h"
+#include "netmsg.h"      /* kLsw2MsgQuit */
 #include "statelog.h"
 #include "statereq.h"
 #include "vwh.h"
@@ -202,6 +203,17 @@ void lsw2_score_lobby_return_begin() {
     g_want_lobby = false;
     g_state_asked = false;
     lsw2_lobby_return_pair();
+}
+
+bool lsw2_score_quit_message(uint32_t packet) {
+    if (!ui_fork_build() || !lsw2_vwh_lockstep()) return false;
+    const uint32_t type = read_guest_bytes(packet + 1u, 1u);
+    if (type != kLsw2MsgQuit) return false;
+    std::fprintf(stderr, "[fork] score screen: Return to Lobby chosen - the "
+                 "session stays up and every console returns to the lobby at "
+                 "this step (the cartridge's Quit would end the session)\n");
+    lsw2_score_lobby_return_begin();
+    return true;
 }
 
 void lsw2_lobby_return_pair() {

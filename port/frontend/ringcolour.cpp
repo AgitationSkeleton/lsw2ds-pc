@@ -12,13 +12,21 @@
 #include "vram.h"          /* nds_vram_*_texpal16 - patch 0020 */
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace {
 
 constexpr uint32_t kSpritePalette = 0xD8u;   /* sprite -> its palette object */
 constexpr uint32_t kPaletteColours = 0x04u;  /* -> the RAM copy of the colours */
 constexpr uint32_t kPaletteVram = 0x08u;     /* low half: texpal offset / 8 */
-constexpr uint32_t kPaletteBytes = 0x10u;    /* the colours' size in bytes */
+/* THE COLOUR COUNT IS THE HALFWORD AT +2, not the word at +0x10. This read
+ * +0x10 as "the colours' size in bytes" because it held 0x20 on the ring it
+ * was measured on, and it is not a size: on a joiner's ring rebuilt after a
+ * respawn it held 0x0C, on a face palette 0x10C - while +2 read 0x0010 on all
+ * four palette objects sampled (conn_item34). The 0x0C refused every rebuilt
+ * ring, so player 2's ring went back to the game's blue on the first respawn
+ * and stayed there. */
+constexpr uint32_t kPaletteCount = 0x02u;    /* u16: how many colours */
 constexpr int kColours = 16;
 
 /* Which of the ROM's five palettes each slot wears - the four a match stages
@@ -75,7 +83,7 @@ void lsw2_ringcolour_tick() {
     const uint32_t pal = r32(ring + kSpritePalette);
     if (!ram(pal)) return;
     const uint32_t colours = r32(pal + kPaletteColours);
-    if (!ram(colours) || r32(pal + kPaletteBytes) != kColours * 2u) return;
+    if (!ram(colours) || r16(pal + kPaletteCount) != kColours) return;
     const uint32_t vram = (r32(pal + kPaletteVram) & 0xFFFFu) * 8u;
 
     uint16_t own[kColours];
@@ -127,6 +135,22 @@ void lsw2_ringcolour_tick() {
         is_want = is_want && now[i] == (want[i] & 0x7FFFu);
         is_own = is_own && now[i] == (own[i] & 0x7FFFu);
         is_ours = is_ours && now[i] == (g_written[i] & 0x7FFFu);
+    }
+    /* LSW2_RING_TRACE=1: the decision, each time the ring sprite changes. */
+    {
+        static const bool trace = [] {
+            const char* v = std::getenv("LSW2_RING_TRACE");
+            return v && *v == '1';
+        }();
+        static uint32_t last_ring = 0;
+        if (trace && ring != last_ring) {
+            last_ring = ring;
+            std::fprintf(stderr, "[fork] ring trace: ring %08X pal %08X texpal %05X "
+                         "slot %d own1 %04X now1 %04X want1 %04X is_want %d is_own %d "
+                         "is_ours %d\n", unsigned(ring), unsigned(pal), unsigned(vram),
+                         slot, unsigned(own[1]), unsigned(now[1]), unsigned(want[1]),
+                         int(is_want), int(is_own), int(is_ours));
+        }
     }
     if (is_want || (!is_own && !is_ours)) return;
 

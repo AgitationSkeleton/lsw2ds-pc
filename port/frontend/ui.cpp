@@ -5,9 +5,13 @@
 #include "widescreen.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"   /* BringWindowToDisplayBack, for the panel */
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "uiwidgets.h"
+
+#include <SDL_opengl.h>      /* glReadPixels, for LSW2_UI_SHOT */
 
 #include "arenahud.h"
 #include "cheats.h"
@@ -39,12 +43,18 @@ bool g_visible = false;
  * given an SDL_Renderer, so it can never disagree with the window that was
  * actually created. */
 bool g_gl_backend = false;
+/* The top window, for LSW2_UI_SHOT's drawable size under OpenGL. */
+SDL_Window* g_window = nullptr;
 double g_fps = 0.0;
 uint64_t g_frames = 0;
 uint64_t g_underruns = 0;
 void* g_touch_texture = nullptr;
 SDL_Rect g_floating_rect{};
 bool g_floating_shown = false;
+/* Whether the floating panel was the window under the mouse last frame. See
+ * ui_handle_event: a click over the panel is the game's only when nothing of
+ * the menu's is on top of it. */
+bool g_floating_hovered = false;
 
 constexpr int kScreenWidth = 256;
 constexpr int kScreenHeight = 192;
@@ -180,40 +190,159 @@ void touch_panel_size_cb(ImGuiSizeCallbackData* data) {
     data->DesiredSize = ImVec2(k * kUw + edge_w, k * kUh + edge_h);
 }
 
-void video_tab(UiSettings& s) {
-    ImGui::TextUnformatted("Presentation");
-    ImGui::Separator();
+/* THE PAGES. Each function below is one page of the menu - one entry in a
+ * section's sidebar - and holds every setting that page shows, with its
+ * tooltip and its behaviour. How a checkbox or a slider LOOKS is uiwidgets.h's
+ * business; what it does is decided here.
+ *
+ * Every page is drawn by draw_page(), by name and never through a table of
+ * function pointers: the source sweeps follow calls by name to decide what is
+ * reachable, and a page reached only through a pointer would make everything
+ * it calls - the cheats' warp, the fork's probes - look dead. */
 
-    ImGui::Checkbox("Preserve aspect ratio", &s.preserve_aspect);
-    ImGui::SameLine();
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Letterbox rather than stretch.\n\n"
-            "This changes how the frame is SHOWN. It never changes the\n"
-            "projection the game produced - the guest still renders 256x192\n"
-            "and still believes it is on a DS.");
-    }
+/* Settings > Display: how the frame is shown, and the window's size. */
+void display_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Presentation");
+    uiw::checkbox("Preserve aspect ratio", &s.preserve_aspect,
+        "Letterbox rather than stretch.\n\n"
+        "This changes how the frame is SHOWN. It never changes the\n"
+        "projection the game produced - the guest still renders 256x192\n"
+        "and still believes it is on a DS.");
 
     ImGui::BeginDisabled(!s.preserve_aspect);
-    ImGui::Checkbox("Integer scale", &s.integer_scale);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Snap to whole multiples of the guest pixel so every\n"
-                          "one is the same size. Leaves a wider border.");
-    }
+    uiw::checkbox("Integer scale", &s.integer_scale,
+                  "Snap to whole multiples of the guest pixel so every\n"
+                  "one is the same size. Leaves a wider border.");
     ImGui::EndDisabled();
 
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Widescreen");
-    ImGui::Separator();
-    ImGui::Checkbox("Adaptive widescreen", &s.adaptive_widescreen);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Widen the 3D viewport to match the window instead of\n"
-            "letterboxing, so more of the world is visible.\n\n"
-            "Under OpenGL the width is fixed when the renderer starts,\n"
-            "so this takes effect on the next launch.");
+    uiw::next_column();
+    uiw::section("Gameplay window size");
+    uiw::note("Applies to the top screen only; the touch window keeps its own size.");
+    uiw::slider_int("Scale", &s.window_scale, 1, 6, "%dx");
+    if (uiw::button("Apply", "Resize the gameplay window to this scale now."))
+        s.applied_scale = s.window_scale;
+    uiw::note("%d x %d per screen", kScreenWidth * s.window_scale,
+              kScreenHeight * s.window_scale);
+
+    uiw::section("Presets");
+    struct { const char* name; int scale; } presets[] = {
+        {"1x  256x192",  1}, {"2x  512x384",  2}, {"3x  768x576",  3},
+        {"4x 1024x768",  4}, {"5x 1280x960",  5}, {"6x 1536x1152", 6},
+    };
+    /* Three to a row, sized from the column rather than a fixed pixel width,
+     * so the row fits whatever width the column has at this window size. */
+    const float preset_w = (ImGui::GetContentRegionAvail().x -
+                            2.0f * ImGui::GetStyle().ItemSpacing.x) / 3.0f / uiw::scale();
+    for (int i = 0; i < 6; ++i) {
+        if (i % 3) uiw::same_line();
+        if (uiw::button(presets[i].name, "Snap the gameplay window to this size.",
+                        preset_w)) {
+            s.window_scale = presets[i].scale;
+            s.applied_scale = presets[i].scale;
+        }
     }
+    uiw::text(
+        "The window stays freely resizable; a preset just snaps it to an exact "
+        "multiple so every guest pixel is the same size.");
+    uiw::end_columns();
+}
+
+/* Settings > Graphics: the renderer, its sample density, and widescreen. */
+void graphics_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Rendering quality");
+
+    /* WHY THE UI SAYS "RESTART" AND MEANS IT. The internal scale is compiled
+     * into the compute shaders and sizes every framebuffer, so the framework
+     * refuses to change it under a live renderer; and SDL_WINDOW_OPENGL cannot
+     * be added to a window that already exists. A slider that appeared to work
+     * and quietly did nothing would be worse than one that says so. */
+    const bool gl_live = lsw2_gl_active();
+    uiw::checkbox("OpenGL renderer", &s.opengl_renderer,
+        "Render the 3D layer on the GPU and present it directly.\n\n"
+        "This is what makes the two settings below possible: the extra\n"
+        "detail they produce exists only in a GPU texture and never\n"
+        "reaches the CPU framebuffer the software path presents from.\n\n"
+        "Needs OpenGL 4.3. If it is unavailable the port falls back to\n"
+        "the software path and says so on startup.");
+
+    ImGui::BeginDisabled(!s.opengl_renderer);
+    uiw::slider_int("3D resolution", &s.internal_resolution, 1, 4, "%dx",
+        "Render the 3D layer at this multiple of 256x192.\n\n"
+        "This is the setting that fixes chunkiness at large window\n"
+        "sizes. The DS renders 256x192, so scaling up magnifies every\n"
+        "polygon edge; rendering at 3x means there is real detail to\n"
+        "show instead of bigger pixels.\n\n"
+        "The guest is unaffected - it still reads the native surface.");
+    /* NAMED FOR WHAT IT DRIVES. This combo feeds nds_texture_upscale_set_factor
+     * - an xBR resample of each decoded texture at 2x or 4x - and it was
+     * labelled "Texture filtering", which is the name of the checkbox below
+     * that does something else. A player reading "filtering" here and
+     * "Linear filtering" there had two controls with one name. */
+    const char* upscales[] = {"Off", "2x", "4x"};
+    int upscale_index = s.texture_upscale >= 4 ? 2 : s.texture_upscale >= 2 ? 1 : 0;
+    if (uiw::combo("Texture upscale", &upscale_index, upscales, 3,
+            "Resample each decoded DS texture once (xBR), when it is\n"
+            "first used. Restart to apply.\n\n"
+            "Worth turning on alongside a higher 3D resolution: without it\n"
+            "the geometry sharpens but the textures on it stay blocky."))
+        s.texture_upscale = upscale_index == 2 ? 4 : upscale_index == 1 ? 2 : 1;
+    ImGui::EndDisabled();
+
+    /* A KNOWN DEFECT, SAID OUT LOUD. Either of the two settings above above 1x
+     * turns on the compute renderer's HD compositing path, and that path
+     * renders the Arena Lobby's hologram as a solid white shape instead of a
+     * translucent one. Bisected: 1x/1x is correct, 2x/1x and 1x/2x both break
+     * it, and the software renderer is correct at any setting - so it is the
+     * HD path, not the upscaling ratio.
+     *
+     * Shown here rather than buried in a document because the alternative is a
+     * player turning on a quality setting and quietly getting a broken picture.
+     * It sits under both controls now rather than between the slider and its
+     * tooltip, where it once took the slider's tooltip for itself. */
+    if (s.opengl_renderer &&
+        (s.internal_resolution > 1 || s.texture_upscale > 1)) {
+        uiw::warn("Known: above 1x, the Cantina hologram renders as a solid "
+                  "white shape. Set both to 1x to avoid it.");
+    }
+
+    /* Report what is ACTUALLY running next to what is selected, so a failed
+     * OpenGL start is visible here and not only in a startup log nobody reads. */
+    if (s.opengl_renderer != gl_live) {
+        uiw::warn("%s", gl_live
+            ? "Running on OpenGL - restart to go back to software."
+            : "Running on software - restart to apply, or OpenGL 4.3 is "
+              "unavailable here (the startup log says which).");
+    } else {
+        uiw::note("now: %s%s", gl_live ? "OpenGL" : "software",
+                  gl_live ? "" : " (3D resolution unavailable)");
+    }
+
+    uiw::spacing();
+    /* WHAT IT REACHES, said where the player can read it. The SDL present
+     * path honours this on both screens (SDL_SetTextureScaleMode) and the
+     * floating panel's GL texture does too (lsw2_gl_touch_texture). The
+     * OpenGL TOP screen does not: nds_compute_host_present_top samples
+     * integer textures with texelFetch inside its own shader and offers no
+     * filter switch, so under the default renderer this checkbox changes the
+     * touch screen only. Saying so here is the difference between a setting
+     * that is honest about its reach and one that looks broken. */
+    uiw::checkbox("Linear filtering", &s.linear_filter,
+                  "Off is nearest-neighbour, which is usually what you\n"
+                  "want for a DS: this is pixel art.\n\n"
+                  "Under OpenGL the top screen is always nearest - the\n"
+                  "GPU presenter samples exact texels - so this applies\n"
+                  "to the touch screen and the floating panel.");
+    if (gl_live) uiw::note("(touch screen only under OpenGL)");
+
+    uiw::next_column();
+    uiw::section("Widescreen");
+    uiw::checkbox("Adaptive widescreen", &s.adaptive_widescreen,
+        "Widen the 3D viewport to match the window instead of\n"
+        "letterboxing, so more of the world is visible.\n\n"
+        "Under OpenGL the width is fixed when the renderer starts,\n"
+        "so this takes effect on the next launch.");
     /* SAY "RESTART" BESIDE THE CHECKBOX, not under the slider. Under OpenGL
      * the raster width is settled before the compute renderer exists and
      * cannot move afterwards (widescreen.cpp locks it), so a click here is a
@@ -221,8 +350,8 @@ void video_tab(UiSettings& s) {
      * slider block, where a player who only ever touched the checkbox would
      * not read it and would report the checkbox as doing nothing. */
     if (lsw2_widescreen_locked()) {
-        ImGui::SameLine();
-        ImGui::TextDisabled("(applies on restart)");
+        uiw::same_line();
+        uiw::note("(applies on restart)");
     }
     ImGui::BeginDisabled(!s.adaptive_widescreen);
     /* The ceiling comes from the renderer, not from a number picked here. A
@@ -230,23 +359,20 @@ void video_tab(UiSettings& s) {
      * that does nothing. */
     const int max_extra = lsw2_widescreen_max_extra();
     if (s.max_extra_width > max_extra) s.max_extra_width = max_extra;
-    ImGui::SliderInt("Max extra width", &s.max_extra_width, 0, max_extra, "%d px");
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "How far past the native 256 px the 3D raster may widen.\n\n"
-            "The width actually used is whatever makes the picture fill\n"
-            "the window exactly; this is only the ceiling. Lower it if a\n"
-            "very wide view shows scenery the level was never built for.\n\n"
-            "The rasteriser cannot go past 448 px total, which is 2.33:1 -\n"
-            "wider than 21:9. On a window wider than that the picture stops\n"
-            "growing and the remainder stays letterboxed.");
-    }
-    ImGui::TextDisabled("raster now: %d x 192", lsw2_widescreen_width());
+    uiw::slider_int("Max extra width", &s.max_extra_width, 0, max_extra, "%d px",
+        "How far past the native 256 px the 3D raster may widen.\n\n"
+        "The width actually used is whatever makes the picture fill\n"
+        "the window exactly; this is only the ceiling. Lower it if a\n"
+        "very wide view shows scenery the level was never built for.\n\n"
+        "The rasteriser cannot go past 448 px total, which is 2.33:1 -\n"
+        "wider than 21:9. On a window wider than that the picture stops\n"
+        "growing and the remainder stays letterboxed.", 8);
+    uiw::note("raster now: %d x 192", lsw2_widescreen_width());
     if (lsw2_widescreen_locked()) {
         /* The width cannot follow the window on this path, so say what it is
          * following instead. Without this the bars on a differently-shaped
          * window look like a bug rather than a consequence. */
-        ImGui::TextDisabled("%s", "fixed for this session: sized to the display");
+        uiw::note("%s", "fixed for this session: sized to the display");
     }
     ImGui::EndDisabled();
     if (s.adaptive_widescreen) {
@@ -262,204 +388,203 @@ void video_tab(UiSettings& s) {
          *
          * So the warning is back, narrowed to what actually breaks. See
          * widescreen.cpp for the fix this is waiting on. */
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            "OBJECTS to the left and right of centre pop in and out");
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            "until they are near the middle. Level geometry is fine.");
+        uiw::warn("%s", "OBJECTS to the left and right of centre pop in and out "
+                        "until they are near the middle. Level geometry is fine.");
     }
-
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Rendering quality");
-    ImGui::Separator();
-
-    /* WHY THE UI SAYS "RESTART" AND MEANS IT. The internal scale is compiled
-     * into the compute shaders and sizes every framebuffer, so the framework
-     * refuses to change it under a live renderer; and SDL_WINDOW_OPENGL cannot
-     * be added to a window that already exists. A slider that appeared to work
-     * and quietly did nothing would be worse than one that says so. */
-    const bool gl_live = lsw2_gl_active();
-    ImGui::Checkbox("OpenGL renderer", &s.opengl_renderer);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Render the 3D layer on the GPU and present it directly.\n\n"
-            "This is what makes the two settings below possible: the extra\n"
-            "detail they produce exists only in a GPU texture and never\n"
-            "reaches the CPU framebuffer the software path presents from.\n\n"
-            "Needs OpenGL 4.3. If it is unavailable the port falls back to\n"
-            "the software path and says so on startup.");
-    }
-
-    ImGui::BeginDisabled(!s.opengl_renderer);
-    ImGui::SliderInt("3D resolution", &s.internal_resolution, 1, 4, "%dx");
-    /* A KNOWN DEFECT, SAID OUT LOUD. Either of the two settings below above 1x
-     * turns on the compute renderer's HD compositing path, and that path
-     * renders the Arena Lobby's hologram as a solid white shape instead of a
-     * translucent one. Bisected: 1x/1x is correct, 2x/1x and 1x/2x both break
-     * it, and the software renderer is correct at any setting - so it is the
-     * HD path, not the upscaling ratio.
-     *
-     * Shown here rather than buried in a document because the alternative is a
-     * player turning on a quality setting and quietly getting a broken picture. */
-    if (s.opengl_renderer &&
-        (s.internal_resolution > 1 || s.texture_upscale > 1)) {
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            "Known: above 1x, the Cantina hologram renders as a");
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            "solid white shape. Set both to 1x to avoid it.");
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Render the 3D layer at this multiple of 256x192.\n\n"
-            "This is the setting that fixes chunkiness at large window\n"
-            "sizes. The DS renders 256x192, so scaling up magnifies every\n"
-            "polygon edge; rendering at 3x means there is real detail to\n"
-            "show instead of bigger pixels.\n\n"
-            "The guest is unaffected - it still reads the native surface.");
-    }
-    /* NAMED FOR WHAT IT DRIVES. This combo feeds nds_texture_upscale_set_factor
-     * - an xBR resample of each decoded texture at 2x or 4x - and it was
-     * labelled "Texture filtering", which is the name of the checkbox below
-     * that does something else. A player reading "filtering" here and
-     * "Linear filtering" there had two controls with one name. */
-    const char* upscales[] = {"Off", "2x", "4x"};
-    int upscale_index = s.texture_upscale >= 4 ? 2 : s.texture_upscale >= 2 ? 1 : 0;
-    if (ImGui::Combo("Texture upscale", &upscale_index, upscales, 3))
-        s.texture_upscale = upscale_index == 2 ? 4 : upscale_index == 1 ? 2 : 1;
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Resample each decoded DS texture once (xBR), when it is\n"
-            "first used. Restart to apply.\n\n"
-            "Worth turning on alongside a higher 3D resolution: without it\n"
-            "the geometry sharpens but the textures on it stay blocky.");
-    }
-    ImGui::EndDisabled();
-
-    /* Report what is ACTUALLY running next to what is selected, so a failed
-     * OpenGL start is visible here and not only in a startup log nobody reads. */
-    if (s.opengl_renderer != gl_live) {
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            gl_live ? "Running on OpenGL - restart to go back to software."
-                    : "Running on software - restart to apply, or OpenGL 4.3");
-        if (!gl_live)
-            ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-                "is unavailable here (the startup log says which).");
-    } else {
-        ImGui::TextDisabled("now: %s%s", gl_live ? "OpenGL" : "software",
-                            gl_live ? "" : " (3D resolution unavailable)");
-    }
-
-    ImGui::Spacing();
-    ImGui::Checkbox("Linear filtering", &s.linear_filter);
-    /* WHAT IT REACHES, said where the player can read it. The SDL present
-     * path honours this on both screens (SDL_SetTextureScaleMode) and the
-     * floating panel's GL texture does too (lsw2_gl_touch_texture). The
-     * OpenGL TOP screen does not: nds_compute_host_present_top samples
-     * integer textures with texelFetch inside its own shader and offers no
-     * filter switch, so under the default renderer this checkbox changes the
-     * touch screen only. Saying so here is the difference between a setting
-     * that is honest about its reach and one that looks broken. */
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Off is nearest-neighbour, which is usually what you\n"
-                          "want for a DS: this is pixel art.\n\n"
-                          "Under OpenGL the top screen is always nearest - the\n"
-                          "GPU presenter samples exact texels - so this applies\n"
-                          "to the touch screen and the floating panel.");
-    }
-    if (gl_live) {
-        ImGui::SameLine();
-        ImGui::TextDisabled("(touch screen only under OpenGL)");
-    }
-
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Gameplay window size");
-    ImGui::Separator();
-    ImGui::TextDisabled("Applies to the top screen only; the touch window keeps "
-                        "its own size.");
-    ImGui::SliderInt("Scale", &s.window_scale, 1, 6, "%dx");
-    ImGui::SameLine();
-    if (ImGui::Button("Apply")) s.applied_scale = s.window_scale;
-    ImGui::TextDisabled("%d x %d per screen",
-                        kScreenWidth * s.window_scale,
-                        kScreenHeight * s.window_scale);
-
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Presets");
-    struct { const char* name; int scale; } presets[] = {
-        {"1x  256x192",  1}, {"2x  512x384",  2}, {"3x  768x576",  3},
-        {"4x 1024x768",  4}, {"5x 1280x960",  5}, {"6x 1536x1152", 6},
-    };
-    for (int i = 0; i < 6; ++i) {
-        if (i % 3) ImGui::SameLine();
-        if (ImGui::Button(presets[i].name, ImVec2(118, 0))) {
-            s.window_scale = presets[i].scale;
-            s.applied_scale = presets[i].scale;
-        }
-    }
-    ImGui::TextWrapped(
-        "The window stays freely resizable; a preset just snaps it to an exact "
-        "multiple so every guest pixel is the same size.");
+    uiw::end_columns();
 }
 
-void input_tab(UiSettings& s) {
-    ImGui::TextUnformatted("Analog stick");
-    ImGui::Separator();
-    ImGui::Checkbox("Stick as D-pad", &s.stick_as_dpad);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "The DS has no analog input, so a stick can only drive the same\n"
-            "four direction bits the D-pad does - there is nothing finer to\n"
-            "send. This is what every DS emulator does.\n\n"
-            "The pad's buttons were read from the start and its sticks were\n"
-            "not read at all, which is why a controller only half-worked.");
-    }
+/* Settings > Controls: the stick, and the binding table. */
+void controls_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Analog stick");
+    uiw::checkbox("Stick as D-pad", &s.stick_as_dpad,
+        "The DS has no analog input, so a stick can only drive the same\n"
+        "four direction bits the D-pad does - there is nothing finer to\n"
+        "send. This is what every DS emulator does.\n\n"
+        "The pad's buttons were read from the start and its sticks were\n"
+        "not read at all, which is why a controller only half-worked.");
     ImGui::BeginDisabled(!s.stick_as_dpad);
-    ImGui::SliderInt("Deadzone", &s.stick_deadzone, 5, 90, "%d%%");
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "How far the stick must move before it counts as a direction.\n"
-            "Raise it if the character wanders on its own - a worn stick\n"
-            "rests off centre.");
-    }
+    uiw::slider_int("Deadzone", &s.stick_deadzone, 5, 90, "%d%%",
+        "How far the stick must move before it counts as a direction.\n"
+        "Raise it if the character wanders on its own - a worn stick\n"
+        "rests off centre.");
     ImGui::EndDisabled();
 
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Enhancements");
-    ImGui::Separator();
-    /* The optional enhancements, and they belong in BOTH builds - they are
-     * specified for both, and the baseline's customize panel applies hats
-     * through the same function. */
-    ImGui::Checkbox("Player-colour ring", &s.enhanced_slot_colour);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Recolour the top-screen portrait ring to this player's\n"
-            "colour, in the hunter lobby and the co-op netgame.");
-    }
+    uiw::spacing();
+    /* ONE LINE, AND A TRUE ONE. The second line here said right-stick camera
+     * control was "planned for the Bounty Hunter fork", forty lines below the
+     * controls that drive it. A stale promise under a working control reads
+     * as the control not working. */
+    uiw::note("The stylus is the mouse, on the touch screen or the floating panel.");
+    /* The camera controls the right stick drives are an enhancement and live
+     * on that section's Arena Controls page; the Camera rows of the binding
+     * table beside this are the keyboard's way to the same camera. */
+    uiw::note("The arena camera's settings are under Enhancements > Arena Controls.");
 
-    ImGui::Checkbox("Portrait follows character", &s.enhanced_portrait);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Changing character on the Free Play screen leaves the top-screen\n"
-            "portrait showing the old one until you tag a partner and back.\n\n"
-            "The touch path swaps the party without asking the game to re-read\n"
-            "it; the d-pad path does. On, the same refresh runs either way.");
-    }
+    uiw::next_column();
+    uiw::section("Buttons");
+    if (uiw::begin_block("Buttons",
+            "bindings rebind keyboard key gamepad controller pad button "
+            "A B X Y L R Start Select D-pad camera reset defaults")) {
+        uiw::text("Click a binding to change it, then press the key or button "
+                  "you want. Escape cancels.");
+        uiw::spacing();
 
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Enhanced arena controls");
-    ImGui::Separator();
-    ImGui::Checkbox("Enhanced controls", &s.enhanced_controls);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "Free camera on the right stick and ordinary movement on the\n"
-            "left, in arena gameplay only - the lobby keeps its usual\n"
-            "controls.\n\n"
-            "Turning this OFF always wins: you get tank controls even in a\n"
-            "match whose host has Enhanced enabled. The reverse is not true -\n"
-            "a host who disallows it still disallows it.");
+        if (ImGui::BeginTable("bindings", 3,
+                              ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+                              ImGuiTableFlags_SizingStretchProp)) {
+            ImGui::TableSetupColumn("Action");
+            ImGui::TableSetupColumn("Key");
+            ImGui::TableSetupColumn("Gamepad");
+            ImGui::TableHeadersRow();
+
+            for (int i = 0; i < kBindingCount; ++i) {
+                UiBinding& b = g_bindings[i];
+                ImGui::TableNextRow();
+                ImGui::PushID(i);
+
+                /* Centred on the row's buttons, which are padded more than
+                 * an ordinary frame. */
+                ImGui::TableNextColumn();
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                                    ImVec2(10.0f * uiw::scale(), 8.0f * uiw::scale()));
+                ImGui::AlignTextToFramePadding();
+                ImGui::PopStyleVar();
+                ImGui::TextUnformatted(b.action);
+
+                ImGui::TableNextColumn();
+                const bool waiting_key = (g_capture_index == i && !g_capture_pad);
+                const char* key_label = waiting_key
+                    ? "press a key..."
+                    : (b.scancode >= 0 ? SDL_GetScancodeName(SDL_Scancode(b.scancode))
+                                       : "unbound");
+                /* Each cell in its own ID scope: a row whose key and pad are
+                 * both "unbound" would otherwise be two buttons with one ID. */
+                ImGui::PushID("key");
+                if (uiw::button(*key_label ? key_label : "unbound")) {
+                    g_capture_index = i;
+                    g_capture_pad = false;
+                }
+                ImGui::PopID();
+
+                ImGui::TableNextColumn();
+                const bool waiting_pad = (g_capture_index == i && g_capture_pad);
+                char pad_label[32];
+                if (waiting_pad) {
+                    std::snprintf(pad_label, sizeof pad_label, "press a button...");
+                } else if (b.pad_button >= 0) {
+                    const char* n = SDL_GameControllerGetStringForButton(
+                        SDL_GameControllerButton(b.pad_button));
+                    std::snprintf(pad_label, sizeof pad_label, "%s", n ? n : "?");
+                } else {
+                    std::snprintf(pad_label, sizeof pad_label, "unbound");
+                }
+                ImGui::PushID("pad");
+                if (uiw::button(pad_label)) {
+                    g_capture_index = i;
+                    g_capture_pad = true;
+                }
+                ImGui::PopID();
+                ImGui::PopID();
+            }
+            ImGui::EndTable();
+        }
+
+        uiw::spacing();
+        if (uiw::button("Reset to defaults", nullptr, -1.0f)) {
+            static const int keys[] = {
+                SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_S, SDL_SCANCODE_A,
+                SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_RETURN,
+                SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
+                SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
+                SDL_SCANCODE_J, SDL_SCANCODE_L, SDL_SCANCODE_I, SDL_SCANCODE_K};
+            /* One default per row: a short initialiser zero-fills the rest,
+             * and the camera rows came back unbound. */
+            static_assert(sizeof keys / sizeof *keys == kBindingCount, "");
+            for (int i = 0; i < kBindingCount; ++i) g_bindings[i].scancode = keys[i];
+            g_capture_index = -1;
+        }
+        uiw::end_block();
     }
+    uiw::end_columns();
+}
+
+/* Settings > Touch Screen: where the DS's lower screen is shown. */
+void touch_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Floating touch panel");
+    uiw::text(
+        "The DS touch screen normally gets its own window. It can instead "
+        "float inside this one as a movable panel.");
+    uiw::spacing();
+
+    uiw::checkbox("Floating touch panel", &s.floating_touch,
+                  "Show the touch screen as a panel inside the gameplay\n"
+                  "window, which can be moved by its title bar and resized\n"
+                  "by its corner.");
+    ImGui::BeginDisabled(!s.floating_touch);
+    /* A MOVED SLIDER IS A RESIZE REQUEST. The panel remembers the size it was
+     * dragged to and that memory outranked this slider on every frame after
+     * the first, so once the panel had been shown the slider changed nothing
+     * (see the note over SetNextWindowSize in ui_draw). Moving it now asks
+     * for the preset size, the same way the window Scale slider's Apply does
+     * for the top window. The -/+ buttons are moves too. */
+    if (uiw::slider_float("Panel scale", &s.floating_touch_scale, 0.5f, 3.0f,
+                          "%.2fx", 0.25f,
+                          "Resizes the panel to this multiple of 256x192.\n"
+                          "Dragging its corner afterwards is remembered too."))
+        g_panel_resize = true;
+    uiw::checkbox("Hide touch window", &s.floating_touch_only,
+                  "Stop showing the separate touch window while the panel\n"
+                  "is doing its job, so the same screen is not shown twice.");
+    ImGui::EndDisabled();
+
+    uiw::next_column();
+    uiw::section("Using the panel");
+    uiw::note(
+        "The panel is clickable: clicks map back to stylus coordinates through "
+        "the same transform used to draw it.");
+    /* THE MENU COVERS THE PANEL. The menu is drawn over the whole game window
+     * now, the panel included, so the panel is touched with the menu closed;
+     * it stays visible, dimmed, behind the menu like the rest of the game. */
+    uiw::note("While this menu is open it covers the panel with the rest of the "
+              "game; close the menu to touch it.");
+    if (s.arena_hud_overlay)
+        uiw::note("The floating touch panel is hidden during matches while the "
+                  "arena HUD overlay is on (Enhancements > Arena HUD).");
+    uiw::end_columns();
+}
+
+/* Enhancements > Arena Controls: the Enhanced control set. */
+void arena_controls_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Enhanced arena controls");
+    uiw::checkbox("Enhanced controls", &s.enhanced_controls,
+        "Free camera on the right stick and ordinary movement on the\n"
+        "left, in arena gameplay only - the lobby keeps its usual\n"
+        "controls.\n\n"
+        "Turning this OFF always wins: you get tank controls even in a\n"
+        "match whose host has Enhanced enabled. The reverse is not true -\n"
+        "a host who disallows it still disallows it.");
+    /* SAY WHAT IS LIVE, and say it precisely - this is the copy the player
+     * reads. It said the checkbox gives movement "the camera's heading instead
+     * of the ship's" by writing the actor's view index, and that the stick
+     * writes the view record's yaw. Neither ever moved anything in an arena:
+     * the index is never the sentinel there, and the record is overwritten by
+     * the next exchange (enhanced.cpp has the measurements). The checkbox now
+     * switches the arena's per-player camera mode through the game's own
+     * message, and the stick steers that camera. */
+    uiw::note("In arena matches: the left stick or d-pad moves you relative to "
+              "the camera, and the right stick (or the Camera bindings under "
+              "Settings > Controls) turns it around you and raises or lowers "
+              "it. The lobby keeps the usual controls.");
+
+    uiw::next_column();
+    uiw::section("Camera");
     ImGui::BeginDisabled(!s.enhanced_controls);
-    ImGui::Checkbox("Invert camera X", &s.right_stick_invert_x);
+    uiw::checkbox("Invert camera X", &s.right_stick_invert_x,
+                  "Reverse which way the right stick turns the camera.");
     /* LIVE SINCE 2026-09-23, and the greyed version's reason retracted.
      *
      * This was disabled with a measured reason: the VIEW RECORD at
@@ -471,170 +596,37 @@ void input_tab(UiSettings& s) {
      * local camera object (enhanced.cpp), which sits at an offset from the
      * player - and the offset has a height, which the stick's vertical axis
      * moves. That is what this inverts. */
-    ImGui::Checkbox("Invert camera Y", &s.right_stick_invert_y);
-    ImGui::SliderInt("Camera deadzone", &s.right_stick_deadzone, 5, 90, "%d%%");
-    ImGui::SliderInt("Camera turn speed", &s.right_stick_speed_x, 25, 600, "%d%%");
-    ImGui::SliderInt("Camera height speed", &s.right_stick_speed_y, 25, 600, "%d%%");
+    uiw::checkbox("Invert camera Y", &s.right_stick_invert_y,
+                  "Reverse which way the right stick raises and lowers\n"
+                  "the camera.");
+    uiw::slider_int("Camera deadzone", &s.right_stick_deadzone, 5, 90, "%d%%",
+                    "How far the right stick must move before the camera\n"
+                    "turns.");
+    uiw::slider_int("Camera turn speed", &s.right_stick_speed_x, 25, 600, "%d%%",
+                    "How fast the camera turns around you, as a percentage of\n"
+                    "the original rate.", 25);
+    uiw::slider_int("Camera height speed", &s.right_stick_speed_y, 25, 600, "%d%%",
+                    "How fast the camera rises and falls, as a percentage of\n"
+                    "the original rate.", 25);
     ImGui::EndDisabled();
-    /* SAY WHAT IS LIVE, and say it precisely - this is the copy the player
-     * reads. It said the checkbox gives movement "the camera's heading instead
-     * of the ship's" by writing the actor's view index, and that the stick
-     * writes the view record's yaw. Neither ever moved anything in an arena:
-     * the index is never the sentinel there, and the record is overwritten by
-     * the next exchange (enhanced.cpp has the measurements). The checkbox now
-     * switches the arena's per-player camera mode through the game's own
-     * message, and the stick steers that camera. */
-    ImGui::TextDisabled("In arena matches: the left stick or d-pad moves you");
-    ImGui::TextDisabled("relative to the camera, and the right stick (or the");
-    ImGui::TextDisabled("Camera bindings below) turns it around you and raises");
-    ImGui::TextDisabled("or lowers it. The lobby keeps the usual controls.");
-
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Buttons");
-    ImGui::Separator();
-    ImGui::TextWrapped(
-        "Click a binding to change it, then press the key or button you want. "
-        "Escape cancels.");
-    ImGui::Spacing();
-
-    if (ImGui::BeginTable("bindings", 3,
-                          ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
-                          ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Action");
-        ImGui::TableSetupColumn("Key");
-        ImGui::TableSetupColumn("Gamepad");
-        ImGui::TableHeadersRow();
-
-        for (int i = 0; i < kBindingCount; ++i) {
-            UiBinding& b = g_bindings[i];
-            ImGui::TableNextRow();
-            ImGui::PushID(i);
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(b.action);
-
-            ImGui::TableNextColumn();
-            const bool waiting_key = (g_capture_index == i && !g_capture_pad);
-            const char* key_label = waiting_key
-                ? "press a key..."
-                : (b.scancode >= 0 ? SDL_GetScancodeName(SDL_Scancode(b.scancode))
-                                   : "unbound");
-            if (ImGui::Button(*key_label ? key_label : "unbound",
-                              ImVec2(-FLT_MIN, 0))) {
-                g_capture_index = i;
-                g_capture_pad = false;
-            }
-
-            ImGui::TableNextColumn();
-            const bool waiting_pad = (g_capture_index == i && g_capture_pad);
-            char pad_label[32];
-            if (waiting_pad) {
-                std::snprintf(pad_label, sizeof pad_label, "press a button...");
-            } else if (b.pad_button >= 0) {
-                const char* n = SDL_GameControllerGetStringForButton(
-                    SDL_GameControllerButton(b.pad_button));
-                std::snprintf(pad_label, sizeof pad_label, "%s", n ? n : "?");
-            } else {
-                std::snprintf(pad_label, sizeof pad_label, "unbound");
-            }
-            if (ImGui::Button(pad_label, ImVec2(-FLT_MIN, 0))) {
-                g_capture_index = i;
-                g_capture_pad = true;
-            }
-            ImGui::PopID();
-        }
-        ImGui::EndTable();
-    }
-
-    ImGui::Spacing();
-    if (ImGui::Button("Reset to defaults")) {
-        static const int keys[kBindingCount] = {
-            SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_S, SDL_SCANCODE_A,
-            SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_RETURN,
-            SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
-            SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT};
-        for (int i = 0; i < kBindingCount; ++i) g_bindings[i].scancode = keys[i];
-        g_capture_index = -1;
-    }
-
-    ImGui::Spacing();
-    /* ONE LINE, AND A TRUE ONE. The second line here said right-stick camera
-     * control was "planned for the Bounty Hunter fork", forty lines below the
-     * controls that drive it. A stale promise under a working control reads
-     * as the control not working. */
-    ImGui::TextDisabled("The stylus is the mouse, on the touch screen or the "
-                        "floating panel.");
+    uiw::end_columns();
 }
 
-void touch_tab(UiSettings& s) {
-    /* THE LOBBY CHARACTER SELECT LIVES HERE, not on the Multiplayer tab.
-     *
-     * This group was on Multiplayer and it is not a networking setting -
-     * it decides what the LOWER SCREEN SHOWS in the lobby, which is what
-     * this tab is for. The Multiplayer tab holds only settings that have
-     * no sensible in-game home - the player name and the master server
-     * address - so anything else sitting on it was miscategorised by that
-     * rule as well as by feel. */
-    ImGui::Spacing();
-    ImGui::SeparatorText("Lobby character select");
-    /* A flag for whether the select shows all characters or only the bounty
-     * hunters, defaulting to only bounty hunters. It is not specified as a game
-     * menu row - so by the rule above it lives here. It is not a match setting;
-     * the host's own Roster row is, and that one is in the game's host menu. */
-    ImGui::Checkbox("Free Play select",
-                    &s.bh_freeplay_select);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "The lobby's touch screen shows the Free Play character select,\n"
-            "so a hunter can be picked and customized before joining.\n\n"
-            "Turning it off restores the stock Party Members tab - which is\n"
-            "the way back if the roster screen misbehaves in the lobby.");
-    }
-    /* GREYED WHILE A SESSION IS UP, because the host owns this then, and a
-     * control that still moves while being ignored is worse than one that
-     * refuses. See lsw2_hle_fork_hunters_only() for the precedence. */
-    const bool host_owns_roster = lsw2_fork_session().in_session();
-    ImGui::BeginDisabled(!s.bh_freeplay_select || host_owns_roster);
-    ImGui::Checkbox("Bounty Hunters only", &s.bh_roster_only);
-    ImGui::EndDisabled();
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            host_owns_roster
-              ? "The host's Roster setting decides this during a session.\n\n"
-                "A client cannot widen its own roster - that would mean picking\n"
-                "from twelve pages while everyone else picks from two."
-              : "Restricts the select to the two Bounty Hunters pages, cycling\n"
-                "between them in both directions.\n\n"
-                "Off shows all twelve character pages.");
-    }
-    if (host_owns_roster) {
-        ImGui::SameLine();
-        ImGui::TextDisabled("(host decides)");
-    }
-
-    ImGui::Spacing();
-
-    /* The arena match HUD on the top screen. Grouped with the touch settings
-     * because it REPLACES them:
-     * during a match the floating panel is not drawn at all. */
-    ImGui::TextUnformatted("Match HUD on the top screen");
-    ImGui::Separator();
-    ImGui::Checkbox("Arena HUD overlay", &s.arena_hud_overlay);
-    /* THE TOOLTIP SITS ON THE CHECKBOX IT DESCRIBES. It used to be sixty lines
-     * down, after the player-count bootstrap button - the probe buttons were inserted
-     * between the checkbox and its IsItemHovered, so imgui attached this text
-     * to the last button drawn and the checkbox had none. Same shape as a
-     * comment drifting away from its code, with the same fix. */
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
-            "During an arena match, mirrors the other players' column to the\n"
-            "lower left, the radar to the top right and the signal meter to\n"
-            "the bottom right, and hides the touch screen.\n\n"
-            "Only during a match - the lobby keeps its touch screen, which\n"
-            "is where the character select lives.\n\n"
-            "Copied from the real touch screen, in player order rather than\n"
-            "score order - the game draws them, this only moves them.");
-    }
+/* Enhancements > Arena HUD: the match HUD on the top screen. */
+void arena_hud_page(UiSettings& s) {
+    /* The arena match HUD on the top screen. It REPLACES the touch screen
+     * during a match - the floating panel is not drawn at all then - which is
+     * why the Touch Screen page mentions it; it lives here because it is an
+     * enhancement, offered as a setting and off by default. */
+    uiw::section("Match HUD on the top screen");
+    uiw::checkbox("Arena HUD overlay", &s.arena_hud_overlay,
+        "During an arena match, mirrors the other players' column to the\n"
+        "lower left, the radar to the top right and the signal meter to\n"
+        "the bottom right, and hides the touch screen.\n\n"
+        "Only during a match - the lobby keeps its touch screen, which\n"
+        "is where the character select lives.\n\n"
+        "Copied from the real touch screen, in player order rather than\n"
+        "score order - the game draws them, this only moves them.");
 
     /* NO SOURCE-RECTANGLE SLIDERS ANY MORE.
      *
@@ -652,116 +644,205 @@ void touch_tab(UiSettings& s) {
      * The design rule for the HUD: the switch lives in imgui, the pixels come
      * from the game. arenahud.cpp now locates the signal meter from the game's own OAM
      * entry on every frame and mirrors the radar's measured panel as a constant,
-     * so the toggle above is the whole of what this tab has to offer for the
+     * so the toggle above is the whole of what this page has to offer for the
      * arena HUD. The
      * old settings keys are left untouched in the file by the store. */
     ImGui::BeginDisabled(!s.arena_hud_overlay);
-    ImGui::SliderFloat("HUD size", &s.arena_hud_scale, 0.5f, 1.5f, "%.2fx");
+    uiw::slider_float("HUD size", &s.arena_hud_scale, 0.5f, 1.5f, "%.2fx", 0.05f,
+                      "The mirrored HUD's size on the top screen: 1.00x is the\n"
+                      "DS's own size, 0.50x is half.");
     ImGui::EndDisabled();
     if (s.arena_hud_overlay) {
-        ImGui::TextDisabled("The floating touch panel is hidden during matches.");
+        uiw::note("The floating touch panel is hidden during matches.");
     }
-
-    /* THE THREE PROBE BUTTONS THAT SAT HERE ARE ON THE DEBUG TAB NOW. They
-     * are guest-call probes that print a log line - the camera yaw, the gear
-     * applier, the count bootstrap - and this tab is for what the lower screen
-     * shows. A probe between the HUD toggle and the touch panel is a control
-     * in the wrong category. */
-    ImGui::Spacing();
-
-    ImGui::TextWrapped(
-        "The DS touch screen normally gets its own window. It can instead "
-        "float inside this one as a movable panel.");
-    ImGui::Spacing();
-
-    ImGui::Checkbox("Floating touch panel", &s.floating_touch);
-    ImGui::BeginDisabled(!s.floating_touch);
-    /* A MOVED SLIDER IS A RESIZE REQUEST. The panel remembers the size it was
-     * dragged to and that memory outranked this slider on every frame after
-     * the first, so once the panel had been shown the slider changed nothing
-     * (see the note over SetNextWindowSize in ui_draw). Moving it now asks
-     * for the preset size, the same way the window Scale slider's Apply does
-     * for the top window. */
-    if (ImGui::SliderFloat("Panel scale", &s.floating_touch_scale, 0.5f, 3.0f,
-                           "%.2fx"))
-        g_panel_resize = true;
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Resizes the panel to this multiple of 256x192.\n"
-                          "Dragging its corner afterwards is remembered too.");
-    }
-    ImGui::Checkbox("Hide touch window", &s.floating_touch_only);
-    ImGui::EndDisabled();
-
-    ImGui::Spacing();
-    ImGui::TextDisabled(
-        "The panel is clickable: clicks map back to stylus coordinates through\n"
-        "the same transform used to draw it.");
 }
 
-void debug_tab(UiSettings& s) {
-    ImGui::Text("%.1f FPS", g_fps);
-    ImGui::Text("%llu frames presented", (unsigned long long)g_frames);
-    if (g_underruns)
-        ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f),
-                           "%llu audio underruns", (unsigned long long)g_underruns);
-    else
-        ImGui::TextDisabled("no audio underruns");
-
-    ImGui::Spacing();
-    ImGui::Checkbox("ImGui metrics", &s.show_metrics);
-
-    /* Several clients on one machine, heard once. */
-    ImGui::Spacing();
-    ImGui::TextUnformatted("When another copy of the game is already running");
-    ImGui::Separator();
-    ImGui::Checkbox("Mute music", &s.mute_music_second_instance);
-    ImGui::SameLine();
-    ImGui::Checkbox("Mute all sound", &s.mute_sound_second_instance);
-    ImGui::TextDisabled("%s", lsw2_instance_is_secondary()
-                                  ? "This window is a second copy - these apply to it."
-                                  : "This window is the first copy - these do not apply to it.");
-
-    /* THE FORK'S GUEST-CALL PROBES, moved here from the Touch tab.
+/* Enhancements > Lobby: what the lobby's lower screen offers. */
+void lobby_page(UiSettings& s) {
+    /* THE LOBBY CHARACTER SELECT LIVES HERE, not on the Multiplayer page.
      *
-     * Each is one call into the cartridge's own code, armed by the button and
-     * fired from the fork tick, and each reports with a log line rather than
-     * changing anything a player sees. That is a debugging instrument, so it
-     * lives on the tab that says so. Fork only, because every one of them
-     * refuses in the baseline and a button that only prints "fork build only"
-     * is noise. Labels are the noun; the tooltip carries the explanation. */
-    if (ui_fork_build()) {
-        ImGui::Spacing();
-        ImGui::TextUnformatted("Probes");
-        ImGui::Separator();
-        if (ImGui::Button("Probe camera yaw")) lsw2_enhanced_probe_camera();
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip(
-                "During a match, writes a quarter turn into the camera's yaw\n"
-                "and reports next frame whether it stuck. Outside a match it\n"
-                "refuses and says so.");
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Probe gear applier")) lsw2_partapply_arm();
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("One call to the game's own part attacher, and a\n"
-                              "log line saying whether it returned.");
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Seat players")) lsw2_countboot_arm();
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Runs the cartridge's own player-count bootstrap\n"
-                              "with the session's real count.");
-        }
+     * This group was once on Multiplayer and it is not a networking setting -
+     * it decides what the LOWER SCREEN SHOWS in the lobby. The Multiplayer
+     * page holds only settings that have no sensible in-game home - the
+     * player name and the master server address - so anything else sitting on
+     * it was miscategorised by that rule as well as by feel. It replaces the
+     * cartridge's own Party Members tab, which makes it an enhancement. */
+    uiw::section("Lobby character select");
+    /* A flag for whether the select shows all characters or only the bounty
+     * hunters, defaulting to only bounty hunters. It is not specified as a game
+     * menu row - so by the rule above it lives here. It is not a match setting;
+     * the host's own Roster row is, and that one is in the game's host menu. */
+    uiw::checkbox("Free Play select",
+                  &s.bh_freeplay_select,
+        "The lobby's touch screen shows the Free Play character select,\n"
+        "so a hunter can be picked and customized before joining.\n\n"
+        "Turning it off restores the stock Party Members tab - which is\n"
+        "the way back if the roster screen misbehaves in the lobby.");
+    /* GREYED WHILE A SESSION IS UP, because the host owns this then, and a
+     * control that still moves while being ignored is worse than one that
+     * refuses. See lsw2_hle_fork_hunters_only() for the precedence. */
+    const bool host_owns_roster = lsw2_fork_session().in_session();
+    ImGui::BeginDisabled(!s.bh_freeplay_select || host_owns_roster);
+    uiw::checkbox("Bounty Hunters only", &s.bh_roster_only,
+        host_owns_roster
+          ? "The host's Roster setting decides this during a session.\n\n"
+            "A client cannot widen its own roster - that would mean picking\n"
+            "from twelve pages while everyone else picks from two."
+          : "Restricts the select to the two Bounty Hunters pages, cycling\n"
+            "between them in both directions.\n\n"
+            "Off shows all twelve character pages.");
+    ImGui::EndDisabled();
+    if (host_owns_roster) {
+        uiw::same_line();
+        uiw::note("(host decides)");
+    }
+}
+
+/* Enhancements > Portraits: the top-screen portrait fixes. */
+void portraits_page(UiSettings& s) {
+    uiw::section("Top-screen portrait");
+    /* The optional enhancements, and they belong in BOTH builds - they are
+     * specified for both, and the baseline's customize panel applies hats
+     * through the same function. */
+    uiw::checkbox("Player-colour ring", &s.enhanced_slot_colour,
+        "Recolour the top-screen portrait ring to this player's\n"
+        "colour, in the hunter lobby and the co-op netgame.");
+    uiw::checkbox("Portrait follows character", &s.enhanced_portrait,
+        "Changing character on the Free Play screen leaves the top-screen\n"
+        "portrait showing the old one until you tag a partner and back.\n\n"
+        "The touch path swaps the party without asking the game to re-read\n"
+        "it; the d-pad path does. On, the same refresh runs either way.");
+}
+
+/* Debug > General: the live numbers, the metrics window, the debug surface. */
+void debug_general_page(UiSettings& s) {
+    uiw::columns(2);
+    uiw::section("Performance");
+    if (uiw::begin_block("Performance",
+                         "fps frames presented audio underruns performance stats")) {
+        uiw::text("%.1f FPS", g_fps);
+        uiw::text("%llu frames presented", (unsigned long long)g_frames);
+        if (g_underruns)
+            uiw::warn("%llu audio underruns", (unsigned long long)g_underruns);
+        else
+            uiw::note("no audio underruns");
+        uiw::end_block();
     }
 
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Remote control");
-    ImGui::Separator();
-    ImGui::TextWrapped(
-        "This build serves a debug surface on 127.0.0.1:19842 - framebuffer "
-        "capture, memory and register reads, and input injection.");
-    ImGui::TextDisabled("tools/pilot.py shot out.png");
-    ImGui::TextDisabled("tools/pilot.py press start");
+    uiw::spacing();
+    uiw::checkbox("ImGui metrics", &s.show_metrics,
+                  "Open imgui's own metrics window over the menu.");
+
+    uiw::next_column();
+    uiw::section("Remote control");
+    if (uiw::begin_block("Remote control",
+                         "debug surface pilot remote capture screenshot port 19842")) {
+        uiw::text(
+            "This build serves a debug surface on 127.0.0.1:19842 - framebuffer "
+            "capture, memory and register reads, and input injection.");
+        uiw::note("tools/pilot.py shot out.png");
+        uiw::note("tools/pilot.py press start");
+        uiw::end_block();
+    }
+    uiw::end_columns();
+}
+
+/* Debug > Instances: several clients on one machine, heard once. */
+void debug_instances_page(UiSettings& s) {
+    uiw::section("When another copy of the game is already running");
+    uiw::checkbox("Mute music", &s.mute_music_second_instance,
+                  "A second copy of the game plays no music, so several\n"
+                  "clients on one machine are not heard several times over.");
+    uiw::same_line();
+    uiw::checkbox("Mute all sound", &s.mute_sound_second_instance,
+                  "A second copy of the game plays no sound at all.");
+    uiw::note("%s", lsw2_instance_is_secondary()
+                        ? "This window is a second copy - these apply to it."
+                        : "This window is the first copy - these do not apply to it.");
+}
+
+/* Debug > Probes: the fork's guest-call probes.
+ *
+ * Each is one call into the cartridge's own code, armed by the button and
+ * fired from the fork tick, and each reports with a log line rather than
+ * changing anything a player sees. That is a debugging instrument, so it
+ * lives in the section that says so. Fork only, because every one of them
+ * refuses in the baseline and a button that only prints "fork build only"
+ * is noise. Labels are the noun; the tooltip carries the explanation. */
+void debug_probes_page() {
+    uiw::section("Probes");
+    uiw::note("Each probe makes one call into the game and reports in the log.");
+    if (uiw::button("Probe camera yaw",
+            "During a match, writes a quarter turn into the camera's yaw\n"
+            "and reports next frame whether it stuck. Outside a match it\n"
+            "refuses and says so.", -1.0f))
+        lsw2_enhanced_probe_camera();
+    uiw::same_line();
+    if (uiw::button("Probe gear applier",
+            "One call to the game's own part attacher, and a\n"
+            "log line saying whether it returned.", -1.0f))
+        lsw2_partapply_arm();
+    uiw::same_line();
+    if (uiw::button("Seat players",
+            "Runs the cartridge's own player-count bootstrap\n"
+            "with the session's real count.", -1.0f))
+        lsw2_countboot_arm();
+}
+
+/* The name and the two addresses, which both builds' Multiplayer pages share.
+ *
+ * ONE FIELD WIDTH FOR THE WHOLE FORM, by construction now. imgui draws a
+ * label to the RIGHT of its widget, so with no explicit width every field took
+ * its own and the labels - "Player name", "Host", "Port", "Host or IP",
+ * "Listen port" - started at five different x positions down a single column;
+ * both builds once pinned one width to line them up. The menu's fields carry
+ * their labels ABOVE them and fill the column, so every field and every label
+ * starts at the same x without a width to keep in step. */
+void master_server_fields(UiSettings& s) {
+    uiw::section("Player");
+    uiw::input_text("Player name", s.mp.player_name, sizeof s.mp.player_name,
+                    "Shown to other players and on the master server list.");
+    uiw::note("Shown to other players and on the master server list.");
+
+    uiw::section("Master server");
+    uiw::input_text("Host", s.mp.master_host, sizeof s.mp.master_host,
+                    "The lobby directory's address.");
+    uiw::input_int("Port", &s.mp.master_port, "The lobby directory's port.");
+    /* A port outside the legal range is not a preference, it is a typo, and
+     * clamping here means nothing downstream has to check it. Port 0 is legal
+     * to bind but meaningless to connect to, so the floor is 1. */
+    s.mp.master_port = std::clamp(s.mp.master_port, 1, 65535);
+
+    uiw::spacing();
+    if (uiw::button("Use 127.0.0.1", "A master server running on this machine.")) {
+        std::snprintf(s.mp.master_host, sizeof s.mp.master_host, "127.0.0.1");
+        s.mp.master_port = 28553;
+    }
+    if (uiw::button("Use lsw2server.viosarcade.xyz", "The hosted lobby directory.")) {
+        std::snprintf(s.mp.master_host, sizeof s.mp.master_host,
+                      "lsw2server.viosarcade.xyz");
+        s.mp.master_port = 80;
+    }
+}
+
+/* Direct connect and this machine's listen port, also shared. */
+void direct_connect_fields(UiSettings& s, const char* offered) {
+    uiw::section("Direct connect");
+    /* THE OTHER HALF OF THE 2026-08-27 DECISION. The room code is entered in
+     * the game, on a d-pad, because four characters is what a d-pad can do
+     * without an invented keyboard. A full address is not, so it lives here and
+     * the in-game screen offers it as a second way in. */
+    uiw::input_text("Host or IP", s.mp.direct_host, sizeof s.mp.direct_host,
+                    "One specific host to join, by address.");
+    uiw::input_int("Host port", &s.mp.direct_port, "That host's listen port.");
+    s.mp.direct_port = std::clamp(s.mp.direct_port, 1, 65535);
+    uiw::note("%s", offered);
+
+    uiw::section("This machine");
+    uiw::input_int("Listen port", &s.mp.listen_port,
+                   "The port other players connect to when you host.");
+    s.mp.listen_port = std::clamp(s.mp.listen_port, 1, 65535);
+    uiw::note("The port other players connect to when you host.");
 }
 
 /* The fork's networking configuration, and for now ONLY the
@@ -770,21 +851,12 @@ void debug_tab(UiSettings& s) {
  * written, and because the master server host is already known.
  *
  * FORK-ONLY, deliberately. The base recomp is meant to stay close to the
- * original game, so the baseline gets no Multiplayer tab at all rather than a
- * tab full of controls that do nothing. */
+ * original game, so the baseline gets its own co-op page below rather than
+ * this one. */
 void multiplayer_tab(UiSettings& s) {
-    /* ONE FIELD WIDTH FOR THE WHOLE FORM, so nothing on it is misaligned.
+    /* WHAT BELONGS ON THIS PAGE, and nothing else.
      *
-     * imgui draws a label to the RIGHT of its widget, so with no explicit
-     * width every field takes its own and the labels - "Player name",
-     * "Host", "Port", "Host or IP", "Listen port" - start at five different
-     * x positions down a single column. Pinning one width lines them all up.
-     * Sized in font units rather than pixels so it survives the UI scale
-     * settings this panel also offers. */
-    ImGui::PushItemWidth(ImGui::GetFontSize() * 12.0f);
-    /* WHAT BELONGS ON THIS TAB, and nothing else.
-     *
-     * The imgui Multiplayer tab is limited to settings with no sensible
+     * The imgui Multiplayer page is limited to settings with no sensible
      * in-game home: the player/DS name, the master server address, and
      * whatever else the design does not place in the game's own UI.
      *
@@ -793,105 +865,71 @@ void multiplayer_tab(UiSettings& s) {
      * is an IN-GAME menu row and is deliberately absent here. */
     Lsw2ForkSession& session = lsw2_fork_session();
 
-    ImGui::TextDisabled("Name and server address only. Match settings are in the");
-    ImGui::TextDisabled("game, on the host menu.");
-    ImGui::Separator();
+    uiw::note("Name and server address only. Match settings are in the game, "
+              "on the host menu.");
+    uiw::columns(2);
+    master_server_fields(s);
+    uiw::note("Local for testing on this machine; the real host otherwise.");
 
-    ImGui::InputText("Player name", s.mp.player_name, sizeof s.mp.player_name);
-    ImGui::TextDisabled("Shown to other players and on the master server list.");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("Master server");
-    ImGui::InputText("Host", s.mp.master_host, sizeof s.mp.master_host);
-    ImGui::InputInt("Port", &s.mp.master_port);
-    /* A port outside the legal range is not a preference, it is a typo, and
-     * clamping here means nothing downstream has to check it. Port 0 is legal
-     * to bind but meaningless to connect to, so the floor is 1. */
-    s.mp.master_port = std::clamp(s.mp.master_port, 1, 65535);
-
-    ImGui::Spacing();
-    if (ImGui::Button("Use 127.0.0.1")) {
-        std::snprintf(s.mp.master_host, sizeof s.mp.master_host, "127.0.0.1");
-        s.mp.master_port = 28553;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Use lsw2server.viosarcade.xyz")) {
-        std::snprintf(s.mp.master_host, sizeof s.mp.master_host,
-                      "lsw2server.viosarcade.xyz");
-        s.mp.master_port = 80;
-    }
-    ImGui::TextDisabled("Local for testing on this machine; the real host otherwise.");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("Direct connect");
-    /* THE OTHER HALF OF THE 2026-08-27 DECISION. The room code is entered in
-     * the game, on a d-pad, because four characters is what a d-pad can do
-     * without an invented keyboard. A full address is not, so it lives here and
-     * the in-game screen offers it as a second way in. */
-    ImGui::InputText("Host or IP", s.mp.direct_host, sizeof s.mp.direct_host);
-    ImGui::InputInt("Host port", &s.mp.direct_port);
-    s.mp.direct_port = std::clamp(s.mp.direct_port, 1, 65535);
-    ImGui::TextDisabled("Offered in the game's Join screen as \"Join <address>\".");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("This machine");
-    ImGui::InputInt("Listen port", &s.mp.listen_port);
-    s.mp.listen_port = std::clamp(s.mp.listen_port, 1, 65535);
-    ImGui::TextDisabled("The port other players connect to when you host.");
-    ImGui::Spacing();
-    ImGui::Text("Will connect to:  %s:%d", s.mp.master_host, s.mp.master_port);
+    uiw::next_column();
+    direct_connect_fields(s, "Offered in the game's Join screen as \"Join <address>\".");
+    uiw::spacing();
+    uiw::text("Will connect to:  %s:%d", s.mp.master_host, s.mp.master_port);
 
     /* PUSH THE SETTINGS DOWN EVERY FRAME rather than on a button.
      *
-     * A tab that needs an Apply press is a tab someone forgets to press, and
+     * A page that needs an Apply press is a page someone forgets to press, and
      * the values are three copies rather than a computation - pushing them is
      * cheaper than explaining when they take effect. */
     session.configure(s.mp.player_name, s.mp.master_host, s.mp.master_port,
                       s.mp.listen_port);
     session.configure_direct(s.mp.direct_host, s.mp.direct_port);
 
-
-    ImGui::SeparatorText("Session");
-    switch (session.state()) {
-    case Lsw2SessionState::Offline:
-        ImGui::TextUnformatted("Offline.");
-        ImGui::TextDisabled("Host or join from the arena menu inside the game.");
-        break;
-    case Lsw2SessionState::Hosting:
-        ImGui::Text("Hosting on port %d - %d/4 players", s.mp.listen_port,
-                    session.player_count());
-        if (session.console().room_code[0])
-            ImGui::Text("Room code: %s", session.console().room_code);
-        else
-            ImGui::TextDisabled("No room code - the directory has not issued one.");
-        break;
-    case Lsw2SessionState::Joining:
-        ImGui::TextUnformatted("Connecting...");
-        break;
-    case Lsw2SessionState::Joined:
-        ImGui::Text("Joined - %d/4 players", session.player_count());
-        break;
-    case Lsw2SessionState::InMatch:
-        ImGui::TextUnformatted("In a match.");
-        break;
+    uiw::section("Session");
+    if (uiw::begin_block("Session",
+                         "session status hosting joined connecting offline "
+                         "match players room code error")) {
+        switch (session.state()) {
+        case Lsw2SessionState::Offline:
+            uiw::text("Offline.");
+            uiw::note("Host or join from the arena menu inside the game.");
+            break;
+        case Lsw2SessionState::Hosting:
+            uiw::text("Hosting on port %d - %d/4 players", s.mp.listen_port,
+                      session.player_count());
+            if (session.console().room_code[0])
+                uiw::text("Room code: %s", session.console().room_code);
+            else
+                uiw::note("No room code - the directory has not issued one.");
+            break;
+        case Lsw2SessionState::Joining:
+            uiw::text("Connecting...");
+            break;
+        case Lsw2SessionState::Joined:
+            uiw::text("Joined - %d/4 players", session.player_count());
+            break;
+        case Lsw2SessionState::InMatch:
+            uiw::text("In a match.");
+            break;
+        }
+        if (session.last_error() && *session.last_error())
+            uiw::error("%s", session.last_error());
+        uiw::end_block();
     }
-    if (session.last_error() && *session.last_error())
-        ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.4f, 1.0f), "%s",
-                           session.last_error());
-    ImGui::PopItemWidth();
+    uiw::end_columns();
 }
 
-/* THE BASELINE'S CO-OP TAB - the baseline's online co-op configuration.
+/* THE BASELINE'S CO-OP PAGE - the baseline's online co-op configuration.
  *
  * The surface is divided explicitly, and the division is the reverse of the
- * fork's in one place. This tab holds the master server address (by default
+ * fork's in one place. This page holds the master server address (by default
  * the fork's), connecting directly by IP, and the room code - and the room
- * code of the current lobby is shown on this imgui tab, concealed until a
+ * code of the current lobby is shown on this imgui page, concealed until a
  * checkbox is ticked, where the Bounty Hunter fork shows it in the game. In
  * the baseline, a co-op lobby is hosted or joined through the pause menu or
  * through a console entity in the Cantina's central hub.
  *
- * So the tab is CONFIGURATION ONLY, and deliberately so: hosting and joining
+ * So the page is CONFIGURATION ONLY, and deliberately so: hosting and joining
  * happen on the cartridge's own screens, which the pause menu and the
  * Cantina's console entity lead to. Adding an imgui Host button here would
  * give a control with no requirement behind it, in the one build that exists to leave the game's UI presentation as
@@ -900,168 +938,130 @@ void multiplayer_tab(UiSettings& s) {
  * WHAT IS SHARED WITH THE FORK, and why that is not laziness: the master
  * address defaults to the same one, the transport is the same, and the
  * settings file is already shared between the two launchers. Two copies of
- * these four fields would be two things to keep in step for no gain. */
+ * these four fields would be two things to keep in step for no gain - which is
+ * why both pages draw them from the same two functions. */
 void coop_tab(UiSettings& s) {
-    /* THE SAME ONE FIELD WIDTH the fork's tab uses.
-     *
-     * The fork's Multiplayer tab was misaligned, and this tab has the
-     * identical shape - "Player name", "Host", "Port", "Host or IP",
-     * "Listen port" down one column, each taking its own width so every
-     * label starts somewhere different. Fixing one build and not the other
-     * would leave the same defect waiting in the baseline. */
-    ImGui::PushItemWidth(ImGui::GetFontSize() * 12.0f);
     Lsw2ForkSession& session = lsw2_fork_session();
 
-    ImGui::TextDisabled("Online co-op. Games are started and joined in the game -");
-    ImGui::TextDisabled("from the Cantina's console, or the pause menu - the way");
-    ImGui::TextDisabled("the cartridge does it. This tab is the address book.");
-    ImGui::Separator();
+    uiw::note("Online co-op. Games are started and joined in the game - from "
+              "the Cantina's console, or the pause menu - the way the cartridge "
+              "does it. This page is the address book.");
+    uiw::columns(2);
+    master_server_fields(s);
+    uiw::note("The same directory the Bounty Hunter fork uses. Co-op lobbies "
+              "are listed separately from arena ones.");
 
-    ImGui::InputText("Player name", s.mp.player_name, sizeof s.mp.player_name);
-    ImGui::TextDisabled("Shown to other players and on the master server list.");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("Master server");
-    ImGui::InputText("Host", s.mp.master_host, sizeof s.mp.master_host);
-    ImGui::InputInt("Port", &s.mp.master_port);
-    s.mp.master_port = std::clamp(s.mp.master_port, 1, 65535);
-    ImGui::Spacing();
-    if (ImGui::Button("Use 127.0.0.1")) {
-        std::snprintf(s.mp.master_host, sizeof s.mp.master_host, "127.0.0.1");
-        s.mp.master_port = 28553;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Use lsw2server.viosarcade.xyz")) {
-        std::snprintf(s.mp.master_host, sizeof s.mp.master_host,
-                      "lsw2server.viosarcade.xyz");
-        s.mp.master_port = 80;
-    }
-    ImGui::TextDisabled("The same directory the Bounty Hunter fork uses. Co-op");
-    ImGui::TextDisabled("lobbies are listed separately from arena ones.");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("Direct connect");
-    ImGui::InputText("Host or IP", s.mp.direct_host, sizeof s.mp.direct_host);
-    ImGui::InputInt("Host port", &s.mp.direct_port);
-    s.mp.direct_port = std::clamp(s.mp.direct_port, 1, 65535);
-    ImGui::TextDisabled("Offered in the game's own join list as a direct entry.");
-
-    ImGui::Spacing();
-    ImGui::SeparatorText("This machine");
-    ImGui::InputInt("Listen port", &s.mp.listen_port);
-    s.mp.listen_port = std::clamp(s.mp.listen_port, 1, 65535);
-    ImGui::TextDisabled("The port other players connect to when you host.");
+    uiw::next_column();
+    direct_connect_fields(s, "Offered in the game's own join list as a direct entry.");
 
     session.configure(s.mp.player_name, s.mp.master_host, s.mp.master_port,
                       s.mp.listen_port);
     session.configure_direct(s.mp.direct_host, s.mp.direct_port);
 
-    ImGui::Spacing();
-    ImGui::SeparatorText("Room code");
-    /* THE ONE PLACE THE BASELINE DIFFERS FROM THE FORK BY DESIGN. The fork puts
-     * its code on an in-game console screen; the baseline's goes here,
-     * behind a checkbox that starts unticked. */
-    ImGui::Checkbox("Show room code", &s.coop_show_room_code);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip(
+    uiw::section("Room code");
+    if (uiw::begin_block("Room code", "show room code lobby join share hidden")) {
+        /* THE ONE PLACE THE BASELINE DIFFERS FROM THE FORK BY DESIGN. The fork
+         * puts its code on an in-game console screen; the baseline's goes
+         * here, behind a checkbox that starts unticked. */
+        uiw::checkbox("Show room code", &s.coop_show_room_code,
             "Hidden by default: a code on screen is a code anyone watching\n"
             "a stream or a screenshot can join with.");
-    }
-    if (!s.coop_show_room_code) {
-        ImGui::TextDisabled("Hidden.");
-    } else if (session.state() == Lsw2SessionState::Offline) {
-        ImGui::TextDisabled("No lobby - host one from the game first.");
-    } else if (session.console().room_code[0]) {
-        ImGui::Text("Room code: %s", session.console().room_code);
-        /* SAY WHAT THE TAB IS SHOWING, once per code. LSW2_PRESENT_SHOT sees
-         * the DS frames and not this overlay, so the requirement that the code
-         * be shown on the imgui Multiplayer tab behind a checkbox had no instrument
-         * that could see it - a drive could prove the checkbox was wired and
-         * the code was issued, and still not that this text was ever drawn.
-         * This line is drawn from the same branch as the text, so it is only
-         * printed when the text is, which is the traced value that was
-         * missing. */
-        static char said[8] = {0};
-        if (std::strncmp(said, session.console().room_code, sizeof said - 1) != 0) {
-            std::strncpy(said, session.console().room_code, sizeof said - 1);
-            said[sizeof said - 1] = '\0';
-            std::fprintf(stderr, "[ui] Multiplayer tab is drawing \"Room code: "
-                                 "%s\" (checkbox on)\n", said);
+        if (!s.coop_show_room_code) {
+            uiw::note("Hidden.");
+        } else if (session.state() == Lsw2SessionState::Offline) {
+            uiw::note("No lobby - host one from the game first.");
+        } else if (session.console().room_code[0]) {
+            uiw::text("Room code: %s", session.console().room_code);
+            /* SAY WHAT THE PAGE IS SHOWING, once per code. LSW2_PRESENT_SHOT
+             * sees the DS frames and not this overlay, so the requirement that
+             * the code be shown on the imgui Multiplayer page behind a checkbox
+             * had no instrument that could see it - a drive could prove the
+             * checkbox was wired and the code was issued, and still not that
+             * this text was ever drawn. This line is drawn from the same branch
+             * as the text, so it is only printed when the text is, which is the
+             * traced value that was missing. (LSW2_UI_SHOT now captures the
+             * menu itself as well.) */
+            static char said[8] = {0};
+            if (std::strncmp(said, session.console().room_code, sizeof said - 1) != 0) {
+                std::strncpy(said, session.console().room_code, sizeof said - 1);
+                said[sizeof said - 1] = '\0';
+                std::fprintf(stderr, "[ui] Multiplayer tab is drawing \"Room code: "
+                                     "%s\" (checkbox on)\n", said);
+            }
+        } else {
+            uiw::note("The directory has not issued one.");
         }
-    } else {
-        ImGui::TextDisabled("The directory has not issued one.");
+        uiw::end_block();
     }
 
-    ImGui::Spacing();
-    ImGui::SeparatorText("Session");
-    ImGui::Text("Advertising as:  %s", session.kind());
-    switch (session.state()) {
-    case Lsw2SessionState::Offline:
-        ImGui::TextUnformatted("Offline.");
-        break;
-    case Lsw2SessionState::Hosting:
-        ImGui::Text("Hosting on port %d - %d/4 players", s.mp.listen_port,
-                    session.player_count());
-        break;
-    case Lsw2SessionState::Joining:
-        ImGui::TextUnformatted("Connecting...");
-        break;
-    case Lsw2SessionState::Joined:
-        ImGui::Text("Joined - %d/4 players", session.player_count());
-        break;
-    case Lsw2SessionState::InMatch:
-        ImGui::TextUnformatted("In a game.");
-        break;
-    }
-    if (session.last_error() && *session.last_error())
-        ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.4f, 1.0f), "%s",
-                           session.last_error());
+    uiw::section("Session");
+    if (uiw::begin_block("Session",
+                         "session status advertising hosting joined connecting "
+                         "offline game players error")) {
+        uiw::text("Advertising as:  %s", session.kind());
+        switch (session.state()) {
+        case Lsw2SessionState::Offline:
+            uiw::text("Offline.");
+            break;
+        case Lsw2SessionState::Hosting:
+            uiw::text("Hosting on port %d - %d/4 players", s.mp.listen_port,
+                      session.player_count());
+            break;
+        case Lsw2SessionState::Joining:
+            uiw::text("Connecting...");
+            break;
+        case Lsw2SessionState::Joined:
+            uiw::text("Joined - %d/4 players", session.player_count());
+            break;
+        case Lsw2SessionState::InMatch:
+            uiw::text("In a game.");
+            break;
+        }
+        if (session.last_error() && *session.last_error())
+            uiw::error("%s", session.last_error());
 
-    /* SAY WHAT IS AND IS NOT KNOWN, WHICH IS NOT WHAT THIS USED TO SAY.
-     *
-     * It read: "No way in yet - the Cantina console and pause-menu entries are
-     * not built", on the reasoning that the two co-op entry points (the
-     * Cantina console and the pause menu) are the cartridge's own and
-     * "neither has been located".
-     *
-     * The baseline does not need the port to BUILD those entries. The
-     * baseline's co-op uses the cartridge's own list UI and keeps the usual
-     * UI presentation; the port's job is to fill that list and answer the
-     * connect. lsw2_coopjoin_publish writes the cartridge's host table every
-     * frame in both builds, and lsw2_coopjoin_install registers the connect
-     * override - which was once installed on the wrong side of the fork gate
-     * and never reached the baseline at all. Both entry points lead to that
-     * one list, so both are covered by covering it.
-     *
-     * WHAT IS GENUINELY UNKNOWN is whether a baseline session works end to
-     * end, because no capture reaches the co-op screen - and that is the same
-     * end-to-end run the rest of the baseline's online co-op is waiting on.
-     * Saying "not built" claimed
-     * something worse and more specific than the truth, in a place the PLAYER
-     * reads. */
-    ImGui::Spacing();
-    ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-        "Wired but unproven: the lobby list and connect are in the");
-    ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-        "baseline, through the game's own screens. No session tested yet.");
-    ImGui::PopItemWidth();
+        /* SAY WHAT IS AND IS NOT KNOWN, WHICH IS NOT WHAT THIS USED TO SAY.
+         *
+         * It read: "No way in yet - the Cantina console and pause-menu entries
+         * are not built", on the reasoning that the two co-op entry points (the
+         * Cantina console and the pause menu) are the cartridge's own and
+         * "neither has been located".
+         *
+         * The baseline does not need the port to BUILD those entries. The
+         * baseline's co-op uses the cartridge's own list UI and keeps the usual
+         * UI presentation; the port's job is to fill that list and answer the
+         * connect. lsw2_coopjoin_publish writes the cartridge's host table every
+         * frame in both builds, and lsw2_coopjoin_install registers the connect
+         * override - which was once installed on the wrong side of the fork gate
+         * and never reached the baseline at all. Both entry points lead to that
+         * one list, so both are covered by covering it.
+         *
+         * WHAT IS GENUINELY UNKNOWN is whether a baseline session works end to
+         * end, because no capture reaches the co-op screen - and that is the
+         * same end-to-end run the rest of the baseline's online co-op is
+         * waiting on. Saying "not built" claimed something worse and more
+         * specific than the truth, in a place the PLAYER reads. */
+        uiw::spacing();
+        uiw::warn("Wired but unproven: the lobby list and connect are in the "
+                  "baseline, through the game's own screens. No session tested yet.");
+        uiw::end_block();
+    }
+    uiw::end_columns();
 }
 
 /* Set from the executable name at startup - see ui_set_fork_build. */
 bool g_fork_build = false;
 
-void cheats_tab(UiSettings&) {
-    ImGui::TextWrapped(
+/* Cheats > Levels: where the game is, and the warp. */
+void cheats_levels_page() {
+    uiw::text(
         "The baseline runs the game as shipped. Nothing here is applied unless "
         "you press it, and nothing is applied at startup.");
-    ImGui::Spacing();
 
-    ImGui::TextUnformatted("Levels");
-    ImGui::Separator();
-
+    uiw::section("Levels");
     if (!lsw2_cheats_available()) {
-        ImGui::TextDisabled("Waiting for the game to build its state - this is");
-        ImGui::TextDisabled("normal during boot and on the title screen.");
+        uiw::note("Waiting for the game to build its state - this is normal "
+                  "during boot and on the title screen.");
         return;
     }
 
@@ -1077,20 +1077,22 @@ void cheats_tab(UiSettings&) {
     for (int i = 0; i < kLsw2LevelCount; ++i)
         if (kLsw2Levels[i].id == live) live_name = kLsw2Levels[i].name;
 
-    if (live >= 0) ImGui::Text("Currently: %s  (id %d)", live_name, live);
-    else ImGui::TextDisabled("Currently: unreadable");
+    if (live >= 0) uiw::text("Currently: %s  (id %d)", live_name, live);
+    else uiw::note("Currently: unreadable");
     if (live != check) {
-        ImGui::TextDisabled("The installed level state says %d - it differs", check);
-        ImGui::TextDisabled("after a warp, because a warp sets the request");
-        ImGui::TextDisabled("and lets the game build from it.");
+        uiw::note("The installed level state says %d - it differs after a warp, "
+                  "because a warp sets the request and lets the game build from it.",
+                  check);
     }
 
-    ImGui::Spacing();
+    uiw::spacing();
     static int selected = 0;
     /* Names carry their confidence, because most of them are DERIVED from the
      * level's own asset names rather than confirmed. Presenting a guess in the
      * same typeface as a fact is how a guess becomes a fact by accident. */
-    if (ImGui::BeginCombo("Level", kLsw2Levels[selected].name)) {
+    if (uiw::begin_combo("Level", kLsw2Levels[selected].name,
+                         "The level to warp to. Each is marked with how its\n"
+                         "name is known.")) {
         for (int i = 0; i < kLsw2LevelCount; ++i) {
             const bool chosen = (i == selected);
             ImGui::PushID(i);
@@ -1104,34 +1106,39 @@ void cheats_tab(UiSettings&) {
                 ImGui::TextDisabled("unidentified");
             ImGui::PopID();
         }
-        ImGui::EndCombo();
+        uiw::end_combo();
     }
 
-    ImGui::SameLine();
     const bool can_warp = lsw2_cheats_can_warp();
     ImGui::BeginDisabled(!can_warp);
-    if (ImGui::Button("Warp")) {
+    if (uiw::button("Warp", "Travel to the level selected above.")) {
         lsw2_cheats_warp(kLsw2Levels[selected].id);
     }
     ImGui::EndDisabled();
 
-    ImGui::Spacing();
+    uiw::spacing();
     if (!can_warp) {
         /* Disabled rather than failing quietly, and with the reason, because
          * "the button did nothing" is the least useful thing a UI can say. */
-        ImGui::TextWrapped(
+        uiw::text(
             "Warp is unavailable right now: the game is not in a level state. "
             "It works from inside the game, not from the menus.");
     } else {
-        ImGui::TextWrapped(
+        uiw::text(
             "Warp uses the game's own state-request queue - it fills in a "
             "request and the game performs the transition itself, on its own "
             "thread, rather than anything being called from outside.");
     }
+}
 
-    ImGui::Spacing();
-    ImGui::TextUnformatted("Unlock flags");
-    ImGui::Separator();
+/* Cheats > Unlocks: the flag arrays, and unlocking everything. */
+void cheats_unlocks_page() {
+    uiw::section("Unlock flags");
+    if (!lsw2_cheats_available()) {
+        uiw::note("Waiting for the game to build its state - this is normal "
+                  "during boot and on the title screen.");
+        return;
+    }
 
     /* THIS SECTION USED TO EXPLAIN WHY THERE WAS NOTHING HERE. It said the
      * flags were unlocated and that only another save file could separate the
@@ -1145,14 +1152,19 @@ void cheats_tab(UiSettings&) {
     const bool have_flags = lsw2_cheats_read_flags(flags_a, flags_b);
 
     if (!have_flags) {
-        ImGui::TextDisabled("Unavailable - the game has not built its context.");
-    } else {
-        ImGui::Text("A  %08X %08X %08X %08X",
-                    flags_a[0], flags_a[1], flags_a[2], flags_a[3]);
-        ImGui::Text("B  %08X %08X %08X %08X",
-                    flags_b[0], flags_b[1], flags_b[2], flags_b[3]);
-        ImGui::Spacing();
-        if (ImGui::Button("Copy")) {
+        uiw::note("Unavailable - the game has not built its context.");
+        return;
+    }
+
+    uiw::columns(2);
+    if (uiw::begin_block("Roster flag arrays",
+                         "flags arrays roster copy hex A B nine")) {
+        uiw::text("A  %08X %08X %08X %08X",
+                  flags_a[0], flags_a[1], flags_a[2], flags_a[3]);
+        uiw::text("B  %08X %08X %08X %08X",
+                  flags_b[0], flags_b[1], flags_b[2], flags_b[3]);
+        uiw::spacing();
+        if (uiw::button("Copy", "Copy both lines to the clipboard.", -1.0f)) {
             char buf[160];
             std::snprintf(buf, sizeof buf,
                           "A %08X %08X %08X %08X\nB %08X %08X %08X %08X\n",
@@ -1160,14 +1172,14 @@ void cheats_tab(UiSettings&) {
                           flags_b[0], flags_b[1], flags_b[2], flags_b[3]);
             ImGui::SetClipboardText(buf);
         }
-        ImGui::Spacing();
-        ImGui::TextWrapped(
+        uiw::spacing();
+        uiw::text(
             "Those two are 0x02104D90 + 0x44CC and + 0x44DC, and a capture "
             "showed them reading identically on a fully-unlocked save and an "
             "empty one. That refuted them - but enumerating the "
             "accessors then found NINE flag arrays, so the capture had ruled out "
             "two candidates out of nine, not all of them.");
-        ImGui::Spacing();
+        uiw::spacing();
         if (ImGui::TreeNode("All nine flag arrays")) {
             uint32_t all[kLsw2FlagArrayCount * kLsw2FlagWords] = {0};
             if (lsw2_cheats_read_all_flag_arrays(all)) {
@@ -1181,7 +1193,7 @@ void cheats_tab(UiSettings&) {
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("%s", kLsw2FlagArrays[a].note);
                 }
-                if (ImGui::Button("Copy all nine")) {
+                if (uiw::button("Copy all nine", nullptr, -1.0f)) {
                     /* THE POINT OF THIS WHOLE PANEL. Take this on a fresh save
                      * and on a fully-unlocked one; the array that differs is
                      * the unlock state, and unlocking everything from the
@@ -1206,53 +1218,420 @@ void cheats_tab(UiSettings&) {
             }
             ImGui::TreePop();
         }
-        ImGui::Spacing();
-        /* NO BUTTONS YET, and for a reason that is nearly the opposite of the
-         * old one. The mechanism is known; what is not known is which array
-         * means what, because the dispatcher sets one or the other depending on
-         * a byte in the roster table and that byte has not been read out.
-         *
-         * The honest route is to capture these two lines from a save that has
-         * the codes entered and use the captured pair - measured rather than
-         * reasoned. That is what this readout is for. */
-        /* THE BASELINE'S OPT-IN, chosen over unlocking by default: the base
-         * port stays close to the original game and this is a button
-         * someone presses. The fork applies the same writes automatically once
-         * its lobby is up (fork.cpp). */
-        if (ImGui::Button("Unlock everything")) {
-            if (lsw2_cheats_unlock_everything())
-                g_unlock_note = "written - open the terminal's Characters tab "
-                                "to check for names rather than ????";
-            else
-                g_unlock_note = "not available yet - the game has not built "
-                                "its context";
-        }
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip(
-                "Sets OWNED and SEEN for every character and vehicle id the\n"
-                "game ships, and marks all 22 terminal Extras as bought.\n\n"
-                "Both roster arrays, because the Characters tab tests SEEN\n"
-                "first and draws \"????\" when it is clear - so OWNED alone\n"
-                "would give a roster of question marks.\n\n"
-                "Does NOT switch Extras on: that is a different array and\n"
-                "belongs to the host's match settings.");
-        }
-        if (g_unlock_note) ImGui::TextWrapped("%s", g_unlock_note);
-        ImGui::Spacing();
-        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.25f, 1.0f), "%s",
-            "The array identification is strong but not settled.");
-        ImGui::TextWrapped(
-            "Four lines of evidence say +0x44CC/+0x44DC are the roster state, "
-            "against one capture that says they do not differ "
-            "between saves. If the button above does nothing visible, that "
-            "capture was right and this needs a save-to-save comparison.");
-        ImGui::TextWrapped(
-            "One array IS the Extras, corroborated four ways: +0x4518, "
-            "indices 0..19. The unlocks are not identified yet. Expand the "
-            "list above on a fresh save and on a fully-unlocked one and copy "
-            "both: the array that differs is the answer, and the buttons can "
-            "be written the same day.");
+        uiw::end_block();
     }
+
+    uiw::next_column();
+    uiw::section("Unlock everything");
+    /* NO BUTTONS YET, and for a reason that is nearly the opposite of the
+     * old one. The mechanism is known; what is not known is which array
+     * means what, because the dispatcher sets one or the other depending on
+     * a byte in the roster table and that byte has not been read out.
+     *
+     * The honest route is to capture these two lines from a save that has
+     * the codes entered and use the captured pair - measured rather than
+     * reasoned. That is what this readout is for. */
+    /* THE BASELINE'S OPT-IN, chosen over unlocking by default: the base
+     * port stays close to the original game and this is a button
+     * someone presses. The fork applies the same writes automatically once
+     * its lobby is up (fork.cpp). */
+    if (uiw::button("Unlock everything",
+            "Sets OWNED and SEEN for every character and vehicle id the\n"
+            "game ships, and marks all 22 terminal Extras as bought.\n\n"
+            "Both roster arrays, because the Characters tab tests SEEN\n"
+            "first and draws \"????\" when it is clear - so OWNED alone\n"
+            "would give a roster of question marks.\n\n"
+            "Does NOT switch Extras on: that is a different array and\n"
+            "belongs to the host's match settings.")) {
+        if (lsw2_cheats_unlock_everything())
+            g_unlock_note = "written - open the terminal's Characters tab "
+                            "to check for names rather than ????";
+        else
+            g_unlock_note = "not available yet - the game has not built "
+                            "its context";
+    }
+    if (g_unlock_note) uiw::text("%s", g_unlock_note);
+    uiw::spacing();
+    uiw::warn("%s", "The array identification is strong but not settled.");
+    uiw::text(
+        "Four lines of evidence say +0x44CC/+0x44DC are the roster state, "
+        "against one capture that says they do not differ "
+        "between saves. If the button above does nothing visible, that "
+        "capture was right and this needs a save-to-save comparison.");
+    uiw::text(
+        "One array IS the Extras, corroborated four ways: +0x4518, "
+        "indices 0..19. The unlocks are not identified yet. Expand the "
+        "list beside this on a fresh save and on a fully-unlocked one and copy "
+        "both: the array that differs is the answer, and the buttons can "
+        "be written the same day.");
+    uiw::end_columns();
+}
+
+/* THE MENU'S SHAPE: sections across the header, pages down the sidebar.
+ *
+ * It was a single floating window with a row of tabs - Video, Input, Touch,
+ * Debug, Cheats, Multiplayer - each one long scrolling list. The tabs became
+ * pages and the pages were grouped the way a player looks for them:
+ *
+ *   Settings      Display, Graphics, Controls, Touch Screen  - the port's own
+ *                 presentation and input, what any emulator would offer;
+ *   Enhancements  Arena Controls, Arena HUD, Lobby, Portraits - the changes
+ *                 to the game itself, all optional;
+ *   Multiplayer   the fork's Online page or the baseline's Co-op page;
+ *   Cheats        Levels, Unlocks - the baseline only;
+ *   Debug         General, Instances, and the fork's Probes.
+ *
+ * Nothing that was reachable before is unreachable now: every control on the
+ * old tabs is on exactly one page, and the search box finds any of them by
+ * name or by a word in its tooltip. */
+enum MenuSection {
+    kSecSettings, kSecEnhancements, kSecMultiplayer, kSecCheats, kSecDebug, kSecCount
+};
+const char* const kSectionNames[kSecCount] = {
+    "Settings", "Enhancements", "Multiplayer", "Cheats", "Debug"};
+
+const char* const kSettingsPages[] = {"Display", "Graphics", "Controls", "Touch Screen"};
+const char* const kEnhancementPages[] = {"Arena Controls", "Arena HUD", "Lobby", "Portraits"};
+const char* const kForkNetPages[] = {"Online"};
+const char* const kCoopNetPages[] = {"Co-op"};
+const char* const kCheatPages[] = {"Levels", "Unlocks"};
+const char* const kForkDebugPages[] = {"General", "Instances", "Probes"};
+const char* const kBaseDebugPages[] = {"General", "Instances"};
+
+template <size_t N>
+int page_count(const char* const (&)[N]) { return int(N); }
+
+/* Whether this build has a section at all. The fork's Cheats are ABSENT, not
+ * greyed - see the header row in draw_menu. */
+bool section_present(int section) {
+    return section != kSecCheats || !g_fork_build;
+}
+
+/* The pages of a section in sidebar order, as this build has them. */
+int section_pages(int section, const char* const** names) {
+    switch (section) {
+    case kSecSettings:
+        *names = kSettingsPages;
+        return page_count(kSettingsPages);
+    case kSecEnhancements:
+        *names = kEnhancementPages;
+        return page_count(kEnhancementPages);
+    case kSecMultiplayer:
+        *names = g_fork_build ? kForkNetPages : kCoopNetPages;
+        return 1;
+    case kSecCheats:
+        *names = kCheatPages;
+        return page_count(kCheatPages);
+    default:
+        *names = g_fork_build ? kForkDebugPages : kBaseDebugPages;
+        return g_fork_build ? page_count(kForkDebugPages) : page_count(kBaseDebugPages);
+    }
+}
+
+void draw_page(UiSettings& s, int section, int page) {
+    switch (section) {
+    case kSecSettings:
+        switch (page) {
+        case 0: display_page(s); break;
+        case 1: graphics_page(s); break;
+        case 2: controls_page(s); break;
+        default: touch_page(s); break;
+        }
+        break;
+    case kSecEnhancements:
+        switch (page) {
+        case 0: arena_controls_page(s); break;
+        case 1: arena_hud_page(s); break;
+        case 2: lobby_page(s); break;
+        default: portraits_page(s); break;
+        }
+        break;
+    case kSecMultiplayer:
+        /* BOTH BUILDS HAVE A MULTIPLAYER SECTION, and they are different
+         * pages. The baseline has online co-op; the fork's page points at the
+         * in-game menus, the baseline's carries the room code, which the
+         * baseline shows OUT of the game. Same name, because to a player it
+         * is the same question. */
+        if (g_fork_build) multiplayer_tab(s);
+        else              coop_tab(s);
+        break;
+    case kSecCheats:
+        if (page == 0) cheats_levels_page();
+        else           cheats_unlocks_page();
+        break;
+    default:
+        if (page == 0)          debug_general_page(s);
+        else if (page == 1)     debug_instances_page(s);
+        else if (g_fork_build)  debug_probes_page();
+        break;
+    }
+}
+
+/* Which section and page are showing. The section is the one the header's
+ * tab bar last reported; each section remembers its own page, so moving
+ * between sections and back returns to the page that was open. */
+int g_section = kSecSettings;
+int g_pages[kSecCount] = {};
+/* A section to select programmatically on the next header row, or -1. */
+int g_want_section = -1;
+/* Whether the menu was drawn last frame, so the frame it opens is known. */
+bool g_was_visible = false;
+
+void select_page(int section, int page) {
+    if (!section_present(section)) return;
+    g_want_section = section;
+    g_pages[section] = page;
+}
+
+/* LSW2_UI_TAB, resolved once the build is known.
+ *
+ * It names a section ("Settings"), a page ("Graphics"), or both
+ * ("Settings/Graphics"). The names the menu had when it was a row of tabs are
+ * still accepted and land on the page that now holds that tab's settings, so
+ * a script written against them keeps working. */
+void apply_tab_request(const char* want) {
+    if (!want || !*want) return;
+    static const struct { const char* name; int section; int page; } legacy[] = {
+        {"Video", kSecSettings, 0},   {"Input", kSecSettings, 2},
+        {"Touch", kSecSettings, 3},   {"Debug", kSecDebug, 0},
+        {"Cheats", kSecCheats, 0},    {"Multiplayer", kSecMultiplayer, 0},
+    };
+    for (const auto& l : legacy) {
+        if (SDL_strcasecmp(want, l.name) == 0) {
+            select_page(l.section, l.page);
+            return;
+        }
+    }
+    const std::string text = want;
+    const size_t slash = text.find('/');
+    const std::string section_name = slash == std::string::npos ? text : text.substr(0, slash);
+    const std::string page_name = slash == std::string::npos ? text : text.substr(slash + 1);
+    for (int sec = 0; sec < kSecCount; ++sec) {
+        if (!section_present(sec)) continue;
+        const bool sec_match = SDL_strcasecmp(section_name.c_str(), kSectionNames[sec]) == 0;
+        const char* const* names = nullptr;
+        const int n = section_pages(sec, &names);
+        for (int p = 0; p < n; ++p) {
+            const bool page_match = SDL_strcasecmp(page_name.c_str(), names[p]) == 0;
+            if (page_match && (sec_match || slash == std::string::npos)) {
+                select_page(sec, p);
+                return;
+            }
+        }
+        if (sec_match && slash == std::string::npos) {
+            select_page(sec, 0);
+            return;
+        }
+    }
+    std::fprintf(stderr, "[ui] LSW2_UI_TAB=%s names no section or page\n", want);
+}
+
+ImGuiTabItemFlags section_tab_flags(int section) {
+    return g_want_section == section ? ImGuiTabItemFlags_SetSelected
+                                     : ImGuiTabItemFlags_None;
+}
+
+void draw_menu(UiSettings& s, bool just_opened) {
+    static bool tab_requested = false;
+    if (!tab_requested) {
+        /* LSW2_UI_TAB preselects a page once, so the UI can be screenshotted
+         * from a script. imgui has no remote clicking, and "it compiles" is
+         * not evidence that a panel renders - this UI has already had a
+         * panel that was correctly placed, correctly sized and entirely
+         * black. */
+        tab_requested = true;
+        apply_tab_request(SDL_getenv("LSW2_UI_TAB"));
+    }
+
+    uiw::begin_menu(just_opened);
+
+    uiw::begin_header();
+    int shown = g_section;
+    if (ImGui::BeginTabBar("##sections", ImGuiTabBarFlags_NoTooltip |
+                                          ImGuiTabBarFlags_FittingPolicyScroll |
+                                          ImGuiTabBarFlags_NoCloseWithMiddleMouseButton)) {
+        auto finish = [&](int section, bool open) {
+            uiw::header_tab(open);
+            if (open) {
+                shown = section;
+                ImGui::EndTabItem();
+            }
+        };
+        finish(kSecSettings,
+               ImGui::BeginTabItem("Settings", nullptr, section_tab_flags(kSecSettings)));
+        finish(kSecEnhancements,
+               ImGui::BeginTabItem("Enhancements", nullptr,
+                                   section_tab_flags(kSecEnhancements)));
+        finish(kSecMultiplayer,
+               ImGui::BeginTabItem("Multiplayer", nullptr,
+                                   section_tab_flags(kSecMultiplayer)));
+        /* The fork has no cheats tab. Not greyed out - absent.
+         * A disabled control still advertises the feature, and the point
+         * of the fork is that unlocks are not the player's to grant: they
+         * are granted wholesale at startup (everything unlocked from the
+         * start) and the match rules come from the host's settings menu.
+         * The second test keeps header_tab from painting a fill behind the
+         * tab before it when there is no Cheats tab to paint behind. */
+        const bool cheats = !g_fork_build && ImGui::BeginTabItem("Cheats", nullptr,
+                                                    section_tab_flags(kSecCheats));
+        if (!g_fork_build) finish(kSecCheats, cheats);
+        finish(kSecDebug,
+               ImGui::BeginTabItem("Debug", nullptr, section_tab_flags(kSecDebug)));
+        ImGui::EndTabBar();
+    }
+    g_want_section = -1;
+    const bool close = uiw::end_header();
+    if (shown != g_section) {
+        /* A new section is a new place to look, so a search left in the box
+         * would hide it; the box is cleared the way a page change clears it. */
+        g_section = shown;
+        uiw::clear_search();
+    }
+
+    const char* const* names = nullptr;
+    const int count = section_pages(g_section, &names);
+    int& page = g_pages[g_section];
+    if (page < 0 || page >= count) page = 0;
+
+    uiw::begin_sidebar();
+    for (int p = 0; p < count; ++p) {
+        if (uiw::sidebar_entry(names[p], p == page)) {
+            page = p;
+            uiw::clear_search();
+        }
+    }
+    uiw::sidebar_footer();
+    /* SAY WHICH BUILD THIS IS. The two executables are identical to look
+     * at and share one settings file, so without this the only way to tell
+     * them apart is to notice which sections are missing. */
+    ImGui::PushTextWrapPos(0.0f);
+    if (g_fork_build) {
+        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Bounty Hunter fork");
+        ImGui::TextDisabled("(saves to bountyhunter.sav)");
+        ImGui::Spacing();
+    }
+    ImGui::TextDisabled("Esc or F1 closes this. The game keeps running behind it.");
+    ImGui::PopTextWrapPos();
+    uiw::end_sidebar();
+
+    uiw::begin_content();
+    if (uiw::searching()) {
+        /* A search looks through EVERY page of every section this build has,
+         * and each page draws only what matches. */
+        for (int sec = 0; sec < kSecCount; ++sec) {
+            if (!section_present(sec)) continue;
+            const char* const* pages = nullptr;
+            const int n = section_pages(sec, &pages);
+            for (int p = 0; p < n; ++p) {
+                uiw::search_origin(kSectionNames[sec], pages[p]);
+                ImGui::PushID(sec * 16 + p);
+                draw_page(s, sec, p);
+                ImGui::PopID();
+            }
+        }
+    } else {
+        ImGui::PushID(g_section * 16 + page);
+        draw_page(s, g_section, page);
+        ImGui::PopID();
+    }
+    uiw::end_content();
+    uiw::end_menu();
+
+    if (close) g_visible = false;
+}
+
+/* LSW2_UI_SHOT: ONE PICTURE OF THE TOP WINDOW AS PRESENTED, MENU INCLUDED.
+ *
+ * LSW2_PRESENT_SHOT and the debug surface's capture both read the DS frames,
+ * which is exactly the layer this menu is NOT drawn on - so neither can show
+ * whether the menu looks right, and "it compiles" is not that evidence. This
+ * reads the finished back buffer after the menu is drawn and before it is
+ * presented, once, LSW2_UI_SHOT_FRAME frames in (default 300, five seconds at
+ * 60 fps, so the game has something on screen behind the menu), and writes it
+ * as a binary PPM. Off unless LSW2_UI_SHOT names a file. Pair it with
+ * LSW2_UI_OPEN=1, and LSW2_UI_TAB or LSW2_UI_SEARCH, to choose what the menu
+ * shows. */
+void take_ui_shot(SDL_Renderer* renderer) {
+    /* COPIED, NOT KEPT. On Windows SDL_getenv answers into one shared buffer,
+     * so a pointer kept from the first lookup reads whatever the second one
+     * found - the shot was once written to a file named after its frame. */
+    static const std::string path = [] {
+        const char* p = SDL_getenv("LSW2_UI_SHOT");
+        return std::string(p ? p : "");
+    }();
+    if (path.empty()) return;
+    static int frames = 0;
+    static const int when = [] {
+        const char* f = SDL_getenv("LSW2_UI_SHOT_FRAME");
+        const int n = f ? std::atoi(f) : 0;
+        return n > 0 ? n : 300;
+    }();
+    if (++frames != when) return;
+
+    int w = 0, h = 0;
+    std::vector<unsigned char> rgb;
+    if (g_gl_backend) {
+        SDL_GL_GetDrawableSize(g_window, &w, &h);
+        if (w <= 0 || h <= 0) return;
+        rgb.resize(size_t(w) * size_t(h) * 3);
+        /* READ WHAT IS ABOUT TO BE PRESENTED: whatever framebuffer the menu
+         * was just drawn into, which the read binding need not match. */
+        GLint draw_fb = 0, read_fb = 0, read_buffer = 0, pack_buffer = 0, align = 4;
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw_fb);
+        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read_fb);
+        glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pack_buffer);
+        glGetIntegerv(GL_PACK_ALIGNMENT, &align);
+        const auto bind = reinterpret_cast<PFNGLBINDFRAMEBUFFERPROC>(
+            SDL_GL_GetProcAddress("glBindFramebuffer"));
+        const auto bind_buffer = reinterpret_cast<PFNGLBINDBUFFERPROC>(
+            SDL_GL_GetProcAddress("glBindBuffer"));
+        if (bind) bind(GL_READ_FRAMEBUFFER, GLuint(draw_fb));
+        /* THE COMPUTE RENDERER READS BACK THROUGH A PACK BUFFER, and while one
+         * is bound glReadPixels takes its pointer argument as an offset into
+         * that buffer - the read failed and the picture came out black. */
+        if (bind_buffer && pack_buffer) bind_buffer(GL_PIXEL_PACK_BUFFER, 0);
+        glGetIntegerv(GL_READ_BUFFER, &read_buffer);
+        if (draw_fb == 0) glReadBuffer(GL_BACK);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgb.data());
+        glPixelStorei(GL_PACK_ALIGNMENT, align);
+        if (draw_fb == 0) glReadBuffer(GLenum(read_buffer));
+        if (bind_buffer && pack_buffer) bind_buffer(GL_PIXEL_PACK_BUFFER, GLuint(pack_buffer));
+        if (bind) bind(GL_READ_FRAMEBUFFER, GLuint(read_fb));
+        /* Said rather than swallowed: a read that failed leaves a black
+         * picture, which would otherwise look like a menu that drew nothing. */
+        if (const GLenum err = glGetError(); err != GL_NO_ERROR)
+            std::fprintf(stderr, "[ui] shot: GL error 0x%04X reading framebuffer %d\n",
+                         unsigned(err), int(draw_fb));
+        /* GL's rows run bottom-up; a PPM's run top-down. */
+        const size_t row = size_t(w) * 3;
+        std::vector<unsigned char> tmp(row);
+        for (int y = 0; y < h / 2; ++y) {
+            unsigned char* a = rgb.data() + size_t(y) * row;
+            unsigned char* b = rgb.data() + size_t(h - 1 - y) * row;
+            std::memcpy(tmp.data(), a, row);
+            std::memcpy(a, b, row);
+            std::memcpy(b, tmp.data(), row);
+        }
+    } else {
+        if (SDL_GetRendererOutputSize(renderer, &w, &h) != 0 || w <= 0 || h <= 0) return;
+        rgb.resize(size_t(w) * size_t(h) * 3);
+        if (SDL_RenderReadPixels(renderer, nullptr, SDL_PIXELFORMAT_RGB24, rgb.data(),
+                                 w * 3) != 0) {
+            std::fprintf(stderr, "[ui] shot: read failed: %s\n", SDL_GetError());
+            return;
+        }
+    }
+    FILE* f = std::fopen(path.c_str(), "wb");
+    if (!f) {
+        std::fprintf(stderr, "[ui] shot: cannot write %s\n", path.c_str());
+        return;
+    }
+    std::fprintf(f, "P6\n%d %d\n255\n", w, h);
+    std::fwrite(rgb.data(), 1, rgb.size(), f);
+    std::fclose(f);
+    std::fprintf(stderr, "[ui] shot: %s (%dx%d, menu %s)\n", path.c_str(), w, h,
+                 g_visible ? "open" : "closed");
 }
 
 }  /* namespace */
@@ -1272,13 +1651,26 @@ bool ui_init(SDL_Window* window, SDL_Renderer* renderer) {
      * The panel was effectively untouchable. */
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     ImGui::StyleColorsDark();
+    /* The menu's typeface, baked before either backend builds the atlas
+     * texture. imgui's own font stays the default for everything else. */
+    uiw::load_fonts();
 
     /* LSW2_UI_TAB is for screenshotting the UI from a script, and on its own it
      * could not do that: it preselects a tab in a window that starts hidden, so
      * nothing was ever drawn to capture. Setting it also opens the menu, which
-     * is what "screenshot this tab" has to mean. */
+     * is what "screenshot this tab" has to mean. LSW2_UI_OPEN=1 opens the menu
+     * on whatever page it would open on anyway, and LSW2_UI_SEARCH opens it
+     * with that text already in the search box. All three are off unless set;
+     * see take_ui_shot for the capture they are paired with. */
     if (SDL_getenv("LSW2_UI_TAB")) g_visible = true;
+    if (const char* open = SDL_getenv("LSW2_UI_OPEN"); open && *open == '1')
+        g_visible = true;
+    if (const char* search = SDL_getenv("LSW2_UI_SEARCH"); search && *search) {
+        uiw::set_search(search);
+        g_visible = true;
+    }
 
+    g_window = window;
     g_gl_backend = (renderer == nullptr);
     if (g_gl_backend) {
         /* 1.30 is the floor imgui's GL3 backend accepts, and it is well below
@@ -1315,8 +1707,15 @@ bool ui_handle_event(const SDL_Event& event) {
              * includes the touch screen it is drawing - so with the settings
              * menu open the panel went dead. Hand back any event inside the
              * panel's image so it becomes a stylus touch. Dragging still works
-             * because the title bar is outside this rectangle. */
-            if (g_floating_shown && event.type != SDL_MOUSEWHEEL) {
+             * because the title bar is outside this rectangle.
+             *
+             * ONLY WHILE THE PANEL IS ON TOP. The menu now covers the whole
+             * window, the panel included, and a click on a menu control that
+             * happens to sit over the panel's picture is the menu's - handing
+             * it back as well would press the control AND touch the game. The
+             * panel is kept behind the menu while it is open (ui_draw), so in
+             * practice this is the rule for any imgui window that is not. */
+            if (g_floating_shown && g_floating_hovered && event.type != SDL_MOUSEWHEEL) {
                 int mx = 0, my = 0;
                 if (event.type == SDL_MOUSEMOTION) { mx = event.motion.x; my = event.motion.y; }
                 else { mx = event.button.x; my = event.button.y; }
@@ -1458,9 +1857,17 @@ void ui_draw(UiSettings& s) {
         ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f),
                                             ImVec2(FLT_MAX, FLT_MAX),
                                             touch_panel_size_cb, nullptr);
+        g_floating_hovered = false;
         if (ImGui::Begin("Touch screen", nullptr,
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoScrollWithMouse)) {
+            /* BEHIND THE MENU WHILE IT IS OPEN. The panel is part of the game
+             * view, and the menu dims the game view; a panel that appeared
+             * while the menu was open - ticking "Floating touch panel" is
+             * exactly that - would otherwise be created in front of it and
+             * cover the page that created it. */
+            if (g_visible) ImGui::BringWindowToDisplayBack(ImGui::GetCurrentWindow());
+            g_floating_hovered = ImGui::IsWindowHovered();
             /* THE PICTURE IS THE CONTENT REGION, not a fit inside it:
              * touch_panel_size_cb makes the region whole 4x3 steps, and drawing
              * AT the region rather than at a fit recomputed from it means no
@@ -1482,69 +1889,16 @@ void ui_draw(UiSettings& s) {
         ImGui::End();
     }
 
-    if (!g_visible) return;
-
-    ImGui::SetNextWindowSize(ImVec2(430, 380), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("LEGO Star Wars II - Settings", nullptr)) {
-        /* SAY WHICH BUILD THIS IS. The two executables are identical to look
-         * at and share one settings file, so without this the only way to tell
-         * them apart is to notice which tabs are missing. */
-        if (g_fork_build) {
-            ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f),
-                               "Bounty Hunter fork");
-            ImGui::SameLine();
-            ImGui::TextDisabled("(saves to bountyhunter.sav)");
-            ImGui::Separator();
-        }
-        if (ImGui::BeginTabBar("tabs")) {
-            /* LSW2_UI_TAB preselects a tab once, so the UI can be screenshotted
-             * from a script. imgui has no remote clicking, and "it compiles" is
-             * not evidence that a panel renders - this UI has already had a
-             * panel that was correctly placed, correctly sized and entirely
-             * black. */
-            static const char* want = SDL_getenv("LSW2_UI_TAB");
-            static bool selected = false;
-            auto flags = [&](const char* name) {
-                if (selected || !want || SDL_strcasecmp(want, name) != 0)
-                    return ImGuiTabItemFlags_None;
-                selected = true;
-                return ImGuiTabItemFlags_SetSelected;
-            };
-            if (ImGui::BeginTabItem("Video", nullptr, flags("Video")))
-                { video_tab(s);  ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Input", nullptr, flags("Input")))
-                { input_tab(s);  ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Touch", nullptr, flags("Touch")))
-                { touch_tab(s);  ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Debug", nullptr, flags("Debug")))
-                { debug_tab(s);  ImGui::EndTabItem(); }
-            /* The fork has no cheats tab. Not greyed out - absent.
-             * A disabled control still advertises the feature, and the point
-             * of the fork is that unlocks are not the player's to grant: they
-             * are granted wholesale at startup (everything unlocked from the
-             * start) and the match rules come from the host's settings menu. */
-            if (!g_fork_build &&
-                ImGui::BeginTabItem("Cheats", nullptr, flags("Cheats")))
-                { cheats_tab(s); ImGui::EndTabItem(); }
-            /* BOTH BUILDS HAVE A MULTIPLAYER TAB NOW, and they are different
-             * tabs. The baseline has online co-op; the fork's tab carries
-             * the lobby character select's roster flags and points at in-game
-             * menus, the baseline's carries the room code, which the baseline
-             * shows OUT of the game. Same name, because to a player it is the same
-             * question. */
-            if (ImGui::BeginTabItem("Multiplayer", nullptr,
-                                    flags("Multiplayer"))) {
-                if (g_fork_build) multiplayer_tab(s);
-                else              coop_tab(s);
-                ImGui::EndTabItem();
-            }
-            ImGui::EndTabBar();
-        }
-        ImGui::Separator();
-        ImGui::TextDisabled("Esc or F1 closes this. The game keeps running behind it.");
+    if (!g_visible) {
+        g_was_visible = false;
+        return;
     }
-    ImGui::End();
+    const bool just_opened = !g_was_visible;
+    g_was_visible = true;
+    draw_menu(s, just_opened);
 
+    /* The metrics window opens OVER the menu, and stays over it: the menu is
+     * only brought forward when it appears, never by a click on it. */
     if (s.show_metrics) ImGui::ShowMetricsWindow(&s.show_metrics);
 }
 
@@ -1552,6 +1906,7 @@ void ui_render(SDL_Renderer* renderer) {
     ImGui::Render();
     if (g_gl_backend) ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     else ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+    take_ui_shot(renderer);
 }
 
 void ui_set_fork_build(bool fork) {

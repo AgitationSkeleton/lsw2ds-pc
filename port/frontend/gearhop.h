@@ -111,6 +111,20 @@ bool lsw2_gearhop_request_call(uint32_t target, uint32_t a0, uint32_t a1,
 bool lsw2_gearhop_request_call_at(uint32_t target, uint32_t a0, uint32_t a1,
                                   uint32_t a2, int tag, uint32_t host);
 
+/* A CALL WITH STACK ARGUMENTS - four registers and three words on the stack,
+ * pinned to `host`, its completion handed to lsw2_touchportrait_step_returned
+ * with `tag`.
+ *
+ * For the game's 2D sprite factory (0x0201AD50), which takes seven arguments
+ * and is how the touch screen's player portraits are built. The three words go
+ * just below the host's sp, as a send's payload does - free stack, since the
+ * host has not run its prologue - in the order the callee reads them: s0 at
+ * [sp], s1 at [sp+4], s2 at [sp+8]. sp is put back when the call returns. */
+bool lsw2_gearhop_request_call7_at(uint32_t target, uint32_t a0, uint32_t a1,
+                                   uint32_t a2, uint32_t a3, uint32_t s0,
+                                   uint32_t s1, uint32_t s2, int tag,
+                                   uint32_t host);
+
 /* A GUEST CALL WHOSE RETURN THE FORK IGNORES - the cartridge's own Extras
  * toggle (the host settings' Extras). Runs on the guest thread like the others, because the
  * toggle re-dresses the party and starts theme music (the scheduler must be

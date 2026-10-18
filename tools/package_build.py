@@ -215,6 +215,21 @@ def stage(version: str) -> Path:
         README.format(version=version, sha1=rom_sha1(), source=SOURCE_URL,
                       commit=git_commit()).replace("\n", "\r\n"),
         encoding="utf-8")
+
+    # THE LICENCES TRAVEL WITH THE BINARIES: the GPL's text, the third-party
+    # record, and the Apache-2.0 text the embedded Roboto font requires. Found
+    # at the public repository's root, or under publish/overlay/ in the private
+    # one this is also run from.
+    (out / "licenses").mkdir()
+    for name, dest in (("LICENSE", "LICENSE.txt"), ("THIRD_PARTY.md", "THIRD_PARTY.md")):
+        src = ROOT / name
+        if not src.is_file():
+            src = ROOT / "publish" / "overlay" / name
+        if not src.is_file():
+            raise SystemExit(f"{name} is missing from the repository root and publish/overlay/")
+        shutil.copy2(src, out / "licenses" / dest)
+    shutil.copy2(ROOT / "port" / "frontend" / "vendor" / "imgui" / "misc" / "fonts" /
+                 "LICENSE-Roboto.txt", out / "licenses" / "Roboto-LICENSE.txt")
     return out
 
 

@@ -19,6 +19,7 @@ licensed under the **GNU General Public License v3.0 or later**
 | libslirp, vendored by ndsrecomp | inside ndsrecomp | BSD-3-Clause |
 | toml++, downloaded by ndsrecomp's CMake | inside ndsrecomp | MIT |
 | [Dear ImGui](https://github.com/ocornut/imgui) | `port/frontend/vendor/imgui/` | MIT |
+| [Roboto](https://github.com/googlefonts/roboto) Medium, the settings menu's font (the copy in Dear ImGui's `misc/fonts/`) | compiled in from `port/frontend/uifont.cpp` | Apache-2.0 ([text](port/frontend/vendor/imgui/misc/fonts/LICENSE-Roboto.txt)) |
 | [SDL2](https://libsdl.org) | `SDL2.dll`, from MSYS2 | zlib |
 | GCC runtime (`libgcc_s_seh-1.dll`, `libstdc++-6.dll`) | from MSYS2 UCRT64 | GPL-3.0 with the GCC Runtime Library Exception |
 | winpthreads (`libwinpthread-1.dll`) | from MSYS2 UCRT64 | MIT and BSD-3-Clause |
@@ -26,7 +27,8 @@ licensed under the **GNU General Public License v3.0 or later**
 **The executables as a whole are GPL-3.0-or-later**, because they link melonDS
 code. Anyone who distributes them must also offer the corresponding source.
 This repository is that source, together with the pinned ndsrecomp commit and
-`port/patches/`. A release zip names the commit it was built from.
+`port/patches/`. A release zip names the commit it was built from, and carries
+this file and the license texts in its `licenses` folder.
 
 ## Not included, and never redistributed
 

@@ -58,6 +58,15 @@ void lsw2_sessionroster_apply(const uint8_t* payload, int len);
  * musicpick.cpp seeds the round's track from it. */
 uint32_t lsw2_sessionroster_round();
 
+/* "NEW MATCH ON SAME MAP" (the score screen's Continue, message 0x0D) starts
+ * another match without the statue select, so no round effect is posted and
+ * the round above would not change - the new match would repeat the last one's
+ * random track. Called when every console dispatches that message, at the same
+ * step: the round's number moves on - so the new match draws a fresh random
+ * track and, under a random roster, rolls fresh characters, instead of
+ * replaying the last match's sequence. */
+void lsw2_sessionroster_next_match();
+
 /* The two overrides (3, 4). Fork-only (kOverridesCore). */
 void lsw2_sessionroster_arena_build();
 void lsw2_sessionroster_spawn();

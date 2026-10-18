@@ -331,12 +331,18 @@ void ui_shutdown();
 /* Returns true if imgui consumed the event and the game should not see it. */
 bool ui_handle_event(const SDL_Event& event);
 
-/* Call once per frame, after the guest frame and before presenting. */
+/* Call once per frame, after the guest frame and before presenting.
+ *
+ * ui_render is also where LSW2_UI_SHOT reads back the finished top window,
+ * menu included, for a scripted screenshot; LSW2_UI_OPEN, LSW2_UI_TAB and
+ * LSW2_UI_SEARCH choose what the menu shows. All are off unless set - see
+ * take_ui_shot and ui_init in ui.cpp. */
 void ui_begin_frame();
 void ui_draw(UiSettings& settings);
 void ui_render(SDL_Renderer* renderer);
 
-/* F1 toggles the menu; the game keeps running behind it. */
+/* F1 or Escape toggles the menu, which covers the whole game window; the game
+ * keeps running behind it, dimmed. */
 void ui_toggle();
 bool ui_visible();
 

@@ -10,6 +10,7 @@
 #include "pauseredraw.h"  /* the pause rebuild's pinned hop */
 #include "levelhud.h"     /* the level HUD's messages, checked at take */
 #include "partyportrait.h"
+#include "touchportrait.h"
 #include "ui.h"
 
 #include "runtime_arm.h"
@@ -29,7 +30,7 @@ constexpr int kQueue = 8;
  * the gear applier; the portrait's party refresh needs a different target and
  * different arguments, and duplicating the whole mechanism to say so would mean
  * two state machines to keep correct instead of one. */
-enum ReqKind { kGear, kRefresh, kPortrait, kExtras, kAction, kSend };
+enum ReqKind { kGear, kRefresh, kPortrait, kExtras, kAction, kSend, kTouch };
 
 /* The game's netgame send: 0x020B04F0(kLsw2MsgOwner, type, payload, 0xFF), the
  * call every per-player message in the image makes. */
@@ -37,7 +38,8 @@ constexpr uint32_t kNetSend = 0x020B04F0u;
 struct Request {
     uint32_t target;
     uint32_t a0, a1, a2;
-    uint32_t a3;           /* r3, for kAction only - see lsw2_gearhop_request_action */
+    uint32_t a3;           /* r3, for kAction and kTouch only - see lsw2_gearhop_request_action */
+    uint32_t s[3];         /* stack words, for kTouch only - see lsw2_gearhop_request_call7_at */
     ReqKind kind;
     int slot;              /* customization slot, or -1 where there is none */
     uint32_t host;         /* the only override that may take it, or 0 = any -
@@ -62,7 +64,7 @@ uint32_t g_saved_sp = 0;
 
 /* The request in flight, kept out of the queue so a completion knows what it
  * completed. */
-Request g_active = {0, 0, 0, 0, 0, kGear, -1, 0};
+Request g_active = {0, 0, 0, 0, 0, {0, 0, 0}, kGear, -1, 0};
 
 /* HOW LONG AN ARM MAY GO UNCLAIMED. Two seconds of frames. The joiner's
  * session-end hop was measured never coming back, and an arm left standing is a
@@ -111,11 +113,12 @@ bool same_work(const Request& r, uint32_t target, uint32_t a0, uint32_t a1,
     if (r.target != target || r.a0 != a0 || r.a1 != a1) return false;
     /* An ACTION is one call per slot or part on one actor, so its whole
      * argument list is the work - the older kinds key on (target, a0, a1). */
-    return kind != kAction || (r.a2 == a2 && r.a3 == a3);
+    return (kind != kAction && kind != kTouch) || (r.a2 == a2 && r.a3 == a3);
 }
 
 bool enqueue(uint32_t target, uint32_t a0, uint32_t a1, uint32_t a2,
-             ReqKind kind, int slot, uint32_t host, uint32_t a3 = 0u) {
+             ReqKind kind, int slot, uint32_t host, uint32_t a3 = 0u,
+             const uint32_t* stack = nullptr) {
     /* A DUPLICATE IS NOT AN ERROR AND NOT A NEW REQUEST. The callers run every
      * frame; without this the queue would fill with the same work. */
     for (int i = 0; i < g_queued; ++i)
@@ -139,6 +142,7 @@ bool enqueue(uint32_t target, uint32_t a0, uint32_t a1, uint32_t a2,
     g_queue[g_queued].a1 = a1;
     g_queue[g_queued].a2 = a2;
     g_queue[g_queued].a3 = a3;
+    for (int i = 0; i < 3; ++i) g_queue[g_queued].s[i] = stack ? stack[i] : 0u;
     g_queue[g_queued].kind = kind;
     g_queue[g_queued].slot = slot;
     g_queue[g_queued].host = host;
@@ -206,6 +210,15 @@ bool lsw2_gearhop_request_action_at(uint32_t target, uint32_t a0, uint32_t a1,
     return enqueue(target, a0, a1, a2, kAction, -1, host, a3);
 }
 
+bool lsw2_gearhop_request_call7_at(uint32_t target, uint32_t a0, uint32_t a1,
+                                   uint32_t a2, uint32_t a3, uint32_t s0,
+                                   uint32_t s1, uint32_t s2, int tag,
+                                   uint32_t host) {
+    if (target == 0 || host == 0) return false;
+    const uint32_t stack[3] = {s0, s1, s2};
+    return enqueue(target, a0, a1, a2, kTouch, tag, host, a3, stack);
+}
+
 bool lsw2_gearhop_request_send(uint8_t type, uint32_t word0, uint32_t word1) {
     if (type == 0) return false;
     return enqueue(kNetSend, type, word0, word1, kSend, -1, 0u);
@@ -261,7 +274,7 @@ bool lsw2_gearhop_hook(uint32_t host_entry) {
         for (int i = 0; i < 4; ++i) g_cpu.R[i] = g_saved_r[i];
         /* A SEND'S PAYLOAD SLOT GOES BACK: the callee left sp where it found
          * it, eight bytes below the host's. */
-        if (g_active.kind == kSend) g_cpu.R[13] = g_saved_sp;
+        if (g_active.kind == kSend || g_active.kind == kTouch) g_cpu.R[13] = g_saved_sp;
         ++g_completed;
 
         if (g_reports < kReports) {
@@ -281,6 +294,8 @@ bool lsw2_gearhop_hook(uint32_t host_entry) {
              * before this hop existed the applier never completed, so it was
              * never once reached. */
             lsw2_headfix_after_apply(g_active.a0, uint16_t(g_active.a1));
+        } else if (g_active.kind == kTouch) {
+            lsw2_touchportrait_step_returned(g_active.slot, result);
         } else if (g_active.kind == kRefresh) {
             /* THE PORTRAIT. R[0] IS THE REFRESH'S ANSWER and the cartridge's own
              * callers honour it: zero means it decided there was nothing to
@@ -330,6 +345,18 @@ bool lsw2_gearhop_hook(uint32_t host_entry) {
                 --i;
                 continue;
             }
+            /* AND A TOUCH PORTRAIT STEP AGAINST THE TOUCH HUD UPDATING NOW - its
+             * r0, the host not having run yet (touchportrait.h). */
+            if (g_queue[i].kind == kTouch &&
+                !lsw2_touchportrait_step_still_live(g_queue[i].slot,
+                                                    g_queue[i].a0, g_cpu.R[0])) {
+                const int step = g_queue[i].slot;
+                for (int k = i + 1; k < g_queued; ++k) g_queue[k - 1] = g_queue[k];
+                --g_queued;
+                lsw2_touchportrait_step_dropped(step);
+                --i;
+                continue;
+            }
             /* AND A HUD MESSAGE AGAINST THE LEVEL UPDATING NOW (levelhud.h). */
             if (g_queue[i].host == kLsw2HudStep &&
                 g_queue[i].target == kLsw2LevelStateMessage &&
@@ -361,6 +388,16 @@ bool lsw2_gearhop_hook(uint32_t host_entry) {
     /* R3 ONLY FOR AN ACTION: the older kinds have always left the host's r3 in
      * place, and changing what their targets see is not this change's to make. */
     if (g_active.kind == kAction) g_cpu.R[3] = g_active.a3;
+    /* A CALL WITH STACK ARGUMENTS: r3 and three words below the host's sp,
+     * which the callee reads at [sp], [sp+4], [sp+8]. Sixteen bytes down, not
+     * twelve, so sp stays 8-aligned as the callee's own pushes expect. */
+    if (g_active.kind == kTouch) {
+        g_cpu.R[3] = g_active.a3;
+        g_saved_sp = g_cpu.R[13];
+        g_cpu.R[13] = g_saved_sp - 16u;
+        for (int i = 0; i < 3; ++i)
+            bus_device_write32(0, g_cpu.R[13] + uint32_t(i) * 4u, g_active.s[i]);
+    }
     /* A SEND: the payload's two words go just below the host's sp - free stack,
      * since the host has not run its prologue and interrupts have their own -
      * and the send copies it before it returns (0x020B05A8). */

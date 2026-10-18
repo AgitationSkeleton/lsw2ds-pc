@@ -164,8 +164,10 @@ void decide() {
 void test_kill_tick() {
     static const char* spec = std::getenv("LSW2_TEST_KILL");
     if (!spec) return;
-    static int station = -1, seconds = 20;
-    if (station < 0 && std::sscanf(spec, "%d,%d", &station, &seconds) < 1)
+    /* An optional third field repeats the kill every `seconds` instead of once,
+     * so one round can show several respawns. */
+    static int station = -1, seconds = 20, repeat = 0;
+    if (station < 0 && std::sscanf(spec, "%d,%d,%d", &station, &seconds, &repeat) < 1)
         station = 1;
     static int frames = 0;
     static bool posted = false;
@@ -173,6 +175,10 @@ void test_kill_tick() {
         frames = 0;
         posted = false;
         return;
+    }
+    if (repeat && posted && frames >= seconds * 60) {
+        frames = 0;
+        posted = false;
     }
     if (posted || ++frames < seconds * 60) return;
     const uint8_t p = uint8_t(station);
@@ -303,6 +309,13 @@ void lsw2_sessionroster_apply(const uint8_t* p, int len) {
 }
 
 uint32_t lsw2_sessionroster_round() { return g_round.active ? g_round.salt : 0u; }
+
+void lsw2_sessionroster_next_match() {
+    if (!g_round.active) return;
+    g_round.salt += 0x9E3779B1u;   /* every bit moves: music and the rolls */
+    std::fprintf(stderr, "[fork] new match on the same map: round %08X\n",
+                 unsigned(g_round.salt));
+}
 
 void lsw2_sessionroster_arena_build() {
     bool any = false;

@@ -120,7 +120,8 @@ BASELINE = {
     0x08: "actor flags / authority active-view / rng remaining / state arg A",
     0x0A: "message type 0x0A (round start) / the sequence record's slot stride",
     0x0C: "context level index / pause row stride / state level arg",
-    0x10: "state argument C / a texture palette object's byte size (ringcolour)",
+    0x10: "state argument C / the other +0x10 fields (ringcolour's 'byte size' "
+          "there was retracted - it is not a size)",
     0x20: "script queue stride / select page / WH system state / slot stride",
     0x28: "headgear covers-head / pause first row Y / select page high",
     0x29: "net player count offset / the select state's id",
@@ -130,6 +131,14 @@ BASELINE = {
     0x48: "countdown Y / co-op host status / state slot argument block",
     0x35: "the select widget's mode / the pause state's id",
     0x36: "message type 0x36 (the Extras toggle) / the select widget's entry",
+    # touchportrait.cpp, read against each other declaration: the character
+    # table's entry count (FUN_0208ea58's own `< 0x54` bound) is not the 3D
+    # HUD's ring member offset; the touch HUD's face-sprite array offset is not
+    # the script queue's base; 8.0 in 20.12 fixed point (the face's x) is not
+    # POWCNT1's display-swap bit.
+    0x54: "the character count / the 3D HUD's ring sprite member",
+    0x94: "the touch HUD's face sprites / the script queue's base",
+    0x8000: "8.0 in 20.12 fixed point (a sprite's x) / POWCNT1's display swap",
 
     # 0xFF as a sentinel in two unrelated structures. The music selector at
     # 0x020B913C treats param 0xFF as "take this row's own default"

@@ -57,6 +57,14 @@ int lsw2_music_pick(uint16_t seed) {
     return kLsw2MusicBattleSlots[seed % unsigned(kLsw2MusicBattleCount)];
 }
 
+int lsw2_music_pick_excluding(uint16_t seed, int exclude) {
+    const int first = lsw2_music_pick(seed);
+    if (first != exclude) return first;
+    /* The next slot in the table: (seed + 1) % n is a different index, and the
+     * table holds each track once. */
+    return lsw2_music_pick(uint16_t(seed + 1u));
+}
+
 namespace {
 
 uint8_t read_byte(uint32_t a) {
@@ -139,8 +147,24 @@ void lsw2_music_tick() {
     if (session.state() != Lsw2SessionState::Offline &&
         session.settings().music == Lsw2HostMusic::Random && seed32 != 0 &&
         table_agrees()) {
-        battle = lsw2_music_pick(uint16_t(seed32 ^ (round * 0x9E3779B1u) ^
-                                          (round * 0x9E3779B1u >> 16)));
+        /* NEVER THE TRACK ALREADY PLAYING. The arena's load asks for the pick,
+         * and the request function skips a slot the context records as
+         * playing - so a pick equal to the lobby's track (its RANDOM draw, or
+         * the Cantina's) was no change at all: the lobby's music carried on
+         * into the match. Drawn once per round, against what is playing when
+         * the round's number arrives - the statue select, or "New Match on
+         * Same Map" - which every console reaches at the same step. */
+        static uint32_t drawn_seed = 0, drawn_round = 0;
+        static int drawn = -1;
+        if (drawn < 0 || seed32 != drawn_seed || round != drawn_round) {
+            const int playing = int(read_byte(kLsw2MusicContext + 9u));
+            drawn = lsw2_music_pick_excluding(
+                uint16_t(seed32 ^ (round * 0x9E3779B1u) ^ (round * 0x9E3779B1u >> 16)),
+                playing);
+            drawn_seed = seed32;
+            drawn_round = round;
+        }
+        battle = drawn;
         want = kLsw2MusicSpareSet;
     }
 
@@ -295,7 +319,16 @@ void lsw2_lobby_music_tick() {
             const uint32_t seed = session.state() != Lsw2SessionState::Offline
                 ? session.match_seed() ^ (lsw2_sessionroster_round() * 0x9E3779B1u)
                 : g_boot_salt ^ (g_lobby_visits * 0x9E3779B1u);
-            if (n > 0) g_lobby_track = pool[(seed ^ (seed >> 16)) % uint32_t(n)];
+            /* Salted apart from the arena's draw, which uses the same seed and
+             * round, and never the track playing now - the lobby's load would
+             * skip it and the match's music would carry into the lobby. */
+            const uint32_t s = seed ^ 0x5A17C0DEu;
+            if (n > 0) {
+                uint32_t idx = (s ^ (s >> 16)) % uint32_t(n);
+                if (pool[idx] == int(read_byte(kLsw2MusicContext + 9u)) && n > 1)
+                    idx = (idx + 1u) % uint32_t(n);
+                g_lobby_track = pool[idx];
+            }
         }
         if (g_lobby_track >= 0) {
             track = g_lobby_track;

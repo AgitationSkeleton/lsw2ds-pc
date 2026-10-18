@@ -32,6 +32,8 @@
 #include "forkpopup.h"
 #include "popuphud.h"
 #include "sessionroster.h"
+#include "touchportrait.h"
+#include "netmsg.h"        /* kLsw2MsgContinue */
 #include "freeplaypick.h"
 #include "hatstay.h"         /* a hit keeps the hat - the knock-off's spawn */
 #include "carbonitekeep.h"   /* a capture keeps the customization */
@@ -59,6 +61,7 @@
 #include "../net/lsw2_net_bind.h"
 #include "vwh.h"
 #include "sessionpause.h"
+#include "scorescreen.h"
 #include "netcount.h"         /* kLsw2NetCountObject - the party spawn's player count */
 
 #include "runtime_arm.h"
@@ -2537,6 +2540,18 @@ constexpr uint32_t kNetMsgDispatch = 0x020B1248u;
 void netmsg_dispatch_override() {
     const uint32_t msg = g_cpu.R[1];
     const int station = int(g_cpu.R[2] & 0xFFu);
+    /* The score screen's Quit, in a session: everyone back to the lobby
+     * rather than out of the session (scorescreen.h). */
+    if (msg >= 0x02000000u && msg < 0x02400000u && lsw2_score_quit_message(msg)) {
+        g_cpu.R[15] = g_cpu.R[14];
+        return;
+    }
+    /* "New Match on Same Map" (0x0D): the round moves on, so the new match
+     * draws its own random track (sessionroster.h). The game still handles it. */
+    if (msg >= 0x02000000u && msg < 0x02400000u && lsw2_vwh_lockstep() &&
+        ((bus_device_read32(0, (msg + 1u) & ~3u) >> (((msg + 1u) & 3u) * 8u)) & 0xFFu) ==
+            kLsw2MsgContinue)
+        lsw2_sessionroster_next_match();
     if (msg >= 0x02000000u && msg < 0x02400000u &&
         lsw2_sessionpause_message(msg, station)) {
         /* HANDLED HERE: dropped, or this console's own menu requested. The
@@ -3042,6 +3057,11 @@ const NdsDispatchEntry kOverridesCore[] = {
      * unchanged. */
     { 0x020897F8u, 0, lsw2_sessionroster_arena_build, nullptr },
     { 0x02091B88u, 0, lsw2_sessionroster_spawn, nullptr },
+    /* The touch screen's player portraits following a re-rolled character -
+     * see touchportrait.h. The touch HUD's per-frame update, reached only
+     * through its vtable word at 0x020FFA44 (zero BL in the generated code), so
+     * it is dispatched and this fires. */
+    { kLsw2TouchHudUpdate, 0, lsw2_touchportrait_update, nullptr },
     /* THE FREE PLAY GRID AS A PICKER - see freeplaypick.h. The unlock query's
      * call from the widget's tap handler (0x0206887C, returning to 0x02068880)
      * crosses banks and dispatches; that call is the one place a confirming
@@ -3505,8 +3525,38 @@ void pause_keep_running() {
     }
 }
 
+/* THE SCORE SCREEN'S ROWS, NAMED FOR WHAT THEY DO IN A SESSION. The match-end
+ * menu (state 44, 0x0209CB94) draws its four rows from the string ids
+ * 0x2A5..0x2A8 - Continue, Select Character, Settings, Quit - in row order.
+ * Row 0 plays another match on the same map; row 3, in a session, returns
+ * everyone to the lobby (scorescreen.h, lsw2_score_quit_message). The labels say
+ * so while a session is up, and revert to the cartridge's outside one. */
+constexpr uint32_t kScoreIdContinue = 0x2A5u;
+constexpr uint32_t kScoreIdQuit = 0x2A8u;
+
+void score_rows_relabel() {
+    const bool session = lsw2_fork_session().in_session();
+    static int applied = -1;
+    if (int(session) == applied) return;
+    applied = int(session);
+    lsw2_string_set_override(kScoreIdContinue, session ? "New Match on Same Map" : nullptr);
+    lsw2_string_set_override(kScoreIdQuit, session ? "Return to Lobby" : nullptr);
+    for (uint32_t id : {kScoreIdContinue, kScoreIdQuit}) {
+        if (id < kStringCacheIds && g_string_cache[id]) {
+            std::free(g_string_cache[id]);
+            g_string_cache[id] = nullptr;
+        }
+    }
+    std::fprintf(stderr, "[fork] score screen rows: %s\n",
+                 session ? "\"New Match on Same Map\" / \"Return to Lobby\""
+                         : "the cartridge's Continue / Quit");
+}
+
 void lsw2_pause_tick() {
     if (!ui_fork_build()) return;
+
+    /* The score screen's labels, before its menu is built (the same reason). */
+    score_rows_relabel();
 
     /* BEFORE THE MENU-OBJECT CHECK. The label has to be right when the menu is
      * BUILT, and the build is the only moment the row's string is read - so

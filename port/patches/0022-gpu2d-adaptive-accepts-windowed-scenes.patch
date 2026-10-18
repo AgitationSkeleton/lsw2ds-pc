@@ -1,0 +1,36 @@
+--- a/runner/src/gpu2d.cpp
++++ b/runner/src/gpu2d.cpp
+@@ -1851,8 +1851,19 @@
+                         (u.dispcnt & 0x100u) != 0;
+     // Known-safe adaptive scenes use main-engine 3D plus OBJ. Text BG planes
+     // can either be title-anchored into left/center/right bands or kept as a
+-    // native-width centered overlay. Affine/bitmap backgrounds and windowed
+-    // composites still retain a centered native image.
++    // native-width centered overlay. Affine/bitmap backgrounds still retain a
++    // centered native image.
++    //
++    // LSW2 PORT PATCH: windowed scenes are no longer refused. No render path
++    // in this file reads the window registers - reg_write stores WIN0H..WINOUT
++    // into u.win[] and nothing consumes them, and render_engine_line draws a
++    // windowed scene exactly as an unwindowed one - so the native picture this
++    // fell back to ignored the window too. Refusing changed nothing about what
++    // a window shows and cost everything else: LEGO Star Wars II enables WIN0
++    // for its in-match notices (the time warnings, the countdown), and every
++    // one of those frames dropped from the widened, high-resolution picture to
++    // a native 256-pixel one between black bars with 1x 3D, then jumped back.
++    // When windows are modelled they belong in both paths at once.
+     bool supported_hud_bgs = true;
+     for (int bg = 1; bg < 4; ++bg) {
+         if ((u.dispcnt & (0x100u << bg)) &&
+@@ -1861,10 +1872,9 @@
+             break;
+         }
+     }
+-    const bool windows_enabled = (u.dispcnt & 0xE000u) != 0u;
+     const bool supported_scene =
+         palette && oam && vram && !(u.dispcnt & 0x80u) &&
+-        mode == 1u && bg0_3d && supported_hud_bgs && !windows_enabled &&
++        mode == 1u && bg0_3d && supported_hud_bgs &&
+         !g_present_capture_active;
+     if (!supported_scene) {
+         for (int y = 0; y < 192; ++y)

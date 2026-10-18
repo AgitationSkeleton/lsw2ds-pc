@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "note": "Every dispatch override REPLACES a function. Who else called it?\n\nWHY THIS EXISTS. An override does not wrap or defer - it replaces.\nSo the moment the port registers one, it has taken responsibility for every\ncaller that function ever had, not just the one the design was about.\n\nThat is easy to forget, and forgetting it cost three design passes:\n\n  - The first proposed overriding 0x020B111C because the pause menu's wireless\n    row calls it. It has EIGHT callers in four functions.\n  - The second kept the idea behind an `lr` gate. That does not help either, because\n    intercepting one call does not stop what the caller does next.\n  - The third settled it by counting callers on the whole path first - 8, 14 and\n    176 - which took one scan and should have come before either design.\n\nNone of the four test gates could catch that, because the code was never\nwritten: it was a plan, and plans are where this kind of error lives.\n\nWHAT THIS DOES. Reads the addresses out of dispatch_overrides.cpp's\nNdsDispatchEntry tables, counts each one's callers in the ROM, and compares\nagainst a baseline. A NEW override, or one whose caller count MOVED, fails.\n\n    python tools/sweep_override_targets.py\n    python tools/sweep_override_targets.py --update    rewrite the baseline\n\nWHAT A HIGH COUNT MEANS - and does not. It is not a failure. `0x02086204` is a\ngeneric flag test with many callers and the port reimplements it exactly, which\nis correct. The number is a QUESTION: does this override behave like the\noriginal for all of them? Answering \"yes, deliberately\" is fine. Never having\nasked is the problem.\n",
+ "note": "Every dispatch override REPLACES a function. Who else called it?\n\nWHY THIS EXISTS. An override does not wrap or defer - it replaces.\nSo the moment the port registers one, it has taken responsibility for every\ncaller that function ever had, not just the one the design was about.\n\nThat is easy to forget, and forgetting it once cost three passes in a row:\n\n  - The first proposed overriding 0x020B111C because the pause menu's wireless\n    row calls it. It has EIGHT callers in four functions.\n  - The second kept the idea behind an `lr` gate. That does not help either, because\n    intercepting one call does not stop what the caller does next.\n  - The third settled it by counting callers on the whole path first - 8, 14 and\n    176 - which took one scan and should have come before either design.\n\nNone of the four test gates could catch that, because the code was never\nwritten: it was a plan, and plans are where this kind of error lives.\n\nWHAT THIS DOES. Reads the addresses out of dispatch_overrides.cpp's\nNdsDispatchEntry tables, counts each one's callers in the ROM, and compares\nagainst a baseline. A NEW override, or one whose caller count MOVED, fails.\n\n    python tools/sweep_override_targets.py\n    python tools/sweep_override_targets.py --update    rewrite the baseline\n\nWHAT A HIGH COUNT MEANS - and does not. It is not a failure. `0x02086204` is a\ngeneric flag test with many callers and the port reimplements it exactly, which\nis correct. The number is a QUESTION: does this override behave like the\noriginal for all of them? Answering \"yes, deliberately\" is fine. Never having\nasked is the problem.\n",
  "targets": {
   "0x020AD970": {
    "handler": "wht_020ad970",
@@ -248,6 +248,10 @@
   },
   "0x02072700": {
    "handler": "wht_02072700",
+   "callers": 1
+  },
+  "0x0209A3CC": {
+   "handler": "lsw2_touchportrait_update",
    "callers": 1
   },
   "0x0205E80C": {

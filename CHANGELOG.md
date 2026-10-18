@@ -8,6 +8,30 @@ land.
 
 ## Unreleased
 
+- New settings menu layout: the F1 menu is now a full-window menu with
+  sections along the top (Settings, Enhancements, Multiplayer, Debug), pages
+  down the side and a search box that finds any option. The game keeps running,
+  dimmed, behind it. Saved settings carry over unchanged. Some options moved:
+  the arena camera and portrait options are under Enhancements, and so are the
+  lobby character select and arena HUD options.
+- Fixed: choosing Quit after a match sent every player to single player and
+  left them stuck in the lobby, with cutscene bars and a squashed HUD. The row
+  is now called "Return to Lobby", and it returns everyone to the online lobby,
+  where they can see each other and the host can start the next match.
+- The match results screen's "Continue" now reads "New Match on Same Map".
+- Fixed: with random music on, a new match on the same map kept the previous
+  track, and a match could start with the lobby's track (such as the cantina
+  music). Each match now draws a fresh track, and never the one that's
+  playing.
+- Fixed: with random characters on, player 2's top-screen ring turned from
+  green to blue after their first respawn.
+- Fixed: with random characters on, the HUD portraits of the other players
+  stayed on their first character all match. They now follow each respawn.
+- Fixed: during match notices (the countdown and the time warnings) the picture
+  briefly dropped to the original resolution, with black bars at the sides.
+- Fixed: "Reset to defaults" in the button bindings cleared the four Camera
+  keys instead of restoring J, L, I and K.
+
 ## 0.2.0 - 2026-10-17
 
 Still an early pre-release. All testing so far ran on a single PC; play between

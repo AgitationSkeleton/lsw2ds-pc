@@ -90,6 +90,9 @@ constexpr int kLsw2MusicSpareSet = 22;
 /* Which battle slot a given round seed picks. Pure, so it can be tested and so
  * every machine agrees without exchanging anything but the seed. */
 int lsw2_music_pick(uint16_t seed);
+/* The same pick, never `exclude` (the slot already playing): the next track in
+ * the table instead. */
+int lsw2_music_pick_excluding(uint16_t seed, int exclude);
 
 /* Once a frame from the fork's tick: keeps the two arena maps' level records
  * naming the music the next round should play - the spare set carrying the
