@@ -5,6 +5,7 @@
 #include "cheats.h"        /* kLsw2PartyActors, kLsw2ActorCharacter */
 #include "gearhop.h"
 #include "levels.h"        /* kLsw2LevelRootAddr */
+#include "radarview.h"
 #include "ui.h"
 
 #include "runtime_arm.h"
@@ -95,10 +96,14 @@ void check(uint32_t hud) {
 }  // namespace
 
 void lsw2_touchportrait_update() {
+    /* THE UPDATE ITSELF COMING BACK, when the radar (radarview.h) sent it off
+     * with lr pointing here: nothing else to do but return to its caller. */
+    if (lsw2_radarview_returned()) return;
     /* THE HOP'S TURN FIRST: a step may be taken here, or one returning here, and
      * either way r0 is not the HUD until the hook has put the host back. */
     if (lsw2_gearhop_hook(kLsw2TouchHudUpdate)) return;
     if (ui_fork_build()) check(g_cpu.R[0]);
+    lsw2_radarview_enter();
     g_cpu.R[15] = kLsw2TouchHudUpdate;
     lsw2_arm9_FUN_0209a3cc();
 }

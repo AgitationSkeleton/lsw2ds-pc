@@ -139,10 +139,12 @@ struct UiSettings {
     int  texture_upscale = 2;        /* 1, 2 or 4                            */
 
     /* The floating touch panel: the bottom screen shown inside the main window
-     * instead of (or as well as) its own. */
-    bool floating_touch = false;
+     * instead of (or as well as) its own. THE DEFAULT since 0.3.x: one window,
+     * the panel in it, no separate touch window (ui.cpp moves an install still
+     * holding the old defaults across once). */
+    bool floating_touch = true;
     float floating_touch_scale = 1.0f;
-    bool floating_touch_only = false;  /* hide the separate touch window      */
+    bool floating_touch_only = true;   /* hide the separate touch window      */
 
     /* THE ANALOG STICK. The pad's BUTTONS were read from the start and its
      * sticks were not read at all, so a controller half-worked: face buttons

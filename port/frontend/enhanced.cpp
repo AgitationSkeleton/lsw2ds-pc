@@ -87,7 +87,7 @@ constexpr uint32_t kCamOffsetZ = 0x26Cu;
 constexpr uint32_t kCamYawTarget = 0x270u;     /* u16, what +0x272 animates to */
 constexpr uint32_t kCamYaw = 0x272u;           /* u16, 0x10000 a full turn    */
 constexpr uint32_t kCamYawAnimate = 0x278u;    /* s8, > 0 animates the yaw    */
-constexpr uint32_t kActorHeading = 0xCAu;      /* u16                         */
+/* The actor's heading is cheats.h's kLsw2ActorHeading. */
 
 /* THE ARENA'S FRAMING when its script set none: the constructor's rest offset
  * (0, 24, 40) in 20.12. */
@@ -162,7 +162,7 @@ void frame_orbit(uint32_t actor) {
     int32_t distance = int32_t(bus_device_read32(0, kModeCamera + kCamRestDistance));
     if (height <= 0 || height > kMaxHeight) height = kDefaultHeight;
     if (distance <= 0 || distance > (200 << 12)) distance = kDefaultDistance;
-    const uint16_t yaw = uint16_t(guest_half(actor + kActorHeading) + 0x8000u);
+    const uint16_t yaw = uint16_t(guest_half(actor + kLsw2ActorHeading) + 0x8000u);
     bus_device_write32(0, kModeCamera + kCamOffsetX, 0);
     bus_device_write32(0, kModeCamera + kCamOffsetY, uint32_t(height));
     bus_device_write32(0, kModeCamera + kCamOffsetZ, uint32_t(distance));
@@ -335,6 +335,18 @@ void lsw2_enhanced_camera_step() {
         g_orbit_height = h;
         bus_device_write32(0, kModeCamera + kCamOffsetY, uint32_t(h));
     }
+}
+
+bool lsw2_enhanced_orbit_heading(uint32_t actor, uint16_t* heading) {
+    if (!heading || !ui_fork_build() || !live_actor(actor)) return false;
+    if (!lsw2_cheats_in_arena_match()) return false;
+    const int station = arena_station(lsw2_vwh_lockstep());
+    if (station < 0) return false;
+    if (guest_byte(kModeTable + uint32_t(station)) != kModeOrbit || !orbit_framed())
+        return false;
+    if (bus_device_read32(0, kModeCamera + kCamTarget) != actor) return false;
+    *heading = uint16_t(guest_half(kModeCamera + kCamYaw) + 0x8000u);
+    return true;
 }
 
 int lsw2_enhanced_camera_yaw(int index) {

@@ -217,6 +217,15 @@ void lsw2_enhanced_probe_camera();
  * definition for why that timing is what makes the write survive. */
 void lsw2_enhanced_camera_step();
 
+/* THE HEADING THE ORBIT CAMERA LOOKS ALONG, for `actor`: true, with the heading
+ * in `*heading`, only while this console's own station is in the Enhanced
+ * orbit (mode 4, framed as ours) and that camera follows `actor`. It is the
+ * camera's yaw + 0x8000 - the inverse of frame_orbit, which places the camera
+ * at heading + 0x8000, behind the player. For the radar (radarview.h), which
+ * the game turns by the actor's heading because its own cameras always look
+ * along it. */
+bool lsw2_enhanced_orbit_heading(uint32_t actor, uint16_t* heading);
+
 void lsw2_enhanced_tick();
 
 /* THERE IS DELIBERATELY NO lsw2_enhanced_last_write().

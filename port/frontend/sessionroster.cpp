@@ -20,9 +20,11 @@
 
 #include "state.h"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <random>
 
 extern "C" void lsw2_arm9_FUN_020897f8(void);
 extern "C" void lsw2_arm9_FUN_02091b88(void);
@@ -58,7 +60,25 @@ struct Round {
 };
 Round g_round;
 bool g_posted = false;     /* host: decided for the select now open */
-uint32_t g_rounds = 0;     /* host: rounds decided this session */
+/* host: the round number, which is also the salt of every random roll and
+ * random track in the round. It STARTS AT A RANDOM VALUE. It started at 0, so
+ * every session's rounds were salted 1, 2, 3... and Random All dealt the same
+ * characters in the same order every time (Han Solo, a Gamorrean, Ghost Kenobi,
+ * a Tusken...). Only the host draws it; the joiners take the salt from the
+ * round's message, so the lockstep is unaffected. */
+uint32_t g_rounds = 0;
+bool g_rounds_seeded = false;
+
+uint32_t next_round() {
+    if (!g_rounds_seeded) {
+        g_rounds_seeded = true;
+        std::random_device rd;
+        g_rounds = rd() ^ uint32_t(std::chrono::steady_clock::now()
+                                       .time_since_epoch().count());
+    }
+    if (++g_rounds == 0u) ++g_rounds;   /* 0 reads as "no round" */
+    return g_rounds;
+}
 
 uint8_t rd8(uint32_t a) {
     const uint32_t w = bus_device_read32(0, a & ~3u);
@@ -115,7 +135,7 @@ void decide() {
     /* Hunters: the game's own select decides the characters; the effect still
      * goes out, carrying the round's number and nothing else. */
     const bool skip = lsw2_roster_skips_select(hs.roster);
-    const uint32_t salt = ++g_rounds;
+    const uint32_t salt = next_round();
     uint16_t chars[4] = {kKeep, kKeep, kKeep, kKeep};
     const int n = skip ? game_players() : 0;
     for (int i = 0; i < n; ++i) {

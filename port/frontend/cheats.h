@@ -371,6 +371,9 @@ constexpr uint32_t kLsw2PartySlots = 4;
  * does not exist. */
 constexpr uint32_t kLsw2PartyActors = 0x4Cu;
 constexpr uint32_t kLsw2ActorCharacter = 0x6BBu;
+/* The actor's heading, u16, 0x10000 a full turn: what the arena camera frames
+ * behind (enhanced.cpp) and what the radar turns by (radarview.h). */
+constexpr uint32_t kLsw2ActorHeading = 0xCAu;
 
 /* THE ACTION ROW, eight bytes along from the character id and part of the same
  * actor. gearapply.cpp had it as kActionRow and partslot.cpp as

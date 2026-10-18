@@ -2103,6 +2103,18 @@ void ui_load_settings(UiSettings& s, const char* path) {
     s.floating_touch_scale = float(g_store.get_number("floating_touch_scale",
                                                       s.floating_touch_scale));
     s.floating_touch_only  = g_store.get_bool("floating_touch_only", s.floating_touch_only);
+    /* THE FLOATING PANEL BECAME THE DEFAULT (2026-10-18), and a saved file
+     * holds the old default as if it were a choice - both off, written by
+     * every install that ever saved. So, once, under its own marker as the
+     * master-server moves do: exactly the old pair becomes the new one. A
+     * separate window chosen after this is kept. */
+    if (g_store.get_number("floating_touch_defaulted", 0) == 0) {
+        if (!s.floating_touch && !s.floating_touch_only) {
+            s.floating_touch = true;
+            s.floating_touch_only = true;
+        }
+        g_store.set_number("floating_touch_defaulted", 1);
+    }
     s.mute_music_second_instance =
         g_store.get_bool("debug_mute_music_second_instance", s.mute_music_second_instance);
     s.mute_sound_second_instance =

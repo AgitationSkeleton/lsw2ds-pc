@@ -8,6 +8,16 @@ land.
 
 ## Unreleased
 
+- Fixed: "Random All" and "Random Hunter" dealt the same characters in the
+  same order every session, and random music followed a fixed order too. Each
+  session now starts from a random seed.
+- Fixed: with Enhanced controls, the radar turned with the character instead
+  of the camera. Up on the radar is now the direction the camera faces.
+- The touch screen now shows as a floating panel inside the game window by
+  default, instead of in a separate window. Settings saved with the old
+  default switch over once; you can turn the separate window back on in
+  Settings > Touch Screen.
+
 ## 0.3.0 - 2026-10-18
 
 Still an early pre-release, and **not thoroughly tested**. These changes were
