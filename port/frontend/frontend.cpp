@@ -39,6 +39,7 @@
 #include "asynclog.h"
 #include "sampleprof.h"
 #include "instancemute.h"
+#include "musicpick.h"
 #include "vwh.h"
 #include "statelog.h"
 #include "ui.h"
@@ -280,6 +281,33 @@ void pump_audio(SDL_AudioDeviceID device, AudioQueue& q) {
     for (;;) {
         const uint32_t frames = nds_spu_read_output(samples, 1024);
         if (!frames) break;
+
+        /* LSW2_AUDIO_LEVEL=1: THE SPU'S OUTPUT LEVEL, once a second - RMS and
+         * peak of what the game produced, before any port-side muting. A
+         * diagnostic for "the music cut out": silence here is the game's, not
+         * the device's. */
+        static const bool level_log = [] {
+            const char* v = std::getenv("LSW2_AUDIO_LEVEL");
+            return v && *v == '1';
+        }();
+        if (level_log) {
+            static double sum = 0.0;
+            static uint32_t count = 0, peak = 0;
+            for (uint32_t i = 0; i < frames * 2u; ++i) {
+                const int s = samples[i];
+                sum += double(s) * double(s);
+                const uint32_t a = uint32_t(s < 0 ? -s : s);
+                if (a > peak) peak = a;
+            }
+            count += frames;
+            if (count >= uint32_t(kAudioFrequency)) {
+                std::fprintf(stderr, "[audio] level rms %d peak %u\n",
+                             int(std::sqrt(sum / double(count * 2u))), peak);
+                sum = 0.0;
+                count = 0;
+                peak = 0;
+            }
+        }
 
         /* SILENCE THE BOOT THE FORK IS ALREADY HIDING.
          *
@@ -1645,6 +1673,7 @@ int nds_run_interactive_frontend(const NdsFrontendOptions& options) {
         const uint64_t perf_fork_start = SDL_GetPerformanceCounter();
         lsw2_fork_tick();
         lsw2_instance_mute_tick();
+        lsw2_music_watch_tick();
         const uint64_t perf_ui_start = SDL_GetPerformanceCounter();
         g_perf_debug += perf_fork_start - perf_between_start;
         g_perf_fork += perf_ui_start - perf_fork_start;

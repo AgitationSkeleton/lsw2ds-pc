@@ -6,6 +6,7 @@
 #include "forksession.h"
 #include "gearhop.h"         /* the live lobby switch, on the guest's thread */
 #include "hostsettings.h"
+#include "instancemute.h"   /* kLsw2MusicVolume */
 #include "hudportrait.h"     /* kLsw2HudStep - the level state's update */
 #include "levels.h"
 #include "sessionroster.h"   /* lsw2_sessionroster_round */
@@ -233,6 +234,34 @@ uint32_t g_boot_salt = 0;
 
 void lsw2_lobby_music_tick() {
     if (!ui_fork_build()) return;
+
+    /* THE LOBBY'S MUSIC AFTER A JOIN. The join prompt pauses the music
+     * (0x020B918C sets the context's flag 0x01) and the wireless screens that
+     * follow stop the paused sequence outright - measured: the SPU's output is
+     * exactly zero from there on - without the sequence-end callback 0x020B9434
+     * running, which is what would set flag 0x02, "the recorded slot is stale".
+     * The cartridge never notices, because a stock join always loads a new level
+     * with a different track. The fork returns everyone to the SAME lobby, whose
+     * reload requests the slot the context still records as playing, and the
+     * request function (0x020B90E4) treats that as already playing: silence for
+     * the rest of the lobby. Entering the match screen (state 40), which host
+     * and joiner both pass on the way back to the lobby, does here what the
+     * callback would have: marks the slot stale, so the lobby's own request
+     * restarts it. */
+    {
+        static int last_state = -2;
+        const int now = lsw2_state_current();
+        if (now == 40 && last_state != 40) {
+            const uint32_t word = kLsw2MusicContext + 8u;   /* +8..+0xB, flags at +0xA */
+            const uint32_t w = bus_device_read32(0, word);
+            bus_device_write32(0, word, w | (0x02u << 16));
+            std::fprintf(stderr, "[fork] music: the wireless screens stopped the "
+                                 "lobby track - marked it stale (flag 0x02) so the "
+                                 "lobby's reload restarts it\n");
+        }
+        last_state = now;
+    }
+
     const uint32_t rec = record_of(kLsw2ArenaLobbyLevel);
     const uint32_t cantina = record_of(kLsw2CantinaLevel);
     if (!rec || !cantina) return;
@@ -307,4 +336,21 @@ void lsw2_lobby_music_tick() {
         std::fprintf(stderr, "[fork] Lobby Music: switched in place (set %d, "
                              "track %d)\n", set, track);
     }
+}
+
+void lsw2_music_watch_tick() {
+    const uint32_t ctx = bus_device_read32(0, kLsw2MusicContext + 8u);   /* +8..+0xB */
+    const int slot = int((ctx >> 8) & 0xFFu);
+    const int flags = int((ctx >> 16) & 0xFFu);
+    const uint32_t vw = bus_device_read32(0, kLsw2MusicVolume & ~3u);
+    const int volume = int((vw >> ((kLsw2MusicVolume & 3u) * 8u)) & 0xFFu);
+    static int last_slot = -2, last_flags = -2, last_volume = -2;
+    if (slot == last_slot && flags == last_flags && volume == last_volume) return;
+    last_slot = slot;
+    last_flags = flags;
+    last_volume = volume;
+    std::fprintf(stderr, "[music] playing slot %d, flags %02X%s, volume %d "
+                         "(state %d, level %d)\n",
+                 slot, unsigned(flags), (flags & 0x20) ? " (suppressed)" : "",
+                 volume, lsw2_state_current(), lsw2_cheats_current_level());
 }

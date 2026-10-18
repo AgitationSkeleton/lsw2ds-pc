@@ -17,6 +17,8 @@
 
 #include "state.h"
 
+#include "musicpick.h"
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -25,7 +27,6 @@ namespace {
 /* The slot the game currently has playing. The request function reads
  * this very byte to decide whether a request is a no-op, so it is the game's own
  * answer to "what is playing" rather than a guess from the request side. */
-constexpr uint32_t kMusicContext = 0x0210DB14u;
 constexpr uint32_t kMusicSlotField = 9u;
 
 /* THE GAME'S RANDOM NUMBER GENERATOR, watched as a desync canary.
@@ -320,7 +321,7 @@ void lsw2_diag_tick() {
         g_last.level = level;
     }
 
-    const int music = int(read_byte(kMusicContext + kMusicSlotField));
+    const int music = int(read_byte(kLsw2MusicContext + kMusicSlotField));
     if (music != g_last.music) {
         /* THE NOTE IS THE WHOLE POINT OF THIS LINE. Whoever reads the log needs
          * to know that a slot seen during combat is the answer and a slot seen

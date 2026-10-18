@@ -24,6 +24,8 @@
 #ifndef LSW2_INSTANCEMUTE_H
 #define LSW2_INSTANCEMUTE_H
 
+#include <cstdint>
+
 /* Claim the instance mutex, once, as early as the process can. */
 void lsw2_instance_claim();
 
@@ -37,5 +39,8 @@ bool lsw2_instance_mute_all_sound();
 /* Once a frame: hold the music player's volume at 0 when the Music setting is
  * on and this is a second instance. */
 void lsw2_instance_mute_tick();
+
+/* The music player's output volume byte. */
+constexpr uint32_t kLsw2MusicVolume = 0x0210DC44u;
 
 #endif /* LSW2_INSTANCEMUTE_H */

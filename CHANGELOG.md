@@ -17,6 +17,12 @@ land.
 - Fixed: players on the same network as the host saw its lobby twice, and
   joining through the master server's listing or a room code could fail. They
   are now given the host's local address.
+- Fixed: the lobby music stopped for good when a player joined. The join
+  screens stop the track in a way the game doesn't record, and the lobby that
+  reloads afterwards asks for the same track, so the game skipped it. The
+  track is now marked for restart, and the lobby plays it again.
+- Logs now record every music change. Setting `LSW2_AUDIO_LEVEL=1` also logs
+  the output level once a second.
 - Enhanced controls: new camera turn and height speed settings in the Input
   tab, with faster defaults. The camera now starts moving smoothly just past
   the deadzone.

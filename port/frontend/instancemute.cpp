@@ -16,9 +16,6 @@
 
 namespace {
 
-/* The music player's output volume (instancemute.h). */
-constexpr uint32_t kMusicVolume = 0x0210DC44u;
-
 bool g_claimed = false;
 bool g_secondary = false;
 
@@ -50,8 +47,8 @@ bool lsw2_instance_mute_all_sound() {
 
 void lsw2_instance_mute_tick() {
     if (!g_secondary || !lsw2_ui_mute_music_second_instance()) return;
-    const uint32_t base = kMusicVolume & ~3u;
-    const uint32_t shift = (kMusicVolume & 3u) * 8u;
+    const uint32_t base = kLsw2MusicVolume & ~3u;
+    const uint32_t shift = (kLsw2MusicVolume & 3u) * 8u;
     const uint32_t w = bus_device_read32(0, base);
     if (((w >> shift) & 0xFFu) == 0u) return;
     bus_device_write32(0, base, w & ~(0xFFu << shift));

@@ -116,7 +116,19 @@ void lsw2_music_tick();
  * next lobby load plays it; a change made while standing in the lobby is
  * applied at once through the game's own music start (0x020B3718) on the
  * guest's thread. The setting is the host's while in a session. */
+/* THE GAME'S MUSIC CONTEXT: +9 the slot recorded as playing (the request
+ * function 0x020B90E4 skips a request for it), +0xA its flags - 0x01 paused,
+ * 0x02 stale (restart on the next request), 0x20 music suppressed. */
+constexpr uint32_t kLsw2MusicContext = 0x0210DB14u;
 constexpr int kLsw2MusicLobbySpareSet = 23;
 void lsw2_lobby_music_tick();
+
+/* THE MUSIC, AS THE LOG SEES IT. Once a frame, both builds: the slot the music
+ * context says is playing (0x0210DB14 + 9), its flags byte (+0xA, bit 0x20
+ * suppresses music) and the music player's volume (0x0210DC44), with the state
+ * and level, logged whenever any of them changes. Read-only - it cannot change
+ * the music, only say when and where it changed - so a player's report of the
+ * music cutting out arrives with the frame it happened on. */
+void lsw2_music_watch_tick();
 
 #endif /* LSW2_MUSICPICK_H */
