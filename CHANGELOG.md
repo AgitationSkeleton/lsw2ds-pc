@@ -8,6 +8,19 @@ land.
 
 ## Unreleased
 
+- Fixed: a host could crash when a second player joined its lobby, if the
+  joining player wore a hat over a helmet-class character. The head re-attach
+  that caused it never actually showed the head, so it has been removed for
+  now.
+- Fixed: hosting stuttered every few seconds. The master server's heartbeat
+  now runs in the background instead of on the game's frame.
+- Fixed: players on the same network as the host saw its lobby twice, and
+  joining through the master server's listing or a room code could fail. They
+  are now given the host's local address.
+- Enhanced controls: new camera turn and height speed settings in the Input
+  tab, with faster defaults. The camera now starts moving smoothly just past
+  the deadzone.
+
 ## 0.1.0 - 2026-10-16
 
 The first public release, and an early one:
