@@ -53,6 +53,7 @@ The upload needs a GitHub token that can write this repository's contents:
       port/game.toml                   the title config
       port/saves/unlocked-template.sav seeds Bounty Hunter's unlocks
       rom/                             empty: the first start fills it
+      licenses/                        the GPL, THIRD_PARTY.md, Roboto's Apache-2.0 text
 
 A release never contains a ROM, BIOS or firmware dumps, saves, settings or logs.
 

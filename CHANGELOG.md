@@ -8,6 +8,14 @@ land.
 
 ## Unreleased
 
+## 0.3.0 - 2026-10-18
+
+Still an early pre-release, and **not thoroughly tested**. These changes were
+checked on a single PC only, with two players. **Online play is still not
+thoroughly playtested**: play between separate PCs over the internet, and
+matches with three or four players, have had little testing. Please report
+problems with the newest file from `build\logs\`.
+
 - New settings menu layout: the F1 menu is now a full-window menu with
   sections along the top (Settings, Enhancements, Multiplayer, Debug), pages
   down the side and a search box that finds any option. The game keeps running,
