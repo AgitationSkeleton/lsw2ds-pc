@@ -698,6 +698,36 @@ void lobby_page(UiSettings& s) {
     }
 }
 
+/* Enhancements > Gameplay: match-rule fixes to the cartridge's own scoring.
+ *
+ * A MATCH RULE, so it is the host's: it travels with the host settings and a
+ * joiner plays by the host's choice (shown, not editable). Not editable
+ * mid-match either - every console has to score the same death the same way,
+ * and a change has to reach them all before the next one. */
+void gameplay_page(UiSettings&) {
+    uiw::section("Scoring");
+    if (!ui_fork_build()) {
+        uiw::note("Bounty Hunter match rules apply to the Bounty Hunter build.");
+        return;
+    }
+    Lsw2ForkSession& session = lsw2_fork_session();
+    const Lsw2SessionState st = session.state();
+    const bool joined = st == Lsw2SessionState::Joined || st == Lsw2SessionState::Joining;
+    const bool in_match = st == Lsw2SessionState::InMatch;
+    ImGui::BeginDisabled(joined || in_match);
+    if (uiw::checkbox("Suicides don't score", &session.settings().suicide_no_kill,
+        "Fixes a bug in the original game: in kill-based modes, blowing\n"
+        "yourself up with your own explosive (Bossk's, Leia in Boushh\n"
+        "disguise's, 4-LOM's) counted as a kill for you.\n\n"
+        "On, a death you caused yourself scores like a fall: a death\n"
+        "and nothing else.\n\n"
+        "A match rule: the host's setting applies to everyone."))
+        session.rules_changed();
+    ImGui::EndDisabled();
+    if (joined) uiw::note("Set by the host for this session.");
+    else if (in_match) uiw::note("Can't be changed during a match.");
+}
+
 /* Enhancements > Portraits: the top-screen portrait fixes. */
 void portraits_page(UiSettings& s) {
     uiw::section("Top-screen portrait");
@@ -1291,7 +1321,8 @@ const char* const kSectionNames[kSecCount] = {
     "Settings", "Enhancements", "Multiplayer", "Cheats", "Debug"};
 
 const char* const kSettingsPages[] = {"Display", "Graphics", "Controls", "Touch Screen"};
-const char* const kEnhancementPages[] = {"Arena Controls", "Arena HUD", "Lobby", "Portraits"};
+const char* const kEnhancementPages[] = {"Arena Controls", "Arena HUD", "Lobby", "Portraits",
+                                         "Gameplay"};
 const char* const kForkNetPages[] = {"Online"};
 const char* const kCoopNetPages[] = {"Co-op"};
 const char* const kCheatPages[] = {"Levels", "Unlocks"};
@@ -1343,7 +1374,8 @@ void draw_page(UiSettings& s, int section, int page) {
         case 0: arena_controls_page(s); break;
         case 1: arena_hud_page(s); break;
         case 2: lobby_page(s); break;
-        default: portraits_page(s); break;
+        case 3: portraits_page(s); break;
+        default: gameplay_page(s); break;
         }
         break;
     case kSecMultiplayer:
@@ -2239,6 +2271,7 @@ void ui_load_settings(UiSettings& s, const char* path) {
         h.music = Lsw2HostMusic(int(g_store.get_number("host_music", double(int(h.music)))));
         h.lobby_music = Lsw2LobbyMusic(int(g_store.get_number("host_lobby_music", double(int(h.lobby_music)))));
         h.lobby_time = Lsw2LobbyTime(int(g_store.get_number("host_lobby_time", double(int(h.lobby_time)))));
+        h.suicide_no_kill = g_store.get_bool("host_suicide_no_kill", h.suicide_no_kill);
         lsw2_host_extras_from_mask(h, uint32_t(g_store.get_number("host_extras", 0)));
         lsw2_host_settings_clamp(h);
     }
@@ -2444,6 +2477,7 @@ void ui_save_settings(const UiSettings& s, const char* path) {
             g_store.set_number("host_music", int(h.music));
         g_store.set_number("host_lobby_music", int(h.lobby_music));
         g_store.set_number("host_lobby_time", int(h.lobby_time));
+        g_store.set_bool("host_suicide_no_kill", h.suicide_no_kill);
         g_store.set_number("host_extras", double(lsw2_host_extras_mask(h)));
     }
     g_store.set_bool("bh_freeplay_select", s.bh_freeplay_select);

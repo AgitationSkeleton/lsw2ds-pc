@@ -33,6 +33,7 @@
 #include "popuphud.h"
 #include "sessionroster.h"
 #include "touchportrait.h"
+#include "killcredit.h"
 #include "netmsg.h"        /* kLsw2MsgContinue */
 #include "freeplaypick.h"
 #include "hatstay.h"         /* a hit keeps the hat - the knock-off's spawn */
@@ -3062,6 +3063,9 @@ const NdsDispatchEntry kOverridesCore[] = {
      * through its vtable word at 0x020FFA44 (zero BL in the generated code), so
      * it is dispatched and this fires. */
     { kLsw2TouchHudUpdate, 0, lsw2_touchportrait_update, nullptr },
+    /* A suicide scores nothing - see killcredit.h. The death handler's one
+     * caller, the actor's die method, reaches it through the dispatcher. */
+    { kLsw2DeathHandler, 0, lsw2_killcredit_death, nullptr },
     /* THE FREE PLAY GRID AS A PICKER - see freeplaypick.h. The unlock query's
      * call from the widget's tap handler (0x0206887C, returning to 0x02068880)
      * crosses banks and dispatches; that call is the one place a confirming

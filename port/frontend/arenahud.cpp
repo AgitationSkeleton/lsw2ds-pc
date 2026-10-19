@@ -142,6 +142,14 @@ constexpr int kMeterSize = 16;
  * flush against a border that a widescreen letterbox might crop. */
 constexpr int kInset = 2;
 
+/* THE LOCAL PLAYER'S COUNTERS (see the composite): their rectangle within a
+ * touch-screen row, and where the cartridge's own hearts sit on a native top
+ * screen - measured from the GL frame of a live match (hearts x 82..140,
+ * y 25..37 of a 320-wide frame, i.e. x 50 on a 256-wide one). */
+constexpr int kScoreX = 48, kScoreY = 6, kScoreW = 40, kScoreH = 36;
+constexpr int kHeartsLeft = 50, kHeartsTop = 25;
+constexpr int kScoreMinTop = 2;
+
 /* THE HUD'S LAYER is kLsw2HudLayerScale times the frame in each direction
  * (topoverlay.h); every destination below is in its pixels. */
 constexpr int kLayerH = kH * kLsw2HudLayerScale;
@@ -515,6 +523,43 @@ void lsw2_arena_hud_composite(uint32_t* layer, int width) {
                         kLayerH - (kSlots - 1 - seat) * sh - inset, sw, sh);
         }
         ++seat;
+    }
+
+    /* THE LOCAL PLAYER'S OWN SCORE, above the hearts.
+     *
+     * The column shows the other three players because the top screen already
+     * carries this one's portrait and hearts - and so this player's own counters
+     * were nowhere on screen at all once the touch screen was hidden. They go
+     * where the single-player HUD keeps its stud counter: right of the
+     * portrait, above the hearts.
+     *
+     * THE SAME COPY AS THE COLUMN: this player's row of the touch screen, the
+     * counters only (icons and up to three digits - measured x 49..88, y 6..41
+     * of a 48-pixel row, in both the two-counter and the carbonite layouts), at
+     * the column's scale. The row comes from read_rows, so it follows the
+     * player when the touch column re-sorts.
+     *
+     * PLACED AGAINST THE GAME'S OWN HUD, not a window corner: the portrait and
+     * hearts are the cartridge's 3D HUD, drawn at native positions and centred
+     * in a widened frame, so the hearts' measured top-left (50, 25) is offset by
+     * the widening exactly as they are. Bottom-aligned one pixel above them,
+     * and shrunk if a large HUD scale would push it above the frame. */
+    {
+        const int me = local_station();
+        if (me >= 0 && me < kSlots && rows[me] >= 0) {
+            const int S = kLsw2HudLayerScale;
+            const int frame_w = width / S;
+            const int extra = frame_w > kW ? (frame_w - kW) / 2 : 0;
+            int dw = scaled(kScoreW), dh = scaled(kScoreH);
+            const int room = (kHeartsTop - 1 - kScoreMinTop) * S;
+            if (dh > room) {
+                dw = dw * room / dh;
+                dh = room;
+            }
+            blit_scaled(touch, backdrop, kScoreX, rows[me] * kSlotPitch + kScoreY,
+                        kScoreW, kScoreH, layer, width, (extra + kHeartsLeft) * S,
+                        (kHeartsTop - 1) * S - dh, dw, dh);
+        }
     }
 
     /* THE RADAR, from the measured constants and nothing else - 2026-09-12.

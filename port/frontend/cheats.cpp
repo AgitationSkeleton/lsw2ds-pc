@@ -669,7 +669,7 @@ namespace {
 constexpr uint32_t kActorFlags = 0x08u;
 /* Earlier readings called it the controller index and the view index; both
  * are the same byte, and 4 is its "no view of my own" sentinel. */
-constexpr uint32_t kActorViewIndex = 0x5DAu;
+constexpr uint32_t kActorViewIndex = kLsw2ActorViewIndex;
 constexpr uint32_t kActorPresentBit = 1u;
 
 }  // namespace

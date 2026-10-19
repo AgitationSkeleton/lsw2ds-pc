@@ -66,6 +66,14 @@ struct Lsw2HostSettings {
     Lsw2LobbyMusic lobby_music = Lsw2LobbyMusic::Hunter;
     Lsw2LobbyTime lobby_time = Lsw2LobbyTime::S30;
 
+    /* A SUICIDE SCORES NOTHING (killcredit.h). The cartridge credits a death
+     * to whoever the killer resolves to, and its own explosives (Bossk's,
+     * Leia in Boushh disguise's, 4-LOM's) resolve to the thrower - so blowing
+     * yourself up counted as a kill. On, a death the victim caused is scored
+     * as the game scores a fall: a death and nothing else. A match rule,
+     * so it travels with the others and the host's choice holds everywhere. */
+    bool suicide_no_kill = true;
+
     /* WHICH ARENA MAP THE ROUND USES - AND IT IS NOT A ROW, AND NOT WHAT PICKS
      * THE LEVEL. levels.h names both, from rows the level table marks
      * `confirmed`: 4 Jabba's Tower, 5 Mos Eisley Streets.
@@ -219,13 +227,14 @@ bool lsw2_host_character_valid(int character_id);
  * VERSIONED, because a client built from a different revision must refuse the
  * record rather than misread it - a settings block off by one byte would apply
  * the wrong Extras to a match and look like a game bug. */
-constexpr uint8_t kLsw2HostWireVersion = 2;
+constexpr uint8_t kLsw2HostWireVersion = 3;
 /* THIRTEEN SINCE THE ROUND START CROSSED THE WIRE: the map the host picked and
  * the level a round is running on, one byte each. The version byte at [0]
  * guards the change - an older peer's payload is rejected outright rather than
  * read short, which is what lsw2_host_settings_from_wire's first check is
- * for. FOURTEEN, version 2, since Lobby Music joined the rules. */
-constexpr int kLsw2HostWireBytes = 14;
+ * for. FOURTEEN, version 2, since Lobby Music joined the rules. FIFTEEN,
+ * version 3, since the suicide rule did. */
+constexpr int kLsw2HostWireBytes = 15;
 
 /* Write the match rules. Returns bytes written, or 0 if `n` is too small. */
 int lsw2_host_settings_to_wire(const Lsw2HostSettings& s, uint8_t* out, int n);

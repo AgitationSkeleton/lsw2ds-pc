@@ -374,6 +374,9 @@ constexpr uint32_t kLsw2ActorCharacter = 0x6BBu;
 /* The actor's heading, u16, 0x10000 a full turn: what the arena camera frames
  * behind (enhanced.cpp) and what the radar turns by (radarview.h). */
 constexpr uint32_t kLsw2ActorHeading = 0xCAu;
+/* The actor's view index, u8: the station its deaths are scored to
+ * (FUN_02004dec), and 4 for "no view of its own" (cheats.cpp, killcredit.h). */
+constexpr uint32_t kLsw2ActorViewIndex = 0x5DAu;
 
 /* THE ACTION ROW, eight bytes along from the character id and part of the same
  * actor. gearapply.cpp had it as kActionRow and partslot.cpp as

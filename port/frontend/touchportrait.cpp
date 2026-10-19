@@ -27,9 +27,13 @@ constexpr uint32_t kSpriteFrames = 0x20u;        /* sprite -> its frame set */
 constexpr uint32_t kSprite2dVtable = 0x020FD0F0u;
 constexpr uint32_t kSpriteFactory = 0x0201AD50u;
 constexpr uint32_t kSpriteManagerPool = 0x0209A3A4u;  /* -> -> the manager */
-constexpr uint32_t kFaceX = 0x8000u;             /* 8.0 */
-constexpr uint32_t kFacePitch = 0x30u, kFaceTop = 0x08u;
 constexpr uint32_t kFacePaletteBase = 8u;
+/* WHERE A FACE IS NOW: the factory stores its x and y at +0x4C/+0x50
+ * (0x0201ADC4), and the touch column's re-sort slides them there
+ * (FUN_0209aaa4). The init's (8, 48i + 8) is only where a slot STARTS. */
+constexpr uint32_t kSpriteX = 0x4Cu, kSpriteY = 0x50u;
+/* hud + slot: non-zero while that slot's portrait is sliding to a new row. */
+constexpr uint32_t kHudSliding = 0xCDu;
 
 enum Step { kDestroy = 0, kBuild = 1 };
 
@@ -38,6 +42,7 @@ bool g_busy = false;
 uint32_t g_hud = 0;
 int g_slot = -1;
 uint8_t g_char = 0;
+uint32_t g_x = 0, g_y = 0;   /* the old face's position, for the new one */
 int g_said_odd = 0;
 
 bool ram(uint32_t a) { return a >= 0x02000000u && a < 0x02400000u; }
@@ -65,6 +70,9 @@ void check(uint32_t hud) {
         if (c >= kCharCount) continue;
         const int was = built_for(sprite);
         if (was == int(c)) continue;
+        /* NOT MID-SLIDE: the re-sort is moving this face to a new row and
+         * holds its target; rebuild once it has arrived. */
+        if (r8(hud + kHudSliding + uint32_t(i)) != 0) continue;
         if (was < 0 || r32(sprite) != kSprite2dVtable) {
             if (g_said_odd < 4) {
                 ++g_said_odd;
@@ -85,6 +93,11 @@ void check(uint32_t hud) {
             g_hud = hud;
             g_slot = i;
             g_char = c;
+            /* WHERE IT IS, not where the slot started: after a capture or a
+             * kill re-sorts the column, slot i's row is no longer 48i + 8, and
+             * a face built there sat beside another player's score. */
+            g_x = r32(sprite + kSpriteX);
+            g_y = r32(sprite + kSpriteY);
             std::fprintf(stderr,
                          "[fork] touch portrait: slot %d is character %u, its face "
                          "was built for %d - rebuilding\n", i, unsigned(c), was);
@@ -134,8 +147,7 @@ void lsw2_touchportrait_step_returned(int step, uint32_t result) {
         const uint32_t manager = r32(r32(kSpriteManagerPool));
         if (!lsw2_gearhop_request_call7_at(
                 kSpriteFactory, slot, i + kFacePaletteBase, frames_of(g_char),
-                kFaceX, (kFacePitch * i + kFaceTop) << 12, 0u, manager, kBuild,
-                kLsw2TouchHudUpdate)) {
+                g_x, g_y, 0u, manager, kBuild, kLsw2TouchHudUpdate)) {
             std::fprintf(stderr,
                          "[fork] touch portrait: slot %d's build could not be "
                          "queued - its face stays empty\n", g_slot);

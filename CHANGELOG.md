@@ -8,6 +8,22 @@ land.
 
 ## Unreleased
 
+- Fixed (a bug in the original game): in kill-based modes, blowing yourself up
+  with your own explosive (Bossk's, Leia in Boushh disguise's, 4-LOM's)
+  counted as a kill. A death you cause yourself now scores like a fall: a
+  death and nothing else. New option under Enhancements > Gameplay, "Suicides
+  don't score", on by default. It's a match rule, so the host's setting
+  applies to everyone.
+- Fixed: after a capture or a kill reordered the score column, a player who
+  then respawned as a new character (random characters) had their portrait
+  drawn on another player's row, so the scorer appeared beside that player's
+  score of 0.
+- The top screen now shows your own score above your hearts, where the stud
+  counter sits in story mode: kills and deaths, or captures in Capture. The
+  other players' scores were already in the column at the lower left.
+- Online play needs everyone on this version: the host's match rules gained a
+  field, and older versions won't accept them.
+
 ## 0.3.1 - 2026-10-18
 
 Still an early pre-release, and **not thoroughly tested**: these fixes were

@@ -476,6 +476,7 @@ int lsw2_host_settings_to_wire(const Lsw2HostSettings& s, uint8_t* out, int n) {
     out[11] = uint8_t(s.map);
     out[12] = uint8_t(s.round_level);
     out[13] = uint8_t(int(s.lobby_music));
+    out[14] = s.suicide_no_kill ? 1u : 0u;
     return kLsw2HostWireBytes;
 }
 
@@ -496,6 +497,7 @@ bool lsw2_host_settings_from_wire(Lsw2HostSettings& s, const uint8_t* in, int n)
     s.map = int(in[11]);
     s.round_level = int(in[12]);
     s.lobby_music = Lsw2LobbyMusic(int(in[13]));
+    s.suicide_no_kill = in[14] != 0;
 
     /* CLAMPED, because this arrived from the network. Every value above is cast
      * straight to an enum that indexes the menu's own value arrays, and a

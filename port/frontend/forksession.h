@@ -443,6 +443,13 @@ public:
      * joins. */
     bool session_rules_known() const { return is_host() || borrowing_; }
 
+    /* A MATCH RULE CHANGED OUTSIDE THE HOST MENU (the F1 menu's Gameplay
+     * page): a hosting session tells its clients now, as leaving the host
+     * menu does. A no-op offline or for a joiner. */
+    void rules_changed() {
+        if (is_host()) broadcast_settings();
+    }
+
 private:
     void rebuild_menu();
 

@@ -254,6 +254,10 @@
    "handler": "lsw2_touchportrait_update",
    "callers": 1
   },
+  "0x02004DEC": {
+   "handler": "lsw2_killcredit_death",
+   "callers": 2
+  },
   "0x0205E80C": {
    "handler": "lsw2_hatstay_spawn_override",
    "callers": 346

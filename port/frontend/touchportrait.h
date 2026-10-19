@@ -32,6 +32,14 @@
  * zero BL, so it is dispatched and its override fires), which is where this
  * module also looks for the change.
  *
+ * CORRECTED (0.3.2): the rebuild used to pass the init's position, (8, 48i+8).
+ * That is where a slot STARTS. The touch column re-sorts by score - a capture
+ * or a kill slides the leader's ring and face to the top row (FUN_0209aaa4,
+ * via each sprite's y at +0x50) - so after a re-sort a rebuilt face landed on
+ * another player's row, beside that player's score: "a capture shows 0 beside
+ * the scorer". The new face now takes the old one's current x and y
+ * (+0x4C/+0x50), and no rebuild starts while the slot is sliding (hud+0xCD+i).
+ *
  * WHICH CHARACTER A FACE WAS BUILT FOR is decoded from its +0x20, and a face
  * whose +0x20 does not decode to a table entry is left alone and reported once:
  * the field's meaning was measured, and a sprite that disagrees is not one this
