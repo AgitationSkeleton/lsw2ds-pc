@@ -8,6 +8,13 @@ land.
 
 ## Unreleased
 
+## 0.3.2 - 2026-10-18
+
+Still an early pre-release, and **not thoroughly tested**: these fixes were
+checked on a single PC only, with two players. **Online play is still not
+thoroughly playtested** - play between separate PCs over the internet, and
+matches with three or four players, have had little testing.
+
 - Fixed (a bug in the original game): in kill-based modes, blowing yourself up
   with your own explosive (Bossk's, Leia in Boushh disguise's, 4-LOM's)
   counted as a kill. A death you cause yourself now scores like a fall: a
