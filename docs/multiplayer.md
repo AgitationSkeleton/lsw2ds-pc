@@ -645,7 +645,29 @@ and one SOAP `AddPortMapping`. It needs no library. Every failure is soft. A
 host behind carrier-grade NAT, or with UPnP off, still hosts for the LAN and
 for anyone who can reach it directly, and the log says why the mapping
 failed. `lsw2_ping.*` measures a lobby's ping as a TCP connect to its listen
-port, so the number is the distance to the host, not to the directory.
+port, so the number is the distance to the host, not to the directory. A
+lobby only reachable through the relay shows no ping.
+
+### The relay
+
+Many hosts can't accept connections at all: a VPN, a router without UPnP,
+carrier-grade NAT. For those, the master server carries the connection
+(`services/master-server/src/relay.js`): a Cloudflare Durable Object room
+per lobby, reached by WebSocket over the same plain HTTP the lobby list uses.
+
+- **Host.** A listed host keeps one connection to its room, authenticated with
+  its registration token (`Lsw2RelayHost` in `port/net/lsw2_wsrelay.*`). Each
+  joiner the room announces becomes a loopback connection to the host's own
+  listen port, which the transport accepts like any other.
+- **Joiner.** `join_address` tries the host directly (1.5 s). For a lobby from
+  the list or a room code, it then opens the lobby's room (`Lsw2RelayJoin`)
+  and joins a loopback port the bridge carries.
+- **The wire.** Host messages are `[kind][peer][bytes]` (0 data, 1 open,
+  2 close); a joiner's are the bytes alone. The room never parses the game's
+  stream, so the lockstep and every record are what a direct connection runs.
+
+`LSW2_TEST_FORCE_RELAY=1` skips the direct attempt, so the relay can be
+exercised on one machine.
 
 ## Where to look in the source
 

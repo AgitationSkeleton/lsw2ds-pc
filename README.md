@@ -30,7 +30,8 @@ Both are the same binary under two names: the name picks the mode.
   Close the window to quit.
 - **Online:** to host, start a lobby; it appears in the public lobby list with a
   four-letter room code. To join, pick a lobby from the list or type its code.
-  The host must be reachable on **TCP 28550**. The game tries UPnP first.
+  No port forwarding is needed: when a player can't reach the host directly,
+  the game connects them through the master server's relay automatically.
 - **BIOS:** no BIOS or firmware files are needed. An open-source replacement
   BIOS (FreeBIOS) and a generated firmware image are built in.
 

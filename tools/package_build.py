@@ -101,9 +101,10 @@ Host:  choose to host a game. Your lobby appears in the online list and
        gets a four-letter ROOM CODE - send it to your friends.
 Join:  pick the lobby from the list, or enter the room code.
 
-The host's computer must be reachable on TCP port 28550. The game asks
-your router to open it automatically (UPnP). If friends cannot join you,
-forward TCP 28550 to your PC in your router, or let someone else host.
+No port forwarding is needed. If a friend can't reach your computer
+directly (a VPN, a router without UPnP, your ISP's setup), the game
+connects you through the master server automatically. Everyone in a game
+should be on the same version.
 
 
 CONTROLS AND SETTINGS
