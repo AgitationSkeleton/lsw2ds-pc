@@ -14,6 +14,14 @@
     "database_name": "lsw2ds-master-server",
     "database_id": "04bab9e4-e90a-4b11-9b62-61b32ca181b7"
   }],
+  // The relay (src/relay.js): one Durable Object room per lobby, so players who
+  // cannot accept connections - no port forwarding, a VPN, carrier-grade NAT -
+  // still meet, both dialling out to here. SQLite-backed, as the free plan
+  // requires.
+  "durable_objects": {
+    "bindings": [{"name": "RELAY", "class_name": "RelayRoom"}]
+  },
+  "migrations": [{"tag": "relay-v1", "new_sqlite_classes": ["RelayRoom"]}],
   // Once a minute: remove lobbies whose host stopped answering, and log them.
   "triggers": {
     "crons": ["* * * * *"]

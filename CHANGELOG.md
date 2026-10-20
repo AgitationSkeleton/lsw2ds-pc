@@ -8,6 +8,25 @@ land.
 
 ## Unreleased
 
+## 0.3.3 - 2026-10-19
+
+Still an early pre-release, and **not thoroughly tested**: the relay was
+checked on a single PC, through the live master server, with two players.
+Online play between separate PCs over the internet is still largely
+untested. Everyone in a game should be on this version.
+
+- **Online play no longer needs port forwarding.** When a player can't
+  connect to a host directly - no port forwarding, a VPN, a router without
+  UPnP, an ISP's carrier-grade NAT - the game now connects through the master
+  server's relay automatically. Both players connect out to the server, so
+  nothing needs opening. Joining from the online list or by room code tries
+  the direct route first (best on a LAN) and falls back to the relay. Players
+  who join by typing an IP address still need the host to be reachable.
+- Fixed: joining a host that couldn't be reached froze the game for about 20
+  seconds. A failed attempt now gives up within a few seconds and says why.
+- Fixed: the log filled with a "customize menu" line on every frame while the
+  customize menu was open.
+
 ## 0.3.2 - 2026-10-18
 
 Still an early pre-release, and **not thoroughly tested**: these fixes were

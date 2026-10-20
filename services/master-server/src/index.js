@@ -23,6 +23,7 @@
  */
 
 import {announce, describeConfig, kindLabel, lasted, names, plain} from "./discord.js";
+export {RelayRoom} from "./relay.js";
 
 // Twenty seconds, as the self-host server: the game heartbeats about once a
 // second, and a crashed host should leave the list quickly rather than linger
@@ -314,14 +315,38 @@ async function list(request, env) {
 async function resolveCode(request, env, raw) {
   const now = Math.floor(Date.now() / 1000);
   const row = await env.DB.prepare(
-    "SELECT name,address,port,players,max_players,lan FROM servers WHERE code=? AND expires_at>=?"
+    "SELECT id,name,address,port,players,max_players,lan FROM servers WHERE code=? AND expires_at>=?"
   ).bind(normaliseCode(raw), now).first();
   if (!row) return reply({error: "no such room code"}, 404);
   const requester = request.headers.get("cf-connecting-ip") || "";
+  /* The id is what a joiner needs to reach the lobby through the relay when
+   * its address does not answer. */
   return reply({
-    name: row.name, ...reachableAddress(row, requester), port: row.port,
+    id: row.id, name: row.name, ...reachableAddress(row, requester), port: row.port,
     players: row.players, max_players: row.max_players,
   });
+}
+
+/* THE RELAY's front door (relay.js has the room). A host must prove it owns the
+ * lobby with its token; a joiner only needs the lobby to be live. Then the
+ * WebSocket goes to the lobby's own room. */
+async function relay(request, env, id) {
+  if ((request.headers.get("upgrade") || "").toLowerCase() !== "websocket") {
+    return reply({error: "expected a WebSocket upgrade"}, 426);
+  }
+  if (!env.RELAY) return reply({error: "relay not configured"}, 503);
+  const role = new URL(request.url).searchParams.get("role");
+  if (role === "host") {
+    if (!await authorised(request, env, id)) return reply({error: "unauthorized"}, 401);
+  } else if (role === "join") {
+    const now = Math.floor(Date.now() / 1000);
+    const row = await env.DB.prepare("SELECT 1 FROM servers WHERE id=? AND expires_at>=?")
+      .bind(id, now).first();
+    if (!row) return reply({error: "no such lobby"}, 404);
+  } else {
+    return reply({error: "role must be host or join"}, 400);
+  }
+  return env.RELAY.get(env.RELAY.idFromName(id)).fetch(request);
 }
 
 /* THE ADDRESS THAT WILL ACTUALLY ANSWER. A player behind the same router as
@@ -383,6 +408,9 @@ export default {
       if (method === "POST" && url.pathname === "/v1/servers") return register(request, env, ctx);
       if (method === "GET" && url.pathname === "/v1/turn-credentials") return turnCredentials(request, env);
 
+      if (parts.length === 3 && parts[0] === "v1" && parts[1] === "relay" && method === "GET") {
+        return relay(request, env, parts[2]);
+      }
       if (parts.length === 3 && parts[0] === "v1" && parts[1] === "codes" && method === "GET") {
         return resolveCode(request, env, parts[2]);
       }

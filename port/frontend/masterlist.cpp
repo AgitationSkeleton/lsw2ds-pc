@@ -50,6 +50,7 @@ void lsw2_master_row_format(const Lsw2ServerEntry& entry, Lsw2MasterRow* out) {
     out->address = entry.address;
     out->port = entry.port;
     out->lan = entry.lan;
+    out->id = entry.lan ? std::string() : entry.id;
 }
 
 void lsw2_master_list_set(Lsw2MasterListState& state,

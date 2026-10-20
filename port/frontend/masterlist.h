@@ -42,6 +42,7 @@ struct Lsw2MasterRow {
     std::string address;
     int port = 0;
     bool lan = false;           /* found on the local network    */
+    std::string id;             /* the directory's lobby id: the relay's way in */
 };
 
 struct Lsw2MasterListState {

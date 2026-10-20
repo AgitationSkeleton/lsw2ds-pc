@@ -183,7 +183,7 @@ uint16_t Lsw2TcpTransport::host(uint16_t port) {
     return ntohs(a.sin_port);
 }
 
-bool Lsw2TcpTransport::join(const std::string& address, uint16_t port) {
+bool Lsw2TcpTransport::join(const std::string& address, uint16_t port, int timeout_ms) {
     socket_t s = socket(AF_INET, SOCK_STREAM, 0);
     if (s == LSW2_INVALID) return false;
 
@@ -216,8 +216,9 @@ bool Lsw2TcpTransport::join(const std::string& address, uint16_t port) {
         FD_SET(s, &wr);
         FD_SET(s, &ex);   /* Windows reports a refused connect here */
         timeval tv;
-        tv.tv_sec = kConnectTimeoutMs / 1000;
-        tv.tv_usec = (kConnectTimeoutMs % 1000) * 1000;
+        const int ms = timeout_ms > 0 ? timeout_ms : kConnectTimeoutMs;
+        tv.tv_sec = ms / 1000;
+        tv.tv_usec = (ms % 1000) * 1000;
         if (::select(int(s) + 1, nullptr, &wr, &ex, &tv) <= 0 || FD_ISSET(s, &ex)) {
             lsw2_close(s);
             return false;

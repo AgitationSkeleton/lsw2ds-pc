@@ -337,6 +337,7 @@ bool Lsw2ForkSession::join_row(int row) {
     if (row < 0 || row >= int(list_.rows.size())) return false;
     const Lsw2MasterRow& r = list_.rows[size_t(row)];
     if (r.address.empty() || r.port <= 0) return false;
+    join_relay_id_ = r.id;      /* the relay, if the address does not answer */
     return join_address(r.address.c_str(), r.port);
 }
 
@@ -389,10 +390,13 @@ void Lsw2ForkSession::update_lobby() {
         char room[64];
         std::snprintf(room, sizeof room, "%s", player_name_);
         publish_roster();
-        if (master_.register_lobby(room, listen_port_, player_count()))
+        if (master_.register_lobby(room, listen_port_, player_count())) {
             std::snprintf(console_.room_code, sizeof console_.room_code, "%s",
                           master_.room_code().c_str());
+            start_relay_host();
+        }
     } else if (!settings_.visible_master && listed) {
+        relay_host_.reset();
         master_.unregister();
         console_.room_code[0] = '\0';
     }
@@ -489,19 +493,20 @@ void Lsw2ForkSession::start_lobby() {
                          listen_port_, external.empty() ? "" : "; external IP ",
                          external.empty() ? "" : external.c_str());
         } else {
-            /* SAID TO THE PLAYER, not only the log: "LAN and direct
-             * connections still work" read as if internet players could join,
-             * and a host behind a VPN (whose own UPnP request never reaches the
-             * router) was listed at the VPN's address and joined by nobody. */
-            last_error_ = "Automatic port forwarding failed. Players on the "
-                          "internet can't join unless TCP port 28550 is "
-                          "forwarded to this PC on your router - and not "
-                          "through a VPN. LAN play still works.";
+            /* NOT A PROBLEM FOR A LISTED LOBBY ANY MORE: internet players who
+             * cannot reach this machine join through the master server's
+             * relay (start_relay_host). Only an unlisted lobby - LAN and
+             * direct IP only - is told it cannot be reached from outside. */
+            if (!settings_.visible_master)
+                last_error_ = "No automatic port forwarding, and the lobby is not "
+                              "listed online: only players on your network can "
+                              "join. List it online to let anyone join.";
             std::fprintf(stderr,
-                         "[fork] no automatic port forwarding (%s) - LAN play "
-                         "works; internet players need TCP %d forwarded to this "
-                         "PC, and a VPN in the way blocks them\n",
-                         why.c_str(), listen_port_);
+                         "[fork] no automatic port forwarding (%s) - %s\n", why.c_str(),
+                         settings_.visible_master
+                             ? "internet players join through the relay"
+                             : "the lobby is unlisted, so only LAN and direct "
+                               "connections reach it");
         }
     }
 
@@ -557,6 +562,7 @@ void Lsw2ForkSession::start_lobby() {
         if (master_.register_lobby(room, listen_port_, player_count())) {
             std::snprintf(console_.room_code, sizeof console_.room_code, "%s",
                           master_.room_code().c_str());
+            start_relay_host();
         } else {
             /* NOT FATAL. A lobby the directory never heard of is still joinable
              * by IP and over LAN, so this reports and carries on rather than
@@ -595,11 +601,52 @@ bool Lsw2ForkSession::join_address(const char* address, int port) {
 
     transport_ = std::make_unique<Lsw2TcpTransport>();
     state_ = Lsw2SessionState::Joining;
-    if (!transport_->join(address, uint16_t(port))) {
+
+    /* DIRECT FIRST, THEN THE RELAY.
+     *
+     * A host on this network, or one whose port is open, answers directly and
+     * that is the shortest path. Many do not - no port forwarding, a VPN,
+     * carrier-grade NAT - and for a lobby the directory knows (a list row or a
+     * room code set join_relay_id_), the join then goes through the master
+     * server's relay: both consoles dial out to it, so nothing has to be
+     * reachable. The transport is the same either way; through the relay it
+     * joins a loopback port the bridge carries (lsw2_wsrelay.h).
+     *
+     * The direct attempt is short when the relay can take over: a host that
+     * answers at all answers in well under a second.
+     *
+     * LSW2_TEST_FORCE_RELAY=1 skips the direct attempt, so a test on one
+     * machine - where direct always works - can exercise the relay. */
+    std::string relay_id;
+    relay_id.swap(join_relay_id_);
+    via_relay_ = false;
+    const char* force = std::getenv("LSW2_TEST_FORCE_RELAY");
+    const bool force_relay = !relay_id.empty() && force && *force == '1';
+    bool linked = !force_relay &&
+                  transport_->join(address, uint16_t(port), relay_id.empty() ? 3000 : 1500);
+    if (!linked && !relay_id.empty()) {
+        std::fprintf(stderr, "[fork] %s:%d did not answer directly - joining through "
+                             "the relay\n", address, port);
+        relay_join_ = std::make_unique<Lsw2RelayJoin>();
+        std::string why;
+        if (relay_join_->start(master_.host(), master_.port(), relay_id, 6000, &why)) {
+            linked = transport_->join("127.0.0.1", relay_join_->local_port());
+            via_relay_ = linked;
+        }
+        if (!linked) {
+            relay_join_.reset();
+            last_error_text_ = "Could not reach that host" +
+                               (why.empty() ? std::string(".") : " (" + why + ").");
+            last_error_ = last_error_text_.c_str();
+        }
+    } else if (!linked) {
+        last_error_ = "Could not reach that host. Its port may not be "
+                      "forwarded, or it may be behind a VPN - joining from the "
+                      "online list or by room code goes through the relay instead.";
+    }
+    if (!linked) {
         transport_.reset();
         state_ = Lsw2SessionState::Offline;
-        last_error_ = "Could not reach that host. Its port may not be "
-                      "forwarded, or it may be behind a VPN.";
         std::fprintf(stderr, "[fork] %s (%s:%d)\n", last_error_, address, port);
         return false;
     }
@@ -642,13 +689,18 @@ bool Lsw2ForkSession::join_address(const char* address, int port) {
      * socket; a second is a very long time for a record the host sends on
      * accept, and the alternative to waiting is being silently wrong forever. */
     int station = transport_->assigned_station();
-    for (int spin = 0; spin < kJoinSeatSpins && station < 0; ++spin) {
+    /* Through the relay the seat crosses the internet twice (host -> relay ->
+     * here), so it is given longer to arrive. */
+    const int seat_spins = via_relay_ ? kJoinSeatSpins * 4 : kJoinSeatSpins;
+    for (int spin = 0; spin < seat_spins && station < 0; ++spin) {
         transport_->service();
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
         station = transport_->assigned_station();
     }
     if (station < 0) {
         transport_.reset();
+        relay_join_.reset();
+        via_relay_ = false;
         state_ = Lsw2SessionState::Offline;
         last_error_ = "the host never sent a seat";
         std::fprintf(stderr, "[fork] %s (%s:%d) - refusing to join on a "
@@ -704,8 +756,9 @@ bool Lsw2ForkSession::join_address(const char* address, int port) {
         peer_joined("Host", 0, /*announce=*/false);
 
     std::fprintf(stderr, "[fork] joined %s:%d as station %d (peer_count %d, "
-                 "player_count %d)\n", address, port, station,
-                 console_.peer_count, player_count());
+                 "player_count %d)%s\n", address, port, station,
+                 console_.peer_count, player_count(),
+                 via_relay_ ? " through the relay" : "");
     return true;
 }
 
@@ -729,6 +782,7 @@ bool Lsw2ForkSession::join_code(const char* code) {
      * browse-and-connect runs against it. */
     if (lsw2_relay_auto_enabled() && !lsw2_vwh_enabled())
         return join_relay(entry.address.c_str(), entry.port);
+    join_relay_id_ = entry.id;  /* the relay, if the address does not answer */
     if (!join_address(entry.address.c_str(), entry.port)) return false;
     if (lsw2_vwh_enabled()) lsw2_wh_console_join();
     return true;
@@ -1204,6 +1258,18 @@ void Lsw2ForkSession::apply_directives() {
     }
 }
 
+void Lsw2ForkSession::start_relay_host() {
+    /* THE HOST'S END OF THE RELAY, for a lobby the directory lists: joiners who
+     * cannot reach this machine directly come in through it (lsw2_wsrelay.h).
+     * Its own thread keeps it connected and reconnects if it drops. */
+    relay_host_.reset();
+    if (master_.lobby_id().empty() || master_.lobby_token().empty()) return;
+    relay_host_ = std::make_unique<Lsw2RelayHost>(master_.host(), master_.port(),
+                                                  master_.lobby_id(), master_.lobby_token(),
+                                                  uint16_t(listen_port_));
+    relay_host_->start();
+}
+
 void Lsw2ForkSession::withdraw_from_master() {
     /* THE HARD-CLOSE PATH. shut_down_lobby() withdraws on the graceful exit,
      * but a player who closes the window (or the process dies) never reaches
@@ -1260,6 +1326,8 @@ void Lsw2ForkSession::close_session_host_side() {
      * browser for the full TTL - refusing every connection, which is
      * precisely the "broken host rather than a closed one" the note below
      * refuses to accept for the LAN beacon. */
+    /* The relay first: its joiners go with the lobby. */
+    relay_host_.reset();
     if (is_host() && settings_.visible_master)
         master_.unregister();
 
@@ -1319,6 +1387,8 @@ void Lsw2ForkSession::close_session_host_side() {
     lockstep_.reset();
     vwh_.reset();
     transport_.reset();
+    relay_join_.reset();
+    via_relay_ = false;
 
     /* The roster rule's spawn counter belongs to a session. Leaving one and
      * starting another must not continue its sequence - it was declared for
@@ -1509,6 +1579,7 @@ void Lsw2ForkSession::on_menu_event(Lsw2MenuEvent event) {
          * and connect to that host's beacon, which is the real connection the
          * game's own flow needs. join_address first means the address is always
          * dialed; console_join is inert when real-WH is off. */
+        join_relay_id_ = pick.id;   /* the relay, if the address does not answer */
         if (join_address(pick.address.c_str(), pick.port)) {
             lsw2_wh_console_join();
             close_screen();

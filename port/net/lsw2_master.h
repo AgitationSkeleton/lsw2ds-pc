@@ -41,6 +41,10 @@ struct Lsw2ServerEntry {
     std::string name;
     std::string address;
     std::string code;
+    /* The lobby's id in the directory: what a joiner names to reach it
+     * through the relay (lsw2_wsrelay.h) when its address does not answer.
+     * Empty from a directory without a relay, or for a LAN find. */
+    std::string id;
     std::string kind;
     int port = 0;
     int players = 0;
@@ -142,6 +146,10 @@ public:
     bool resolve(const std::string& code, Lsw2ServerEntry* out);
 
     const std::string& room_code() const { return code_; }
+    /* This host's registration - the relay authenticates the host's own
+     * connection with them. Empty until register_lobby succeeds. */
+    const std::string& lobby_id() const { return id_; }
+    const std::string& lobby_token() const { return token_; }
     const std::string& last_error() const { return error_; }
 
 private:

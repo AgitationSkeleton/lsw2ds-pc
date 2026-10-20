@@ -529,6 +529,7 @@ bool Lsw2MasterClient::refresh() {
         e.name = lsw2_json_string(chunk, "name");
         e.address = lsw2_json_string(chunk, "address");
         e.code = lsw2_json_string(chunk, "code");
+        e.id = lsw2_json_string(chunk, "id");
         e.kind = lsw2_json_string(chunk, "kind");
         e.port = int(lsw2_json_number(chunk, "port", 0));
         e.players = int(lsw2_json_number(chunk, "players", 0));
@@ -553,6 +554,8 @@ bool Lsw2MasterClient::resolve(const std::string& code, Lsw2ServerEntry* out) {
     if (!out) return true;
     out->name = lsw2_json_string(reply, "name");
     out->address = lsw2_json_string(reply, "address");
+    out->id = lsw2_json_string(reply, "id");
+    out->code = code;
     out->port = int(lsw2_json_number(reply, "port", 0));
     out->players = int(lsw2_json_number(reply, "players", 0));
     out->max_players = int(lsw2_json_number(reply, "max_players", 4));

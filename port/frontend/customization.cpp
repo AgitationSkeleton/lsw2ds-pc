@@ -619,6 +619,14 @@ void lsw2_customization_menu_commit() {
      * not a customization, however it got there. */
     const Stock stock = stock_of(read8(actor + kLsw2ActorCharacter));
 
+    /* WHAT WAS SAVED BEFORE, so the log and the save request fire only for a
+     * change: this commit runs on every frame the customize menu is open, and
+     * logged this line thousands of times a minute. */
+    uint16_t was[kWearableSlots + 1];
+    for (int i = 0; i <= kWearableSlots; ++i) was[i] = g_saved[i];
+    const bool was_moustache = g_moustache, was_sunglasses = g_sunglasses,
+               had_saved = g_have_saved;
+
     g_saved[0] = g_saved[1] = g_saved[2] = g_saved[4] = kLsw2CustomNone;
     g_saved[kHeadgearSlot] =
         (lsw2_is_customize_headgear(headgear) && headgear != stock.headgear)
@@ -643,7 +651,10 @@ void lsw2_customization_menu_commit() {
     if (changed & 0x400u) g_moustache  = (after_extras & 0x400u) != 0;
     if (changed & 0x800u) g_sunglasses = (after_extras & 0x800u) != 0;
 
+    bool same = had_saved && was_moustache == g_moustache && was_sunglasses == g_sunglasses;
+    for (int i = 0; i <= kWearableSlots && same; ++i) same = was[i] == g_saved[i];
     g_have_saved = true;
+    if (same) return;
     g_dirty = true;
     std::fprintf(stderr,
                  "[fork] customize menu: saved headgear %u, weapon %u, "

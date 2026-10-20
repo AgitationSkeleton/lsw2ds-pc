@@ -38,6 +38,7 @@
 #include "../net/lsw2_lockstep.h"
 #include "../net/lsw2_master.h"
 #include "../net/lsw2_tcp.h"
+#include "../net/lsw2_wsrelay.h"
 #include "../net/lsw2_vwh.h"
 
 #include <memory>
@@ -586,7 +587,27 @@ private:
     char direct_host_[128] = "";
     int direct_port_ = 28550;
     const char* last_error_ = "";
+    std::string last_error_text_;   /* storage when the message is built at run time */
     int heartbeat_ = 0;
+
+    /* THE RELAY (lsw2_wsrelay.h): online play with no port forwarding. A
+     * listed host keeps relay_host_ connected, so a joiner who cannot reach
+     * its address directly comes in through the master server; a joiner whose
+     * direct connect fails dials the lobby's room with relay_join_ and runs
+     * the same transport over a loopback socket. `join_relay_id_` is the
+     * lobby the next join_address() may fall back to - set by the routes that
+     * know it (a directory row, a room code), consumed by the join. */
+    std::unique_ptr<Lsw2RelayHost> relay_host_;
+    std::unique_ptr<Lsw2RelayJoin> relay_join_;
+    std::string join_relay_id_;
+    bool via_relay_ = false;
+    void start_relay_host();
+
+public:
+    /* True when this console joined through the relay; for the menus. */
+    bool joined_via_relay() const { return via_relay_; }
+    /* True when this host is reachable through the relay. */
+    bool relay_online() const { return relay_host_ && relay_host_->online(); }
 };
 
 Lsw2ForkSession& lsw2_fork_session();

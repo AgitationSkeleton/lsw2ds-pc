@@ -56,7 +56,9 @@ public:
 
     /* Connect to a host. `station` is assigned by the host and reported back
      * through assigned_station() once the handshake completes. */
-    bool join(const std::string& address, uint16_t port);
+    /* `timeout_ms` bounds the connect; a join with the relay to fall back on
+     * tries the direct route for less (see forksession.cpp, join_address). */
+    bool join(const std::string& address, uint16_t port, int timeout_ms = 3000);
 
     /* Pump sockets. Call once per frame BEFORE the session's step(), so a block
      * that arrived since the last frame is available to it. */

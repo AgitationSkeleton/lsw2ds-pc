@@ -103,7 +103,8 @@ TESTS=(
     "wireless_relay: port/net/test_wireless_relay.cpp port/net/lsw2_wireless_relay.cpp"
     "relay_session : port/net/test_relay_session.cpp port/net/lsw2_relay_session.cpp port/net/lsw2_wireless_relay.cpp"
     "upnp          : port/net/test_upnp.cpp port/net/lsw2_upnp_parse.cpp"
-    "forksession   : port/frontend/test_forksession.cpp port/frontend/forksession.cpp port/frontend/lobbytimer.cpp port/frontend/characterpick.cpp port/frontend/roster.cpp port/frontend/test_rosterstub.cpp port/frontend/lasthunter.cpp port/frontend/consolemenu.cpp port/frontend/hostsettings.cpp port/frontend/joinmenu.cpp port/frontend/masterlist.cpp port/frontend/gamemenu.cpp port/frontend/menuhost.cpp port/frontend/forkpopup.cpp port/net/lsw2_lan.cpp port/net/lsw2_lockstep.cpp port/net/lsw2_master.cpp port/net/lsw2_name.cpp port/net/lsw2_net_bind.cpp port/net/lsw2_ping.cpp port/net/lsw2_tcp.cpp port/net/lsw2_vwh.cpp port/net/lsw2_upnp.cpp port/net/lsw2_upnp_parse.cpp port/net/lsw2_relay_session.cpp port/net/lsw2_wireless_relay.cpp"
+    "wsrelay       : port/net/test_wsrelay.cpp port/net/lsw2_wsrelay.cpp"
+    "forksession   : port/frontend/test_forksession.cpp port/frontend/forksession.cpp port/frontend/lobbytimer.cpp port/frontend/characterpick.cpp port/frontend/roster.cpp port/frontend/test_rosterstub.cpp port/frontend/lasthunter.cpp port/frontend/consolemenu.cpp port/frontend/hostsettings.cpp port/frontend/joinmenu.cpp port/frontend/masterlist.cpp port/frontend/gamemenu.cpp port/frontend/menuhost.cpp port/frontend/forkpopup.cpp port/net/lsw2_lan.cpp port/net/lsw2_lockstep.cpp port/net/lsw2_master.cpp port/net/lsw2_name.cpp port/net/lsw2_net_bind.cpp port/net/lsw2_ping.cpp port/net/lsw2_tcp.cpp port/net/lsw2_vwh.cpp port/net/lsw2_upnp.cpp port/net/lsw2_upnp_parse.cpp port/net/lsw2_relay_session.cpp port/net/lsw2_wireless_relay.cpp port/net/lsw2_wsrelay.cpp"
 )
 
 pass=0; fail=0; skip=0; failed_names=""
