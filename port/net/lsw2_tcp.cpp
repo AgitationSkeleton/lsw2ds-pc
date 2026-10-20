@@ -30,6 +30,9 @@
 
 namespace {
 
+/* How long a join waits for the host to answer (see join()). */
+constexpr int kConnectTimeoutMs = 3000;
+
 void set_nonblocking(socket_t s) {
 #ifdef _WIN32
     u_long on = 1;
@@ -191,10 +194,43 @@ bool Lsw2TcpTransport::join(const std::string& address, uint16_t port) {
         lsw2_close(s);
         return false;
     }
-    if (connect(s, (sockaddr*)&a, sizeof a) != 0) { lsw2_close(s); return false; }
+    /* A BOUNDED CONNECT, not a blocking one. This runs on the game's own
+     * thread, and a blocking connect() to an address that never answers - a
+     * host behind a VPN, or one whose port is not forwarded - waits out the
+     * system's SYN retries: about 21 seconds on Windows, with the game frozen
+     * the whole time from the moment the lobby is picked. A
+     * reachable host answers in well under a second even across the internet,
+     * so the attempt now gives up after kConnectTimeoutMs and the join fails
+     * with its message instead. */
+    set_nonblocking(s);
+    if (connect(s, (sockaddr*)&a, sizeof a) != 0) {
+#ifdef _WIN32
+        const bool pending = WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+        const bool pending = errno == EINPROGRESS;
+#endif
+        if (!pending) { lsw2_close(s); return false; }
+        fd_set wr, ex;
+        FD_ZERO(&wr);
+        FD_ZERO(&ex);
+        FD_SET(s, &wr);
+        FD_SET(s, &ex);   /* Windows reports a refused connect here */
+        timeval tv;
+        tv.tv_sec = kConnectTimeoutMs / 1000;
+        tv.tv_usec = (kConnectTimeoutMs % 1000) * 1000;
+        if (::select(int(s) + 1, nullptr, &wr, &ex, &tv) <= 0 || FD_ISSET(s, &ex)) {
+            lsw2_close(s);
+            return false;
+        }
+        int err = 0;
+        socklen_t len = sizeof err;
+        if (getsockopt(s, SOL_SOCKET, SO_ERROR, (char*)&err, &len) != 0 || err != 0) {
+            lsw2_close(s);
+            return false;
+        }
+    }
 
     set_nodelay(s);
-    set_nonblocking(s);
     Peer* p = new Peer();
     p->fd = s;
     p->station = 0;         /* the host */

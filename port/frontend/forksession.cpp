@@ -489,9 +489,19 @@ void Lsw2ForkSession::start_lobby() {
                          listen_port_, external.empty() ? "" : "; external IP ",
                          external.empty() ? "" : external.c_str());
         } else {
+            /* SAID TO THE PLAYER, not only the log: "LAN and direct
+             * connections still work" read as if internet players could join,
+             * and a host behind a VPN (whose own UPnP request never reaches the
+             * router) was listed at the VPN's address and joined by nobody. */
+            last_error_ = "Automatic port forwarding failed. Players on the "
+                          "internet can't join unless TCP port 28550 is "
+                          "forwarded to this PC on your router - and not "
+                          "through a VPN. LAN play still works.";
             std::fprintf(stderr,
-                         "[fork] no automatic port forwarding (%s) - LAN and "
-                         "direct connections still work\n", why.c_str());
+                         "[fork] no automatic port forwarding (%s) - LAN play "
+                         "works; internet players need TCP %d forwarded to this "
+                         "PC, and a VPN in the way blocks them\n",
+                         why.c_str(), listen_port_);
         }
     }
 
@@ -588,7 +598,8 @@ bool Lsw2ForkSession::join_address(const char* address, int port) {
     if (!transport_->join(address, uint16_t(port))) {
         transport_.reset();
         state_ = Lsw2SessionState::Offline;
-        last_error_ = "could not reach that host";
+        last_error_ = "Could not reach that host. Its port may not be "
+                      "forwarded, or it may be behind a VPN.";
         std::fprintf(stderr, "[fork] %s (%s:%d)\n", last_error_, address, port);
         return false;
     }
