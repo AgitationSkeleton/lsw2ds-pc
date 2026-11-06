@@ -50,6 +50,8 @@ The upload needs a GitHub token that can write this repository's contents:
       build/lsw2_bountyhunter.exe      Bounty Hunter
       build/lsw2.exe                   the game as shipped, with online co-op
       build/*.dll, build/assets/fonts/ runtime libraries; the game's fonts, from the ROM
+      build/version.txt                the version; marks the folder as a release that
+                                       may update itself (Settings > Updates)
       port/game.toml                   the title config
       port/saves/unlocked-template.sav seeds Bounty Hunter's unlocks
       rom/                             empty: the first start fills it

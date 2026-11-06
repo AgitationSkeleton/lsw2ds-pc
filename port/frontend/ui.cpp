@@ -26,6 +26,7 @@
 #include "levels.h"
 #include "selectwidget.h"
 #include "settings_store.h"
+#include "updater.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -668,6 +669,74 @@ void touch_page(UiSettings& s) {
         uiw::note("The floating touch panel is hidden during matches while the "
                   "arena HUD overlay is on (Enhancements > Arena HUD).");
     uiw::end_columns();
+}
+
+/* Settings > Updates: the version, a check against GitHub's releases, and
+ * the install (updater.h). */
+void updates_page(UiSettings& s) {
+    uiw::section("Version");
+    const std::string& mine = lsw2_update_this_version();
+    uiw::text("This build: %s", mine.empty() ? "a development build (no version.txt)"
+                                             : mine.c_str());
+    uiw::spacing();
+    const Lsw2UpdateInfo u = lsw2_update_info();
+    ImGui::BeginDisabled(u.state == 1);
+    if (uiw::button("Check for updates", "Ask GitHub for the newest release. Nothing is\n"
+                                         "downloaded until you press Install.", -1.0f))
+        lsw2_update_check(false, false);
+    ImGui::EndDisabled();
+    if (u.state == 1) uiw::note("Checking...");
+    else if (u.state == 3) uiw::warn("%s", u.error.c_str());
+    else if (u.state == 2 && u.tag.empty()) uiw::note("%s", u.error.c_str());
+    else if (u.state == 2) {
+        uiw::text("Newest release: %s", u.tag.c_str());
+        if (u.newer) uiw::text("A newer version is available.");
+        else uiw::note("%s", mine.empty() ? "(a development build is never offered one)"
+                                          : "You're up to date.");
+        if (!u.notes.empty()) {
+            ImGui::BeginChild("update_notes", ImVec2(0, 180.0f * uiw::scale()),
+                              ImGuiChildFlags_Borders);
+            ImGui::PushTextWrapPos(0.0f);
+            ImGui::TextUnformatted(u.notes.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndChild();
+        }
+        if (uiw::button("Open the release page", nullptr, -1.0f)) SDL_OpenURL(u.url.c_str());
+        if (u.newer && !u.asset.empty()) {
+            uiw::same_line();
+            std::string msg;
+            const int st = lsw2_update_state(&msg);
+            const bool can = lsw2_update_supported();
+            ImGui::BeginDisabled(!can || st == 1 || st == 2 || st == 3);
+            if (uiw::button("Install update", "Download the new version and install it over\n"
+                                              "this one. Your settings, saves and ROM are kept.",
+                            -1.0f))
+                lsw2_update_install(u.asset, u.tag);
+            ImGui::EndDisabled();
+            if (!can) uiw::note("Only the downloaded release can update itself.");
+        }
+    }
+    {
+        std::string msg;
+        const int st = lsw2_update_state(&msg);
+        if (st == 1 || st == 2) uiw::note("%s", msg.c_str());
+        if (st == 4) uiw::warn("%s", msg.c_str());
+        if (st == 3) {
+            uiw::text("%s", msg.c_str());
+            if (uiw::button("Restart now", "Close the game and start the new version.", -1.0f))
+                lsw2_update_restart();
+        }
+    }
+    uiw::spacing();
+    uiw::section("At startup");
+    uiw::checkbox("Check for updates at startup", &s.update_check,
+                  "A few seconds after starting, ask GitHub whether a newer\n"
+                  "release is out, and say so if one is.");
+    ImGui::BeginDisabled(!s.update_check);
+    uiw::checkbox("Install updates automatically", &s.auto_update,
+                  "Download and install a newer release at startup. It runs\n"
+                  "from the next start. Your settings, saves and ROM are kept.");
+    ImGui::EndDisabled();
 }
 
 /* Enhancements > Arena Controls: the Enhanced control set. */
@@ -1434,7 +1503,8 @@ enum MenuSection {
 const char* const kSectionNames[kSecCount] = {
     "Settings", "Enhancements", "Multiplayer", "Cheats", "Debug"};
 
-const char* const kSettingsPages[] = {"Display", "Graphics", "Controls", "Touch Screen"};
+const char* const kSettingsPages[] = {"Display", "Graphics", "Controls", "Touch Screen",
+                                     "Updates"};
 const char* const kEnhancementPages[] = {"Arena Controls", "Arena HUD", "Lobby", "Portraits",
                                          "Gameplay"};
 const char* const kForkNetPages[] = {"Online"};
@@ -1480,7 +1550,8 @@ void draw_page(UiSettings& s, int section, int page) {
         case 0: display_page(s); break;
         case 1: graphics_page(s); break;
         case 2: controls_page(s); break;
-        default: touch_page(s); break;
+        case 3: touch_page(s); break;
+        default: updates_page(s); break;
         }
         break;
     case kSecEnhancements:
@@ -2035,6 +2106,42 @@ void ui_draw(UiSettings& s) {
         ImGui::End();
     }
 
+    /* UPDATES AT STARTUP (updater.h): clear what the last update replaced,
+     * then, a few seconds in, ask GitHub once - only from an installed
+     * release, so a development build or a test drive never calls out.
+     * LSW2_UPDATE_CHECK=0 skips it. */
+    {
+        static Uint32 started_ms = 0;
+        static bool checked = false;
+        if (!started_ms) {
+            started_ms = SDL_GetTicks() | 1u;
+            lsw2_update_cleanup();
+        }
+        if (!checked && SDL_GetTicks() - started_ms > 6000) {
+            checked = true;
+            const char* e = SDL_getenv("LSW2_UPDATE_CHECK");
+            if (s.update_check && lsw2_update_supported() && !(e && e[0] == '0'))
+                lsw2_update_check(true, s.auto_update);
+        }
+        /* What the startup check found, for twelve seconds, over the game. */
+        unsigned posted = 0;
+        const std::string notice = lsw2_update_notice(&posted);
+        if (!notice.empty() && SDL_GetTicks() - posted < 12000) {
+            const ImGuiViewport* vp = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(ImVec2(vp->WorkPos.x + vp->WorkSize.x * 0.5f,
+                                           vp->WorkPos.y + 12.0f * uiw::scale()),
+                                    ImGuiCond_Always, ImVec2(0.5f, 0.0f));
+            ImGui::SetNextWindowBgAlpha(0.85f);
+            ImGui::Begin("##update_notice", nullptr,
+                         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav |
+                         ImGuiWindowFlags_NoFocusOnAppearing |
+                         ImGuiWindowFlags_NoSavedSettings);
+            ImGui::TextUnformatted(notice.c_str());
+            ImGui::End();
+        }
+    }
+
     if (!g_visible) {
         g_was_visible = false;
         return;
@@ -2414,6 +2521,8 @@ void ui_load_settings(UiSettings& s, const char* path) {
     g_arena_hud_enabled    = s.arena_hud_overlay;
     s.coop_show_room_code  = g_store.get_bool("coop_show_room_code", s.coop_show_room_code);
     s.enhanced_controls    = g_store.get_bool("enhanced_controls", s.enhanced_controls);
+    s.update_check         = g_store.get_bool("update_check", s.update_check);
+    s.auto_update          = g_store.get_bool("auto_update", s.auto_update);
     /* hud_radar_x/y/size and hud_ping_show/x/y/w/h are NOT read any more -
      * the settings are retired (ui.h) and reading them back is exactly how the
      * pre-measurement values outlived every correction. The store leaves the
@@ -2616,6 +2725,8 @@ void ui_save_settings(const UiSettings& s, const char* path) {
     g_store.set_bool("bh_roster_only", s.bh_roster_only);
     g_store.set_bool("coop_show_room_code", s.coop_show_room_code);
     g_store.set_bool("enhanced_controls", s.enhanced_controls);
+    g_store.set_bool("update_check", s.update_check);
+    g_store.set_bool("auto_update", s.auto_update);
     g_store.set_bool("debug_mute_music_second_instance", s.mute_music_second_instance);
     g_store.set_bool("debug_mute_sound_second_instance", s.mute_sound_second_instance);
     g_store.set_bool("enhanced_portrait", s.enhanced_portrait);

@@ -201,6 +201,11 @@ def stage(version: str) -> Path:
         to_gui_subsystem(out / "build" / exe)
     for dll in DLLS:
         shutil.copy2(BUILD / dll, out / "build" / dll)
+    # THE VERSION, beside the exe: what the game shows on Settings > Updates,
+    # and what marks this folder as an installed release that may update
+    # itself (port/frontend/updater.h). A development build has none.
+    (out / "build" / "version.txt").write_text(version.lstrip("vV") + "
+", encoding="utf-8")
     fonts = sorted((BUILD / "assets" / "fonts").glob("*.lsw2font"))
     if not fonts:
         raise SystemExit("build/assets/fonts has no fonts - the build's font export did not run")

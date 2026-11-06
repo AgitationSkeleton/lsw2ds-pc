@@ -301,6 +301,12 @@ struct UiSettings {
      * those installs. */
     float arena_hud_scale = 0.5f;    /* 0.5 .. 1.5 */
 
+    /* UPDATES (updater.h). The startup check only speaks when a newer
+     * release exists; installing by itself is a separate choice, off by
+     * default as in the LEGO Battles port. */
+    bool update_check = true;
+    bool auto_update = false;
+
     /* Debug */
     bool show_metrics = false;
 

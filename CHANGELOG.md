@@ -8,6 +8,20 @@ land.
 
 ## Unreleased
 
+## 0.3.4 - 2026-11-06
+
+Still an early pre-release, and **not thoroughly tested**. The relay changes
+were tested on one PC through the live server with simulated packet loss;
+online play between separate PCs is still largely untested. Everyone in a
+game should be on this version.
+
+- **Updates from inside the game.** F1 > Settings > Updates shows your
+  version, checks GitHub for a newer release and installs it over your copy,
+  keeping your settings, saves and ROM. "Restart now" starts the new version.
+  The game checks a few seconds after starting and tells you when an update
+  is out. Turn on "Install updates automatically" to have it install updates
+  on its own. Copies from before 0.3.4 can't update themselves: download this
+  version by hand once.
 - **Smoother online play through the relay.** Online games stuttered and ran
   slow over the relay: one lost packet stalled the whole connection for a
   quarter of a second or more, and the game froze with it, dozens of times a

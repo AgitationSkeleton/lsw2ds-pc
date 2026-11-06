@@ -391,7 +391,7 @@ run "$LOGS/shell-link.log" g++ -O2 -o "$BUILD/lsw2.exe" \
     "$BUILD/runner/libnds_support.a" \
     "$BUILD/runner/libnds_armv4t.a" \
     "$BUILD/runner/vendor/melonds/net/libslirp/libslirp.a" \
-    -L"$UCRT/../lib" -lSDL2main -lSDL2 -lws2_32 -liphlpapi -lopengl32
+    -L"$UCRT/../lib" -lSDL2main -lSDL2 -l:libz.a -lwinhttp -lws2_32 -liphlpapi -lopengl32
 [ -x "$BUILD/lsw2.exe" ] || die "shell link produced no executable"
 
 # PUT THE THING YOU RUN SOMEWHERE YOU CAN FIND IT. out/work/port-build/ is where
