@@ -424,20 +424,25 @@ void pump_audio(SDL_AudioDeviceID device, AudioQueue& q) {
 /* KEY AND PAD LOOKUP NOW GO THROUGH THE UI'S BINDING TABLE. The DS bit layout
  * is written down in exactly one place (ui.cpp), so a rebind in the settings
  * window takes effect immediately and the two can never disagree. */
+/* EVERY ROW BOUND TO THE KEY, not the first. The menu moves a key that is
+ * already in use rather than sharing it, but settings.json is hand-editable,
+ * and a key on two rows used to drive only the first of them. */
 uint16_t key_bit(SDL_Scancode key) {
     int n = 0;
     const UiBinding* b = ui_bindings(&n);
+    uint16_t bits = 0;
     for (int i = 0; i < n; ++i)
-        if (b[i].scancode == int(key)) return b[i].ds_bit;
-    return 0;
+        if (b[i].scancode == int(key)) bits |= b[i].ds_bit;
+    return bits;
 }
 
 uint16_t controller_bit(SDL_GameControllerButton button) {
     int n = 0;
     const UiBinding* b = ui_bindings(&n);
+    uint16_t bits = 0;
     for (int i = 0; i < n; ++i)
-        if (b[i].pad_button == int(button)) return b[i].ds_bit;
-    return 0;
+        if (b[i].pad_button == int(button)) bits |= b[i].ds_bit;
+    return bits;
 }
 
 /* THE LEFT STICK, AS A D-PAD.
@@ -1413,6 +1418,22 @@ int nds_run_interactive_frontend(const NdsFrontendOptions& options) {
         const uint64_t perf_loop_start = SDL_GetPerformanceCounter();
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
+            /* A REBIND PROMPT TAKES THE NEXT PRESS FIRST - before imgui, and
+             * before the menu toggle. imgui used to see the key first, and
+             * once the click on a binding had given it keyboard focus it kept
+             * the press for itself (WantCaptureKeyboard), so a key binding
+             * often never arrived. Escape cancels either prompt, so a gamepad
+             * prompt can be backed out of from the keyboard. */
+            if (ui_capturing_binding()) {
+                if (e.type == SDL_KEYDOWN && !e.key.repeat) {
+                    ui_offer_captured_key(e.key.keysym.scancode);
+                    continue;
+                }
+                if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+                    ui_offer_captured_pad(e.cbutton.button);
+                    continue;
+                }
+            }
             /* Escape and F1 toggle the menu, checked before imgui so they
              * always work - including to close a menu that currently has
              * keyboard focus. */
@@ -1429,13 +1450,9 @@ int nds_run_interactive_frontend(const NdsFrontendOptions& options) {
             switch (e.type) {
                 case SDL_QUIT: running = false; break;
                 case SDL_KEYDOWN:
-                    /* A keypress meant for the rebind prompt must not also be
-                     * gameplay input, or binding "A" would press A on the way
-                     * in. */
-                    if (ui_capturing_binding()) {
-                        ui_offer_captured_key(e.key.keysym.scancode);
-                        break;
-                    }
+                    /* (A press meant for a rebind prompt was taken above,
+                     * before imgui, so binding "A" never presses A.) */
+                    if (ui_capturing_binding()) break;
                     /* ESCAPE OPENS THE MENU, it does not quit. Quitting on the
                      * key people press to look at options is a hostile default:
                      * the first thing anyone does with a new build is hit Escape
@@ -1452,10 +1469,7 @@ int nds_run_interactive_frontend(const NdsFrontendOptions& options) {
                     g_keys_host &= static_cast<uint16_t>(~key_bit(e.key.keysym.scancode));
                     break;
                 case SDL_CONTROLLERBUTTONDOWN:
-                    if (ui_capturing_binding()) {
-                        ui_offer_captured_pad(e.cbutton.button);
-                        break;
-                    }
+                    if (ui_capturing_binding()) break;
                     g_keys_pad |= controller_bit(
                         static_cast<SDL_GameControllerButton>(e.cbutton.button));
                     break;

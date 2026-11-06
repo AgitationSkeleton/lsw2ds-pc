@@ -86,9 +86,100 @@ UiBinding g_bindings[] = {
 };
 constexpr int kBindingCount = int(sizeof g_bindings / sizeof *g_bindings);
 
+/* WHAT EACH ROW DOES IN THE GAME, beside the DS name, so the table answers
+ * "what is this for" without a manual. Only what is measured: B is jump - an
+ * in-match sweep of every button on the cartridge (config/ability_handlers.
+ * json), with the jetpack on a mid-air press of the same button - so it says
+ * so; the other face buttons are named by their place on the DS, because the
+ * cartridge's own hints ("Press _ to attack") lost their button glyphs in
+ * extraction and a guessed role would be worse than none. One per row. */
+const char* const kBindingRoles[] = {
+    "right face button",
+    "jump - again in mid-air for the double jump or jetpack",
+    "top face button",
+    "left face button",
+    "left shoulder",
+    "right shoulder",
+    "pause menu",
+    "the DS Select button",
+    "move up", "move down", "move left", "move right",
+    "turn the arena camera (Enhanced controls)",
+    "turn the arena camera (Enhanced controls)",
+    "raise the arena camera (Enhanced controls)",
+    "lower the arena camera (Enhanced controls)",
+};
+static_assert(sizeof kBindingRoles / sizeof *kBindingRoles == kBindingCount,
+              "one role per binding row");
+
+/* THE DEFAULTS, copied from the table before anything loads over it. "Reset
+ * to defaults" used to restore the keys from a separate list and leave every
+ * gamepad button as it was; one copy of the whole table restores both. The
+ * table is constant-initialised, so this copy (made during dynamic
+ * initialisation, after it in this file) sees the compiled-in values. */
+UiBinding g_default_bindings[kBindingCount];
+const bool g_defaults_taken = [] {
+    for (int i = 0; i < kBindingCount; ++i) g_default_bindings[i] = g_bindings[i];
+    return true;
+}();
+
 const char* g_unlock_note = nullptr;  /* what the unlock button last did */
 int g_capture_index = -1;   /* which binding is waiting for a key */
 bool g_capture_pad = false; /* waiting for a pad button rather than a key */
+/* What the last rebind moved, shown under the table: "Z moved from B to A". */
+std::string g_bind_note;
+
+const char* key_name(int scancode) {
+    const char* n = scancode > 0 ? SDL_GetScancodeName(SDL_Scancode(scancode)) : "";
+    return (n && *n) ? n : "unbound";
+}
+
+/* Readable pad names. SDL's own strings are its config keys ("leftshoulder",
+ * "dpup"), and its face names are the Xbox ones by POSITION - so each face
+ * button says where it sits, which is the same on every pad. */
+const char* pad_name(int button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_A:             return "A (bottom)";
+        case SDL_CONTROLLER_BUTTON_B:             return "B (right)";
+        case SDL_CONTROLLER_BUTTON_X:             return "X (left)";
+        case SDL_CONTROLLER_BUTTON_Y:             return "Y (top)";
+        case SDL_CONTROLLER_BUTTON_BACK:          return "Back / Select";
+        case SDL_CONTROLLER_BUTTON_GUIDE:         return "Guide";
+        case SDL_CONTROLLER_BUTTON_START:         return "Start";
+        case SDL_CONTROLLER_BUTTON_LEFTSTICK:     return "Left stick press";
+        case SDL_CONTROLLER_BUTTON_RIGHTSTICK:    return "Right stick press";
+        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:  return "Left bumper";
+        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return "Right bumper";
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:       return "D-pad up";
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:     return "D-pad down";
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:     return "D-pad left";
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:    return "D-pad right";
+        default: break;
+    }
+    const char* n = button >= 0
+        ? SDL_GameControllerGetStringForButton(SDL_GameControllerButton(button))
+        : nullptr;
+    return n ? n : "unbound";
+}
+
+/* ONE KEY, ONE ROW. Binding a key or button another row already holds MOVES it
+ * there - the other row is left unbound and the note says so - rather than
+ * sharing it, because a shared key presses two DS buttons at once and nobody
+ * binds that on purpose. */
+void bind_moving(int row, bool pad, int value) {
+    g_bind_note.clear();
+    for (int i = 0; i < kBindingCount; ++i) {
+        if (i == row) continue;
+        int& other = pad ? g_bindings[i].pad_button : g_bindings[i].scancode;
+        if (other == value) {
+            other = pad ? -1 : 0;
+            g_bind_note = std::string(pad ? pad_name(value) : key_name(value)) +
+                          " moved from " + g_bindings[i].action + " to " +
+                          g_bindings[row].action + "; " + g_bindings[i].action +
+                          " is now unbound.";
+        }
+    }
+    (pad ? g_bindings[row].pad_button : g_bindings[row].scancode) = value;
+}
 /* The Panel scale slider moved this frame: ui_draw resizes the floating touch
  * panel to the preset and clears this. A request rather than a value, for the
  * same reason UiSettings::applied_scale is - the remembered dragged size is
@@ -396,7 +487,9 @@ void graphics_page(UiSettings& s) {
 
 /* Settings > Controls: the stick, and the binding table. */
 void controls_page(UiSettings& s) {
-    uiw::columns(2);
+    /* ONE COLUMN: the binding table has four columns of its own (the DS
+     * button, what it does in the game, the key, the pad button), and half the
+     * page cannot hold them. */
     uiw::section("Analog stick");
     uiw::checkbox("Stick as D-pad", &s.stick_as_dpad,
         "The DS has no analog input, so a stick can only drive the same\n"
@@ -422,25 +515,28 @@ void controls_page(UiSettings& s) {
      * table beside this are the keyboard's way to the same camera. */
     uiw::note("The arena camera's settings are under Enhancements > Arena Controls.");
 
-    uiw::next_column();
+    uiw::spacing();
     uiw::section("Buttons");
     if (uiw::begin_block("Buttons",
             "bindings rebind keyboard key gamepad controller pad button "
             "A B X Y L R Start Select D-pad camera reset defaults")) {
-        uiw::text("Click a binding to change it, then press the key or button "
-                  "you want. Escape cancels.");
+        uiw::text("Click a key or gamepad cell, then press the key or button "
+                  "you want. Escape cancels. Right-click a cell to clear it or "
+                  "put its default back.");
         uiw::spacing();
 
-        if (ImGui::BeginTable("bindings", 3,
+        if (ImGui::BeginTable("bindings", 4,
                               ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
                               ImGuiTableFlags_SizingStretchProp)) {
-            ImGui::TableSetupColumn("Action");
-            ImGui::TableSetupColumn("Key");
-            ImGui::TableSetupColumn("Gamepad");
+            ImGui::TableSetupColumn("DS button", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+            ImGui::TableSetupColumn("In game", ImGuiTableColumnFlags_WidthStretch, 1.6f);
+            ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+            ImGui::TableSetupColumn("Gamepad", ImGuiTableColumnFlags_WidthStretch, 1.0f);
             ImGui::TableHeadersRow();
 
             for (int i = 0; i < kBindingCount; ++i) {
                 UiBinding& b = g_bindings[i];
+                const UiBinding& d = g_default_bindings[i];
                 ImGui::TableNextRow();
                 ImGui::PushID(i);
 
@@ -454,60 +550,78 @@ void controls_page(UiSettings& s) {
                 ImGui::TextUnformatted(b.action);
 
                 ImGui::TableNextColumn();
-                const bool waiting_key = (g_capture_index == i && !g_capture_pad);
-                const char* key_label = waiting_key
-                    ? "press a key..."
-                    : (b.scancode >= 0 ? SDL_GetScancodeName(SDL_Scancode(b.scancode))
-                                       : "unbound");
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                                    ImVec2(10.0f * uiw::scale(), 8.0f * uiw::scale()));
+                ImGui::AlignTextToFramePadding();
+                ImGui::PopStyleVar();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+                ImGui::TextWrapped("%s", kBindingRoles[i]);
+                ImGui::PopStyleColor();
+
                 /* Each cell in its own ID scope: a row whose key and pad are
                  * both "unbound" would otherwise be two buttons with one ID. */
-                ImGui::PushID("key");
-                if (uiw::button(*key_label ? key_label : "unbound")) {
-                    g_capture_index = i;
-                    g_capture_pad = false;
+                for (int col = 0; col < 2; ++col) {
+                    const bool pad = col == 1;
+                    ImGui::TableNextColumn();
+                    ImGui::PushID(pad ? "pad" : "key");
+                    const bool waiting = g_capture_index == i && g_capture_pad == pad;
+                    int& value = pad ? b.pad_button : b.scancode;
+                    const int def = pad ? d.pad_button : d.scancode;
+                    const char* label = waiting
+                        ? (pad ? "press a button..." : "press a key...")
+                        : (pad ? pad_name(value) : key_name(value));
+                    if (uiw::button(label, pad
+                            ? "Click, then press a gamepad button. Escape cancels.\n"
+                              "Right-click to clear it or restore the default."
+                            : "Click, then press a key. Escape cancels.\n"
+                              "Right-click to clear it or restore the default.",
+                            0.0f)) {
+                        g_capture_index = i;
+                        g_capture_pad = pad;
+                        g_bind_note.clear();
+                    }
+                    if (ImGui::BeginPopupContextItem("cell")) {
+                        if (ImGui::MenuItem("Clear")) {
+                            value = pad ? -1 : 0;
+                            g_bind_note.clear();
+                        }
+                        char item[64];
+                        std::snprintf(item, sizeof item, "Default (%s)",
+                                      pad ? pad_name(def) : key_name(def));
+                        if (ImGui::MenuItem(item, nullptr, false, value != def)) {
+                            if ((pad && def >= 0) || (!pad && def > 0))
+                                bind_moving(i, pad, def);
+                            else
+                                value = def;
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::PopID();
                 }
-                ImGui::PopID();
-
-                ImGui::TableNextColumn();
-                const bool waiting_pad = (g_capture_index == i && g_capture_pad);
-                char pad_label[32];
-                if (waiting_pad) {
-                    std::snprintf(pad_label, sizeof pad_label, "press a button...");
-                } else if (b.pad_button >= 0) {
-                    const char* n = SDL_GameControllerGetStringForButton(
-                        SDL_GameControllerButton(b.pad_button));
-                    std::snprintf(pad_label, sizeof pad_label, "%s", n ? n : "?");
-                } else {
-                    std::snprintf(pad_label, sizeof pad_label, "unbound");
-                }
-                ImGui::PushID("pad");
-                if (uiw::button(pad_label)) {
-                    g_capture_index = i;
-                    g_capture_pad = true;
-                }
-                ImGui::PopID();
                 ImGui::PopID();
             }
             ImGui::EndTable();
         }
 
+        if (!g_bind_note.empty()) uiw::note("%s", g_bind_note.c_str());
         uiw::spacing();
-        if (uiw::button("Reset to defaults", nullptr, -1.0f)) {
-            static const int keys[] = {
-                SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_S, SDL_SCANCODE_A,
-                SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_RETURN,
-                SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
-                SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-                SDL_SCANCODE_J, SDL_SCANCODE_L, SDL_SCANCODE_I, SDL_SCANCODE_K};
-            /* One default per row: a short initialiser zero-fills the rest,
-             * and the camera rows came back unbound. */
-            static_assert(sizeof keys / sizeof *keys == kBindingCount, "");
-            for (int i = 0; i < kBindingCount; ++i) g_bindings[i].scancode = keys[i];
+        if (uiw::button("Reset all to defaults",
+                        "Put every key AND every gamepad button back to how the\n"
+                        "port ships.", -1.0f)) {
+            for (int i = 0; i < kBindingCount; ++i) {
+                g_bindings[i].scancode = g_default_bindings[i].scancode;
+                g_bindings[i].pad_button = g_default_bindings[i].pad_button;
+            }
             g_capture_index = -1;
+            g_bind_note.clear();
         }
+        uiw::spacing();
+        uiw::section("Fixed keys");
+        uiw::text("F1 or Escape opens and closes this menu. The mouse is the "
+                  "stylus, on the touch screen or the floating panel. The left "
+                  "stick drives the D-pad (see Analog stick).");
         uiw::end_block();
     }
-    uiw::end_columns();
 }
 
 /* Settings > Touch Screen: where the DS's lower screen is shown. */
@@ -617,7 +731,7 @@ void arena_hud_page(UiSettings& s) {
     /* The arena match HUD on the top screen. It REPLACES the touch screen
      * during a match - the floating panel is not drawn at all then - which is
      * why the Touch Screen page mentions it; it lives here because it is an
-     * enhancement, offered as a setting and off by default. */
+     * enhancement, offered as a setting and on by default since 0.3.4. */
     uiw::section("Match HUD on the top screen");
     uiw::checkbox("Arena HUD overlay", &s.arena_hud_overlay,
         "During an arena match, mirrors the other players' column to the\n"
@@ -2065,17 +2179,25 @@ UiBinding* ui_bindings(int* count) {
 bool ui_capturing_binding() { return g_capture_index >= 0; }
 
 void ui_offer_captured_key(int scancode) {
-    if (g_capture_index < 0 || g_capture_pad) return;
+    if (g_capture_index < 0) return;
     /* Escape cancels rather than binding - otherwise the one key everybody
-     * presses to back out becomes permanently bound to something. */
-    if (scancode != SDL_SCANCODE_ESCAPE)
-        g_bindings[g_capture_index].scancode = scancode;
+     * presses to back out becomes permanently bound to something. It cancels
+     * a GAMEPAD prompt too: that one used to ignore every key, so the only
+     * way out of it was to bind some button. F1 is the menu's own key and is
+     * never bound either. */
+    if (scancode == SDL_SCANCODE_ESCAPE || scancode == SDL_SCANCODE_F1) {
+        g_capture_index = -1;
+        g_bind_note.clear();
+        return;
+    }
+    if (g_capture_pad) return;   /* waiting for a button, not a key */
+    bind_moving(g_capture_index, false, scancode);
     g_capture_index = -1;
 }
 
 void ui_offer_captured_pad(int button) {
     if (g_capture_index < 0 || !g_capture_pad) return;
-    g_bindings[g_capture_index].pad_button = button;
+    bind_moving(g_capture_index, true, button);
     g_capture_index = -1;
 }
 
@@ -2230,6 +2352,16 @@ void ui_load_settings(UiSettings& s, const char* path) {
     s.mp.listen_port = std::clamp(s.mp.listen_port, 1, 65535);
     s.arena_hud_overlay    = g_store.get_bool("arena_hud_overlay", s.arena_hud_overlay);
     s.arena_hud_scale      = float(g_store.get_number("arena_hud_size", s.arena_hud_scale));
+    /* THE TOP-SCREEN HUD AND WIDESCREEN BECAME DEFAULTS (0.3.4), and a saved
+     * file holds the old "off" for both as if it were a choice - every install
+     * that ever saved wrote it. So, once, under its own marker as the floating
+     * panel's move was: a saved off becomes on. Turning either off after this
+     * is kept. */
+    if (g_store.get_number("enhancements_defaulted", 0) == 0) {
+        s.arena_hud_overlay = true;
+        s.adaptive_widescreen = true;
+        g_store.set_number("enhancements_defaulted", 1);
+    }
 
     /* Customization has to survive character switches and every move between
      * a level and an arena - which outlives one run, so it lives in the file. One

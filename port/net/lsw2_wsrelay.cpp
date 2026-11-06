@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <deque>
 #include <map>
 
 #ifdef _WIN32
@@ -149,7 +151,7 @@ uint32_t next_rand(uint32_t& s) {
 }
 
 /* A close frame's reason, for the player: the room says why it refused. */
-std::string close_reason(const std::string& payload) {
+std::string close_text(const std::string& payload) {
     return payload.size() > 2 ? payload.substr(2) : std::string();
 }
 
@@ -312,10 +314,14 @@ bool Lsw2WsClient::open(const std::string& host, int port, const std::string& pa
 }
 
 bool Lsw2WsClient::send_frame(uint8_t opcode, const uint8_t* data, size_t n) {
-    if (fd_ < 0) return false;
+    std::lock_guard<std::mutex> hold(send_mu_);
+    const long long fd = fd_.load();
+    if (fd < 0) return false;
     const std::string f = lsw2_ws_frame(opcode, data, n, next_rand(rng_));
-    if (!send_all(as_sock(fd_), f.data(), f.size())) {
-        close();
+    if (!send_all(as_sock(fd), f.data(), f.size())) {
+        /* Closed here, under the lock already held - close() would take it. */
+        long long expect = fd;
+        if (fd_.compare_exchange_strong(expect, -1)) lsw2_close(as_sock(fd));
         return false;
     }
     return true;
@@ -328,13 +334,13 @@ bool Lsw2WsClient::send_text(const std::string& text) {
 }
 
 bool Lsw2WsClient::receive(std::vector<Lsw2WsMessage>* out) {
-    if (fd_ < 0) return false;
+    const long long fd = fd_.load();
+    if (fd < 0) return false;
     char tmp[kRecvChunk];
-    const int k = ::recv(as_sock(fd_), tmp, int(sizeof tmp), 0);
+    const int k = ::recv(as_sock(fd), tmp, int(sizeof tmp), 0);
     if (k <= 0) { close(); return false; }
     buf_.append(tmp, size_t(k));
     std::vector<Lsw2WsMessage> got;
-    /* Frames already buffered (from open) are parsed on the first call too. */
     if (!lsw2_ws_parse(buf_, partial_, partial_op_, &got)) { close(); return false; }
     bool open = true;
     for (Lsw2WsMessage& m : got) {
@@ -343,7 +349,10 @@ bool Lsw2WsClient::receive(std::vector<Lsw2WsMessage>* out) {
             continue;
         }
         if (m.opcode == 10) continue;
-        if (m.opcode == 8) open = false;
+        if (m.opcode == 8) {
+            open = false;
+            close_reason_ = close_text(m.data);
+        }
         out->push_back(std::move(m));
     }
     if (!open) {
@@ -354,11 +363,121 @@ bool Lsw2WsClient::receive(std::vector<Lsw2WsMessage>* out) {
 }
 
 void Lsw2WsClient::close() {
-    if (fd_ >= 0) lsw2_close(as_sock(fd_));
-    fd_ = -1;
+    std::lock_guard<std::mutex> hold(send_mu_);
+    const long long fd = fd_.exchange(-1);
+    if (fd >= 0) lsw2_close(as_sock(fd));
 }
 
+/* ------------------------------------------------------------- the stream */
+
+std::string Lsw2LaneStream::wrap(const char* data, size_t n) {
+    std::string out(4, '\0');
+    const uint32_t seq = send_seq_++;
+    for (int i = 0; i < 4; ++i) out[size_t(i)] = char((seq >> (8 * i)) & 0xFFu);
+    out.append(data, n);
+    return out;
+}
+
+bool Lsw2LaneStream::take(const std::string& chunk, std::string* out) {
+    if (chunk.size() < 4) return false;
+    uint32_t seq = 0;
+    for (int i = 0; i < 4; ++i) seq |= uint32_t(uint8_t(chunk[size_t(i)])) << (8 * i);
+    if (seq < next_) return true;                       /* a copy: already delivered */
+    if (seq > next_) {
+        /* Ahead of a gap another lane will fill. Bounded: a lane that far ahead
+         * means the stream is broken, not late. */
+        if (early_.size() > 4096) return false;
+        early_.emplace(seq, chunk.substr(4));
+        return true;
+    }
+    out->append(chunk, 4, std::string::npos);
+    ++next_;
+    for (auto it = early_.find(next_); it != early_.end(); it = early_.find(next_)) {
+        out->append(it->second);
+        early_.erase(it);
+        ++next_;
+    }
+    return true;
+}
+
+int lsw2_relay_lanes() {
+    static const int n = [] {
+        const char* v = std::getenv("LSW2_RELAY_LANES");
+        const int k = v ? std::atoi(v) : 2;
+        return k < 1 ? 1 : (k > 4 ? 4 : k);
+    }();
+    return n;
+}
+
+namespace {
+
+/* TEST ONLY, on a joiner's lanes - a long-distance and lossy link reproduced
+ * on one machine:
+ *   LSW2_TEST_NET_DELAY_MS=<ms>         every chunk held that long, each way
+ *   LSW2_TEST_LANE_STALL=<ms>,<per1000> each chunk has that chance of freezing
+ *                                       its lane for <ms> - what a lost packet
+ *                                       does to a TCP stream
+ * Unset, none of this runs. */
+struct TestLink {
+    int delay_ms = 0;
+    int stall_ms = 0;
+    int stall_per_mille = 0;
+    bool on() const { return delay_ms > 0 || stall_per_mille > 0; }
+};
+
+const TestLink& test_link() {
+    static const TestLink t = [] {
+        TestLink x;
+        if (const char* v = std::getenv("LSW2_TEST_NET_DELAY_MS")) x.delay_ms = std::max(0, std::atoi(v));
+        if (const char* v = std::getenv("LSW2_TEST_LANE_STALL"))
+            std::sscanf(v, "%d,%d", &x.stall_ms, &x.stall_per_mille);
+        return x;
+    }();
+    return t;
+}
+
+struct Held {
+    Clock::time_point due;
+    std::string bytes;
+};
+
+/* One lane's test queues: what it will send and what it has received, each
+ * released in order no earlier than its due time. */
+struct TestLane {
+    std::mutex mu;
+    std::deque<Held> up, down;
+    Clock::time_point frozen_until{};
+    Clock::time_point last_up{}, last_down{};
+    uint32_t rng = 0x12345u;
+
+    Clock::time_point due_now(Clock::time_point& last) {
+        const TestLink& t = test_link();
+        const auto now = Clock::now();
+        if (t.stall_per_mille > 0) {
+            rng = rng * 1103515245u + 12345u;
+            if (int((rng >> 8) % 1000u) < t.stall_per_mille)
+                frozen_until = std::max(frozen_until, now + std::chrono::milliseconds(t.stall_ms));
+        }
+        auto due = now + std::chrono::milliseconds(t.delay_ms);
+        if (due < frozen_until) due = frozen_until;
+        if (due < last) due = last;                    /* a lane stays in order */
+        last = due;
+        return due;
+    }
+};
+
+TestLane g_test_lanes[4];
+
+}  // namespace
+
 /* ------------------------------------------------------------- the host */
+
+struct Lsw2RelayHost::Peer {
+    socket_t sock = LSW2_INVALID;
+    Lsw2LaneStream stream;
+};
+
+Lsw2RelayHost::~Lsw2RelayHost() { stop(); }
 
 Lsw2RelayHost::Lsw2RelayHost(std::string master_host, int master_port, std::string id,
                              std::string token, uint16_t listen_port)
@@ -366,28 +485,98 @@ Lsw2RelayHost::Lsw2RelayHost(std::string master_host, int master_port, std::stri
       port_(master_port), listen_port_(listen_port) {}
 
 void Lsw2RelayHost::start() {
-    if (thread_.joinable() || id_.empty() || token_.empty()) return;
+    if (!threads_.empty() || id_.empty() || token_.empty()) return;
     stop_ = false;
-    thread_ = std::thread([this] { run(); });
+    lanes_n_ = lsw2_relay_lanes();
+    lanes_.clear();
+    for (int k = 0; k < lanes_n_; ++k) lanes_.push_back(std::make_unique<Lsw2WsClient>());
+    for (int k = 0; k < lanes_n_; ++k) threads_.emplace_back([this, k] { lane_run(k); });
+    threads_.emplace_back([this] { local_run(); });
 }
 
 void Lsw2RelayHost::stop() {
     stop_ = true;
-    if (thread_.joinable()) thread_.join();
-    online_ = false;
+    for (auto& l : lanes_) if (l) l->close();
+    for (std::thread& t : threads_) if (t.joinable()) t.join();
+    threads_.clear();
+    std::lock_guard<std::mutex> hold(mu_);
+    for (auto& p : peers_map_) if (p.second->sock != LSW2_INVALID) lsw2_close(p.second->sock);
+    peers_map_.clear();
+    lanes_up_ = 0;
     peers_ = 0;
 }
 
-void Lsw2RelayHost::run() {
+void Lsw2RelayHost::send_all_lanes(const std::string& msg) {
+    for (auto& l : lanes_)
+        if (l->is_open()) l->send_binary((const uint8_t*)msg.data(), msg.size());
+}
+
+void Lsw2RelayHost::drop(int n, bool tell) {
+    {
+        std::lock_guard<std::mutex> hold(mu_);
+        auto it = peers_map_.find(n);
+        if (it == peers_map_.end()) return;
+        if (it->second->sock != LSW2_INVALID) lsw2_close(it->second->sock);
+        peers_map_.erase(it);
+        peers_ = int(peers_map_.size());
+    }
+    if (tell) {
+        const std::string m{char(2), char(n)};
+        send_all_lanes(m);
+    }
+    std::fprintf(stderr, "[relay] host: relayed player %d disconnected\n", n);
+}
+
+void Lsw2RelayHost::handle(int lane, const std::string& msg) {
+    if (msg.size() < 2) return;
+    const uint8_t kind = uint8_t(msg[0]);
+    const int n = uint8_t(msg[1]);
+    if (kind == 1) {
+        std::lock_guard<std::mutex> hold(mu_);
+        if (peers_map_.count(n)) return;               /* every lane announces it */
+        /* A joiner arrived: give it a connection to our own listen port, which
+         * the transport accepts like any other. */
+        socket_t s = connect_within("127.0.0.1", listen_port_, 2000);
+        if (s == LSW2_INVALID) {
+            std::fprintf(stderr, "[relay] host: could not hand player %d to the lobby\n", n);
+            const std::string m{char(2), char(n)};
+            lanes_[size_t(lane)]->send_binary((const uint8_t*)m.data(), m.size());
+            return;
+        }
+        auto p = std::make_unique<Peer>();
+        p->sock = s;
+        peers_map_[n] = std::move(p);
+        peers_ = int(peers_map_.size());
+        std::fprintf(stderr, "[relay] host: a player joined through the relay (peer %d, "
+                             "%d lanes)\n", n, lanes_n_);
+    } else if (kind == 0) {
+        std::string deliver;
+        bool broken = false;
+        {
+            std::lock_guard<std::mutex> hold(mu_);
+            auto it = peers_map_.find(n);
+            if (it == peers_map_.end()) return;
+            if (!it->second->stream.take(msg.substr(2), &deliver)) broken = true;
+            else if (!deliver.empty() &&
+                     !send_all(it->second->sock, deliver.data(), deliver.size())) broken = true;
+        }
+        if (broken) drop(n, true);
+    } else if (kind == 2) {
+        drop(n, false);
+    }
+}
+
+void Lsw2RelayHost::lane_run(int lane) {
+    Lsw2WsClient& ws = *lanes_[size_t(lane)];
     int backoff_ms = 1000;
     std::string last_error;
+    const std::string path = "/v1/relay/" + id_ + "?role=host&v=2&lane=" + std::to_string(lane);
     while (!stop_) {
-        Lsw2WsClient ws;
         std::string error;
-        if (!ws.open(host_, port_, "/v1/relay/" + id_ + "?role=host", token_, 5000, &error)) {
+        if (!ws.open(host_, port_, path, token_, 5000, &error)) {
             if (error != last_error) {
-                std::fprintf(stderr, "[relay] host: cannot open the relay (%s) - retrying\n",
-                             error.c_str());
+                std::fprintf(stderr, "[relay] host: lane %d cannot open the relay (%s) - "
+                                     "retrying\n", lane, error.c_str());
                 last_error = error;
             }
             for (int waited = 0; waited < backoff_ms && !stop_; waited += 100)
@@ -395,155 +584,151 @@ void Lsw2RelayHost::run() {
             backoff_ms = std::min(backoff_ms * 2, 30000);
             continue;
         }
-        online_ = true;
         backoff_ms = 1000;
         last_error.clear();
-        {
-            std::vector<Lsw2WsMessage> early;   /* nothing is expected; drop it */
-            ws.take_early(&early);
-        }
-        std::fprintf(stderr, "[relay] host: online - players who cannot reach this "
-                             "machine directly join through the relay\n");
-
-        std::map<int, socket_t> peers;
-        auto drop = [&](int n, bool tell) {
-            auto it = peers.find(n);
-            if (it == peers.end()) return;
-            lsw2_close(it->second);
-            peers.erase(it);
-            if (tell) {
-                const uint8_t m[2] = {2, uint8_t(n)};
-                ws.send_binary(m, 2);
-            }
-            std::fprintf(stderr, "[relay] host: relayed player %d disconnected\n", n);
-        };
-        auto last_sent = Clock::now();
-        std::string out;
-
+        if (++lanes_up_ == 1)
+            std::fprintf(stderr, "[relay] host: online - players who cannot reach this "
+                                 "machine directly join through the relay\n");
+        std::vector<Lsw2WsMessage> early;
+        ws.take_early(&early);
+        for (const Lsw2WsMessage& m : early) if (m.opcode == 2) handle(lane, m.data);
+        auto last_ping = Clock::now();
         while (!stop_ && ws.is_open()) {
-            fd_set rd;
-            FD_ZERO(&rd);
-            socket_t top = as_sock(ws.fd());
-            FD_SET(top, &rd);
-            for (auto& p : peers) {
-                FD_SET(p.second, &rd);
-                if (p.second > top) top = p.second;
-            }
-            timeval tv{0, 200000};
-            if (::select(int(top) + 1, &rd, nullptr, nullptr, &tv) < 0) break;
-
-            if (FD_ISSET(as_sock(ws.fd()), &rd)) {
+            if (wait_readable(as_sock(ws.fd()), 100)) {
                 std::vector<Lsw2WsMessage> msgs;
                 const bool open = ws.receive(&msgs);
-                for (const Lsw2WsMessage& m : msgs) {
-                    if (m.opcode != 2 || m.data.size() < 2) continue;
-                    const uint8_t kind = uint8_t(m.data[0]);
-                    const int n = uint8_t(m.data[1]);
-                    if (kind == 1) {
-                        /* A joiner arrived: give it a connection to our own
-                         * listen port, which the transport accepts like any. */
-                        drop(n, false);
-                        socket_t s = connect_within("127.0.0.1", listen_port_, 2000);
-                        if (s == LSW2_INVALID) {
-                            const uint8_t c[2] = {2, uint8_t(n)};
-                            ws.send_binary(c, 2);
-                            std::fprintf(stderr, "[relay] host: could not hand player "
-                                                 "%d to the lobby\n", n);
-                        } else {
-                            peers[n] = s;
-                            std::fprintf(stderr, "[relay] host: a player joined through "
-                                                 "the relay (peer %d)\n", n);
-                        }
-                    } else if (kind == 0) {
-                        auto it = peers.find(n);
-                        if (it != peers.end() &&
-                            !send_all(it->second, m.data.data() + 2, m.data.size() - 2))
-                            drop(n, true);
-                    } else if (kind == 2) {
-                        drop(n, false);
-                    }
-                }
+                for (const Lsw2WsMessage& m : msgs) if (m.opcode == 2) handle(lane, m.data);
                 if (!open) break;
             }
-
-            std::vector<int> gone;
-            for (auto& p : peers) {
-                if (!FD_ISSET(p.second, &rd)) continue;
-                char tmp[kRecvChunk];
-                const int k = ::recv(p.second, tmp, int(sizeof tmp), 0);
-                if (k <= 0) { gone.push_back(p.first); continue; }
-                out.assign(2, '\0');
-                out[1] = char(p.first);
-                out.append(tmp, size_t(k));
-                ws.send_binary((const uint8_t*)out.data(), out.size());
-                last_sent = Clock::now();
-            }
-            for (int n : gone) drop(n, true);
-            peers_ = int(peers.size());
-
-            if (ms_since(last_sent) > kKeepaliveMs) {
+            if (ms_since(last_ping) > kKeepaliveMs) {
                 ws.send_text("ping");
-                last_sent = Clock::now();
+                last_ping = Clock::now();
             }
         }
-
-        for (auto& p : peers) lsw2_close(p.second);
-        peers_ = 0;
-        online_ = false;
         ws.close();
+        if (--lanes_up_ == 0 && !stop_) {
+            /* Every lane is down: the room has closed its joiners' streams. */
+            std::vector<int> all;
+            {
+                std::lock_guard<std::mutex> hold(mu_);
+                for (auto& p : peers_map_) all.push_back(p.first);
+            }
+            for (int n : all) drop(n, false);
+        }
         if (!stop_) {
-            std::fprintf(stderr, "[relay] host: the relay connection dropped - reconnecting\n");
+            std::fprintf(stderr, "[relay] host: lane %d dropped - reconnecting\n", lane);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
 }
 
+void Lsw2RelayHost::local_run() {
+    /* The lobby's side: whatever the transport sends a relayed joiner goes out
+     * on every lane, numbered. */
+    while (!stop_) {
+        fd_set rd;
+        FD_ZERO(&rd);
+        socket_t top = 0;
+        int count = 0;
+        {
+            std::lock_guard<std::mutex> hold(mu_);
+            for (auto& p : peers_map_) {
+                FD_SET(p.second->sock, &rd);
+                if (p.second->sock > top) top = p.second->sock;
+                ++count;
+            }
+        }
+        if (count == 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            continue;
+        }
+        timeval tv{0, 20000};
+        if (::select(int(top) + 1, &rd, nullptr, nullptr, &tv) <= 0) continue;
+        std::vector<int> gone;
+        std::vector<std::string> out;
+        {
+            std::lock_guard<std::mutex> hold(mu_);
+            for (auto& p : peers_map_) {
+                if (!FD_ISSET(p.second->sock, &rd)) continue;
+                char tmp[kRecvChunk];
+                const int k = ::recv(p.second->sock, tmp, int(sizeof tmp), 0);
+                if (k <= 0) { gone.push_back(p.first); continue; }
+                std::string m{char(0), char(p.first)};
+                m += p.second->stream.wrap(tmp, size_t(k));
+                out.push_back(std::move(m));
+            }
+        }
+        for (const std::string& m : out) send_all_lanes(m);
+        for (int n : gone) drop(n, true);
+    }
+}
+
 /* ------------------------------------------------------------- the joiner */
+
+std::string Lsw2RelayJoin::lane_path(int lane) const {
+    return "/v1/relay/" + id_ + "?role=join&v=2&lane=" + std::to_string(lane) + "&link=" + link_;
+}
 
 bool Lsw2RelayJoin::start(const std::string& master_host, int master_port,
                           const std::string& id, int timeout_ms, std::string* error) {
     stop();
     stop_ = false;
+    ended_ = false;
     pending_.clear();
-    const auto t0 = Clock::now();
-
-    if (!ws_.open(master_host, master_port, "/v1/relay/" + id + "?role=join", "",
-                  timeout_ms, error))
-        return false;
-
-    /* WAIT FOR THE ROOM TO SAY THE HOST IS THERE. Without a host it closes the
-     * socket with the reason, which is what the player is shown. */
-    bool ready = false;
+    stream_ = Lsw2LaneStream();
+    host_ = master_host;
+    port_ = master_port;
+    id_ = id;
+    lanes_n_ = lsw2_relay_lanes();
     {
-        std::vector<Lsw2WsMessage> early;
-        ws_.take_early(&early);
+        /* One nonce per join: the room gives all of this joiner's lanes one
+         * peer number by it. */
+        uint32_t r = uint32_t(Clock::now().time_since_epoch().count()) | 1u;
+        char buf[24];
+        const uint32_t a = next_rand(r), b = next_rand(r);
+        std::snprintf(buf, sizeof buf, "%08x%08x", unsigned(a), unsigned(b));
+        link_ = buf;
+    }
+    const auto t0 = Clock::now();
+    lanes_.clear();
+    for (int k = 0; k < lanes_n_; ++k) lanes_.push_back(std::make_unique<Lsw2WsClient>());
+
+    /* LANE 0 MUST OPEN AND HEAR "ready"; the others are best effort here and
+     * keep trying on their own threads. */
+    Lsw2WsClient& first = *lanes_[0];
+    if (!first.open(host_, port_, lane_path(0), "", timeout_ms, error)) return false;
+    bool ready = false;
+    std::vector<Lsw2WsMessage> early;
+    first.take_early(&early);
+    for (;;) {
         for (const Lsw2WsMessage& m : early) {
             if (m.opcode == 1 && m.data == "ready") ready = true;
-            else if (m.opcode == 2) pending_ += m.data;
+            else if (m.opcode == 2) stream_.take(m.data, &pending_);
             else if (m.opcode == 8) {
-                if (error) *error = close_reason(m.data);
-                ws_.close();
+                if (error) *error = close_text(m.data);
+                first.close();
                 return false;
             }
         }
-    }
-    while (!ready) {
+        early.clear();
+        if (ready) break;
         const int left = timeout_ms - ms_since(t0);
-        if (left <= 0 || !wait_readable(as_sock(ws_.fd()), left)) {
+        if (left <= 0 || !wait_readable(as_sock(first.fd()), left)) {
             if (error) *error = "the relay did not answer";
-            ws_.close();
+            first.close();
             return false;
         }
-        std::vector<Lsw2WsMessage> msgs;
-        const bool open = ws_.receive(&msgs);
-        for (const Lsw2WsMessage& m : msgs) {
-            if (m.opcode == 1 && m.data == "ready") ready = true;
-            else if (m.opcode == 2) pending_ += m.data;
-            else if (m.opcode == 8 && error) *error = close_reason(m.data);
-        }
-        if (!open && !ready) {
-            if (error && error->empty()) *error = "the relay closed the connection";
+        if (!first.receive(&early) && early.empty()) {
+            if (error) *error = first.close_reason().empty() ? "the relay closed the connection"
+                                                              : first.close_reason();
             return false;
+        }
+    }
+    for (int k = 1; k < lanes_n_; ++k) {
+        std::string ignored;
+        if (lanes_[size_t(k)]->open(host_, port_, lane_path(k), "", 2000, &ignored)) {
+            std::vector<Lsw2WsMessage> e;
+            lanes_[size_t(k)]->take_early(&e);   /* its "ready"; data only follows later */
         }
     }
 
@@ -556,83 +741,172 @@ bool Lsw2RelayJoin::start(const std::string& master_host, int master_port,
     if (l == LSW2_INVALID || ::bind(l, (sockaddr*)&a, sizeof a) != 0 || ::listen(l, 1) != 0 ||
         getsockname(l, (sockaddr*)&a, &alen) != 0) {
         if (l != LSW2_INVALID) lsw2_close(l);
-        ws_.close();
+        for (auto& w : lanes_) w->close();
         if (error) *error = "could not open a local port for the relay";
         return false;
     }
     listen_fd_ = as_fd(l);
     local_port_ = ntohs(a.sin_port);
     alive_ = true;
-    thread_ = std::thread([this] { run(); });
+    for (int k = 0; k < lanes_n_; ++k) threads_.emplace_back([this, k] { lane_run(k); });
+    threads_.emplace_back([this] { local_run(); });
+    int up = 0;
+    for (auto& w : lanes_) up += w->is_open() ? 1 : 0;
     std::fprintf(stderr, "[relay] join: connected to the lobby through the relay "
-                         "(local port %u)\n", unsigned(local_port_));
+                         "(%d of %d lanes, local port %u)\n", up, lanes_n_, unsigned(local_port_));
     return true;
 }
 
 void Lsw2RelayJoin::stop() {
     stop_ = true;
-    if (thread_.joinable()) thread_.join();
+    for (auto& w : lanes_) if (w) w->close();
+    for (std::thread& t : threads_) if (t.joinable()) t.join();
+    threads_.clear();
     if (listen_fd_ >= 0) lsw2_close(as_sock(listen_fd_));
     listen_fd_ = -1;
-    ws_.close();
+    const long long lf = local_fd_.exchange(-1);
+    if (lf >= 0) lsw2_close(as_sock(lf));
     alive_ = false;
 }
 
-void Lsw2RelayJoin::run() {
-    socket_t local = LSW2_INVALID;
-    auto last_sent = Clock::now();
-    while (!stop_ && ws_.is_open()) {
-        fd_set rd;
-        FD_ZERO(&rd);
-        socket_t wsfd = as_sock(ws_.fd());
-        socket_t top = wsfd;
-        FD_SET(wsfd, &rd);
-        socket_t watch = local != LSW2_INVALID ? local : as_sock(listen_fd_);
-        if (watch != LSW2_INVALID) {
-            FD_SET(watch, &rd);
-            if (watch > top) top = watch;
-        }
-        timeval tv{0, 200000};
-        if (::select(int(top) + 1, &rd, nullptr, nullptr, &tv) < 0) break;
+void Lsw2RelayJoin::deliver(const std::string& bytes) {
+    const long long lf = local_fd_.load();
+    if (lf < 0) { pending_ += bytes; return; }
+    if (!send_all(as_sock(lf), bytes.data(), bytes.size())) ended_ = true;
+}
 
-        if (local == LSW2_INVALID && watch != LSW2_INVALID && FD_ISSET(watch, &rd)) {
-            local = ::accept(watch, nullptr, nullptr);
-            if (local != LSW2_INVALID) {
-                set_nodelay(local);
-                set_send_timeout(local, 5000);
-                if (!pending_.empty() && !send_all(local, pending_.data(), pending_.size())) break;
-                pending_.clear();
-            }
-        } else if (local != LSW2_INVALID && FD_ISSET(local, &rd)) {
-            char tmp[kRecvChunk];
-            const int k = ::recv(local, tmp, int(sizeof tmp), 0);
-            if (k <= 0) break;                       /* the transport left */
-            if (!ws_.send_binary((const uint8_t*)tmp, size_t(k))) break;
-            last_sent = Clock::now();
-        }
-
-        if (FD_ISSET(wsfd, &rd)) {
-            std::vector<Lsw2WsMessage> msgs;
-            const bool open = ws_.receive(&msgs);
-            bool failed = false;
-            for (const Lsw2WsMessage& m : msgs) {
-                if (m.opcode != 2) continue;
-                if (local == LSW2_INVALID) pending_ += m.data;
-                else if (!send_all(local, m.data.data(), m.data.size())) { failed = true; break; }
-            }
-            if (failed) break;                       /* the transport stopped reading */
-            if (!open) {
-                std::fprintf(stderr, "[relay] join: the relay closed the lobby's stream\n");
-                break;
-            }
-        }
-
-        if (ms_since(last_sent) > kKeepaliveMs && ws_.is_open()) {
-            ws_.send_text("ping");
-            last_sent = Clock::now();
+void Lsw2RelayJoin::send_all_lanes(const std::string& msg) {
+    const bool test = test_link().on();
+    for (int k = 0; k < lanes_n_; ++k) {
+        Lsw2WsClient& w = *lanes_[size_t(k)];
+        if (!w.is_open()) continue;
+        if (test) {
+            TestLane& t = g_test_lanes[k];
+            std::lock_guard<std::mutex> hold(t.mu);
+            t.up.push_back({t.due_now(t.last_up), msg});
+        } else {
+            w.send_binary((const uint8_t*)msg.data(), msg.size());
         }
     }
-    if (local != LSW2_INVALID) lsw2_close(local);
-    ws_.close();
+}
+
+void Lsw2RelayJoin::lane_run(int lane) {
+    Lsw2WsClient& ws = *lanes_[size_t(lane)];
+    const bool test = test_link().on();
+    TestLane& tl = g_test_lanes[lane];
+    {
+        /* Each lane its own luck: real losses on separate connections are
+         * independent, and lanes that froze together would test nothing. */
+        std::lock_guard<std::mutex> hold(tl.mu);
+        tl.rng = 0x12345u + uint32_t(lane + 1) * 2654435761u;
+    }
+    auto take = [&](const std::string& chunk) {
+        std::lock_guard<std::mutex> hold(mu_);
+        std::string out;
+        if (!stream_.take(chunk, &out)) { ended_ = true; return; }
+        if (!out.empty()) deliver(out);
+    };
+    auto last_ping = Clock::now();
+    auto down_since = Clock::now();
+    int backoff_ms = 1000;
+    while (!stop_ && !ended_) {
+        if (!ws.is_open()) {
+            /* A LANE THAT DROPPED RECONNECTS - same link, so the room puts it
+             * back on this joiner. The stream ends only if every lane stays
+             * down (the room is gone, or the host left). */
+            bool any = false;
+            for (auto& w : lanes_) any = any || w->is_open();
+            if (any) down_since = Clock::now();
+            else if (ms_since(down_since) > 15000) { ended_ = true; break; }
+            std::string ignored;
+            if (ws.open(host_, port_, lane_path(lane), "", 4000, &ignored)) {
+                std::vector<Lsw2WsMessage> e;
+                ws.take_early(&e);
+                for (const Lsw2WsMessage& m : e) if (m.opcode == 2) take(m.data);
+                backoff_ms = 1000;
+            } else {
+                for (int waited = 0; waited < backoff_ms && !stop_; waited += 100)
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                backoff_ms = std::min(backoff_ms * 2, 8000);
+                continue;
+            }
+        }
+        if (test) {
+            std::vector<std::string> send_now, got_now;
+            {
+                std::lock_guard<std::mutex> hold(tl.mu);
+                const auto now = Clock::now();
+                while (!tl.up.empty() && tl.up.front().due <= now) {
+                    send_now.push_back(std::move(tl.up.front().bytes));
+                    tl.up.pop_front();
+                }
+                while (!tl.down.empty() && tl.down.front().due <= now) {
+                    got_now.push_back(std::move(tl.down.front().bytes));
+                    tl.down.pop_front();
+                }
+            }
+            for (const std::string& m : send_now) ws.send_binary((const uint8_t*)m.data(), m.size());
+            for (const std::string& m : got_now) take(m);
+        }
+        if (ws.is_open() && wait_readable(as_sock(ws.fd()), test ? 1 : 100)) {
+            std::vector<Lsw2WsMessage> msgs;
+            const bool open = ws.receive(&msgs);
+            for (const Lsw2WsMessage& m : msgs) {
+                if (m.opcode != 2) continue;
+                if (test) {
+                    std::lock_guard<std::mutex> hold(tl.mu);
+                    tl.down.push_back({tl.due_now(tl.last_down), m.data});
+                } else {
+                    take(m.data);
+                }
+            }
+            if (!open) {
+                std::fprintf(stderr, "[relay] join: lane %d closed (%s)\n", lane,
+                             ws.close_reason().c_str());
+                /* The room says why: a host that left ends the stream. */
+                if (ws.close_reason().find("host") != std::string::npos) ended_ = true;
+                continue;
+            }
+        }
+        if (ws.is_open() && ms_since(last_ping) > kKeepaliveMs) {
+            ws.send_text("ping");
+            last_ping = Clock::now();
+        }
+    }
+    ws.close();
+}
+
+void Lsw2RelayJoin::local_run() {
+    /* Accept the transport's connection, hand it what arrived first, then send
+     * everything it writes out on every lane, numbered. */
+    socket_t local = LSW2_INVALID;
+    while (!stop_ && !ended_ && local == LSW2_INVALID) {
+        if (!wait_readable(as_sock(listen_fd_), 100)) continue;
+        local = ::accept(as_sock(listen_fd_), nullptr, nullptr);
+    }
+    if (local != LSW2_INVALID) {
+        set_nodelay(local);
+        set_send_timeout(local, 5000);
+        std::lock_guard<std::mutex> hold(mu_);
+        if (!pending_.empty() && !send_all(local, pending_.data(), pending_.size())) ended_ = true;
+        pending_.clear();
+        local_fd_ = as_fd(local);
+    }
+    while (!stop_ && !ended_ && local != LSW2_INVALID) {
+        if (!wait_readable(local, 100)) continue;
+        char tmp[kRecvChunk];
+        const int k = ::recv(local, tmp, int(sizeof tmp), 0);
+        if (k <= 0) break;                                /* the transport left */
+        std::string m;
+        {
+            std::lock_guard<std::mutex> hold(mu_);
+            m = stream_.wrap(tmp, size_t(k));
+        }
+        send_all_lanes(m);
+    }
+    ended_ = true;
     alive_ = false;
+    const long long lf = local_fd_.exchange(-1);
+    if (lf >= 0) lsw2_close(as_sock(lf));
+    std::fprintf(stderr, "[relay] join: the relayed stream ended\n");
 }

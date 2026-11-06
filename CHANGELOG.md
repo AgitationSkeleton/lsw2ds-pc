@@ -8,6 +8,33 @@ land.
 
 ## Unreleased
 
+- **Smoother online play through the relay.** Online games stuttered and ran
+  slow over the relay: one lost packet stalled the whole connection for a
+  quarter of a second or more, and the game froze with it, dozens of times a
+  match. The relay now carries each game over two parallel connections and
+  uses whichever copy arrives first, so one stalled connection no longer
+  stalls the game. In a test with simulated packet loss, freezes dropped from
+  about 25 per match to 1, and game speed went from 21 to 25 updates per
+  second (30 is full speed). Players on 0.3.3 can't join a 0.3.4 host through
+  the relay; everyone should update.
+- Online games tolerate a longer round trip between players before slowing
+  down.
+- **Controls page (F1 > Settings > Controls)**:
+  - Each button's row says what it does in the game.
+  - Right-click a binding to clear it or restore its default.
+  - Binding a key or button that another row already uses moves it there,
+    and the page says which row lost it.
+  - "Reset all to defaults" now restores gamepad buttons as well as keys.
+  - The page lists the fixed keys (F1 or Escape for the menu, the mouse as
+    the stylus).
+- Fixed: rebinding a key often did nothing, because the menu kept the key
+  press for itself. Escape now also cancels a gamepad rebind; before, you had
+  to press some gamepad button to get out.
+- **New defaults**: the top-screen arena HUD and adaptive widescreen are now
+  on. An existing settings file is switched over once; turn either off again
+  under Enhancements > Arena HUD or Settings > Graphics. Known: with
+  widescreen on, characters near the left and right edges can pop in and out.
+
 ## 0.3.3 - 2026-10-19
 
 Still an early pre-release, and **not thoroughly tested**: the relay was

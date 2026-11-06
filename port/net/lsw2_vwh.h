@@ -57,7 +57,7 @@ constexpr int kLsw2VwhDefaultDelay = 2;
  * its own, so two consoles may be at most 7 datasets apart before a perfectly
  * consistent match reads as a mismatch (state 38). Lockstep holds the gap at
  * the pipeline depth, so the depth must stay under 8. */
-constexpr int kLsw2VwhMaxDelay = 6;
+constexpr int kLsw2VwhMaxDelay = 7;
 /* How long the host waits on one member's block before treating it as gone:
  * ten seconds of host steps. Longer than any level load (both consoles load
  * the arena at once and the slower one is waited for), shorter than a player

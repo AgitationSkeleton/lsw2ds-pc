@@ -281,12 +281,12 @@ What the shell adds:
   upscaling, and the software rasteriser as a fallback.
 - **Pacing.** 60 fps, clocked by audio consumption at the mixer's exact
   32,728 Hz. The game itself simulates at 30 Hz.
-- **Adaptive widescreen.** Off by default, and a title patch rather than a
-  presentation setting. The 3D raster widens to the window. The compute
+- **Adaptive widescreen.** On by default since 0.3.4 (Settings > Graphics),
+  and a title patch rather than a presentation setting. The 3D raster widens to the window. The compute
   renderer accepts only widths in steps of 64 pixels, so on a 16:9 display
   the width snaps to 320 rather than failing over to software. The game's
   own actor visibility test still uses the original 256-pixel bounds, so
-  actors near the new edges can pop in and out, and the Video tab says so.
+  actors near the new edges can pop in and out, and the Graphics page says so.
   2D layers stay native during gameplay, except one named BG that a
   full-screen film effect blends over the 3D.
 - **The settings menu** (imgui, Esc or F1): video, input, touch, a debug tab,

@@ -111,8 +111,13 @@ struct UiSettings {
      * This is the one setting that reaches past presentation: showing more
      * world means the game must stop culling what is now on screen, which is a
      * guest-side change. See widescreen.cpp - it is a named, ROM-gated title
-     * patch, not a checkbox that quietly rewrites the game. */
-    bool adaptive_widescreen = false;
+     * patch, not a checkbox that quietly rewrites the game.
+     *
+     * ON BY DEFAULT since 0.3.4, with the other presentation enhancements
+     * that make up the usual layout (ui.cpp moves a saved "off" across once). Actors
+     * still pop at the old 256-px edges until the game's own visibility test
+     * is widened; the Graphics page says so beside the checkbox. */
+    bool adaptive_widescreen = true;
     int  max_extra_width = 192;      /* how far past 256 the raster may go;
                                         192 is the renderer ceiling (448 total) */
 
@@ -259,8 +264,11 @@ struct UiSettings {
      * ROM-exact and sidesteps the per-player scores, which remained unlocated
      * after three separate attempts.
      *
-     * Off by default: it is an enhancement, offered as a setting. */
-    bool arena_hud_overlay = false;
+     * ON BY DEFAULT since 0.3.4: one window, the floating panel by default,
+     * and in a match the HUD on the top screen rather than a panel covering
+     * the picture - the layout the port is played in. Still a setting, and
+     * ui.cpp moves a saved "off" across once. */
+    bool arena_hud_overlay = true;
 
     /* THERE ARE NO SOURCE-RECTANGLE SETTINGS FOR THE HUD ANY MORE - retired
      * 2026-09-12, and this is the retraction of the two blocks that stood here.

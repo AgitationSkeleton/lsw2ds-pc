@@ -34,6 +34,8 @@
 
 #include <atomic>
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -68,11 +70,13 @@ public:
     bool open(const std::string& host, int port, const std::string& path,
               const std::string& token, int timeout_ms, std::string* error);
 
+    /* Safe from any thread: sends are serialised by a lock. */
     bool send_binary(const uint8_t* data, size_t n);
     bool send_text(const std::string& text);
 
     /* Read what is waiting (call after select says readable) and parse it.
-     * Pings are answered here. False once the connection is closed. */
+     * Pings are answered here. False once the connection is closed. ONE
+     * thread receives. */
     bool receive(std::vector<Lsw2WsMessage>* out);
 
     /* Messages that arrived in the same read as the upgrade's response - the
@@ -83,51 +87,92 @@ public:
         early_.clear();
     }
 
+    /* The close code and reason the server last sent, for the player. */
+    const std::string& close_reason() const { return close_reason_; }
+
     void close();
-    bool is_open() const { return fd_ >= 0; }
-    long long fd() const { return fd_; }
+    bool is_open() const { return fd_.load() >= 0; }
+    long long fd() const { return fd_.load(); }
 
 private:
     bool send_frame(uint8_t opcode, const uint8_t* data, size_t n);
 
-    long long fd_ = -1;
+    std::atomic<long long> fd_{-1};
+    std::mutex send_mu_;
     std::vector<Lsw2WsMessage> early_;
-    std::string buf_, partial_;
+    std::string buf_, partial_, close_reason_;
     uint8_t partial_op_ = 0;
     uint32_t rng_ = 0x9E3779B9u;
 };
 
+/* ------------------------------------------------------------- the stream
+ *
+ * ONE ORDERED STREAM OVER SEVERAL LANES. Every chunk is sent on every lane as
+ * [seq u32 LE][bytes]; the receiver delivers each sequence number once, in
+ * order, from whichever lane brought it first, and drops the copies. A lane
+ * that stalls - a lost packet holds a TCP stream for a retransmit timeout -
+ * costs nothing while another lane is moving. */
+class Lsw2LaneStream {
+public:
+    /* The wire form of the next outgoing chunk. */
+    std::string wrap(const char* data, size_t n);
+    /* A chunk off any lane: append whatever is now deliverable, in order, to
+     * `out`. False for a malformed chunk. */
+    bool take(const std::string& chunk, std::string* out);
+    /* Chunks held waiting for an earlier one (for the log). */
+    size_t waiting() const { return early_.size(); }
+
+private:
+    uint32_t send_seq_ = 0;
+    uint32_t next_ = 0;
+    std::map<uint32_t, std::string> early_;
+};
+
+/* How many lanes each side holds: LSW2_RELAY_LANES (1..4), default 2. */
+int lsw2_relay_lanes();
+
 /* ------------------------------------------------------------- the bridges */
 
-/* THE HOST'S END: keeps the room connected (reconnecting with backoff) and
- * turns each relayed joiner into a loopback connection to `listen_port`. */
+/* THE HOST'S END: keeps every lane connected (each reconnecting on its own
+ * thread) and turns each relayed joiner into a loopback connection to
+ * `listen_port`. */
 class Lsw2RelayHost {
 public:
     Lsw2RelayHost(std::string master_host, int master_port, std::string id,
                   std::string token, uint16_t listen_port);
-    ~Lsw2RelayHost() { stop(); }
+    ~Lsw2RelayHost();
 
     void start();
     void stop();
 
-    /* True while the room is connected - joiners can reach this host. */
-    bool online() const { return online_.load(); }
+    /* True while any lane is connected - joiners can reach this host. */
+    bool online() const { return lanes_up_.load() > 0; }
     /* How many joiners the relay is carrying right now. */
     int peers() const { return peers_.load(); }
 
 private:
-    void run();
+    struct Peer;
+    void lane_run(int lane);
+    void local_run();
+    void handle(int lane, const std::string& msg);
+    void drop(int n, bool tell);
+    void send_all_lanes(const std::string& msg);
 
     std::string host_, id_, token_;
     int port_;
     uint16_t listen_port_;
+    int lanes_n_ = 2;
     std::atomic<bool> stop_{false};
-    std::atomic<bool> online_{false};
+    std::atomic<int> lanes_up_{0};
     std::atomic<int> peers_{0};
-    std::thread thread_;
+    std::vector<std::unique_ptr<Lsw2WsClient>> lanes_;
+    std::vector<std::thread> threads_;
+    std::mutex mu_;                       /* peers_map_ */
+    std::map<int, std::unique_ptr<Peer>> peers_map_;
 };
 
-/* THE JOINER'S END: one stream from a loopback listener to the room. */
+/* THE JOINER'S END: one stream from a loopback listener to the room, over
+ * every lane. */
 class Lsw2RelayJoin {
 public:
     ~Lsw2RelayJoin() { stop(); }
@@ -141,21 +186,33 @@ public:
     /* Where the transport should join: 127.0.0.1:<this>. */
     uint16_t local_port() const { return local_port_; }
 
-    /* False once either side of the stream has closed. */
+    /* False once the stream has ended (the host left, or every lane was lost
+     * for too long). */
     bool alive() const { return alive_.load(); }
 
     void stop();
 
 private:
-    void run();
+    void lane_run(int lane);
+    void local_run();
+    void deliver(const std::string& bytes);   /* under mu_ */
+    void send_all_lanes(const std::string& msg);
+    std::string lane_path(int lane) const;
 
-    Lsw2WsClient ws_;
+    std::string host_, id_, link_;
+    int port_ = 80;
+    int lanes_n_ = 2;
+    std::vector<std::unique_ptr<Lsw2WsClient>> lanes_;
+    std::vector<std::thread> threads_;
     long long listen_fd_ = -1;
+    std::atomic<long long> local_fd_{-1};
     uint16_t local_port_ = 0;
-    std::string pending_;          /* room bytes before the transport connected */
+    std::mutex mu_;                /* stream_, pending_, the local socket's writes */
+    Lsw2LaneStream stream_;
+    std::string pending_;          /* bytes before the transport connected */
     std::atomic<bool> stop_{false};
     std::atomic<bool> alive_{false};
-    std::thread thread_;
+    std::atomic<bool> ended_{false};
 };
 
 #endif /* LSW2_WSRELAY_H */
