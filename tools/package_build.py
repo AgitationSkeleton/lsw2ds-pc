@@ -204,8 +204,7 @@ def stage(version: str) -> Path:
     # THE VERSION, beside the exe: what the game shows on Settings > Updates,
     # and what marks this folder as an installed release that may update
     # itself (port/frontend/updater.h). A development build has none.
-    (out / "build" / "version.txt").write_text(version.lstrip("vV") + "
-", encoding="utf-8")
+    (out / "build" / "version.txt").write_text(version.lstrip("vV") + "\n", encoding="utf-8")
     fonts = sorted((BUILD / "assets" / "fonts").glob("*.lsw2font"))
     if not fonts:
         raise SystemExit("build/assets/fonts has no fonts - the build's font export did not run")
