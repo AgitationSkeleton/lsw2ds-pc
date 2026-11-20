@@ -1,0 +1,8 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "LEGO Star Wars II: The Original Trilogy",
+  "system": "NDS",
+  "type": "recomp",
+  "targets": ["Windows"],
+  "status": "playable"
+}
