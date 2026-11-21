@@ -33,6 +33,7 @@ import re
 import secrets
 import socket
 import sqlite3
+import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -60,6 +61,54 @@ MAX_NAME = 10            # the waiting list has fixed column width
 # keeps a randomly generated code from spelling something unfortunate.
 CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 CODE_LENGTH = 4          # room codes are four letters/digits
+
+# ---------------------------------------------------------------- limits ----
+#
+# A load test on the LEGO Battles port's lobby server (its GitHub issue #2)
+# found what this server shared: a client that sends half a request held a
+# handler thread for good, so a couple of hundred idle sockets refused every
+# real player; one address could list lobbies without end; HEAD came back
+# malformed; and the banner named the Python version. The game's own traffic,
+# for scale: a host registers once per lobby and heartbeats every 5 s; the list
+# and room codes are fetched when a player asks. Every limit sits far above
+# that, and past one the answer is 429 (503 when the directory is full).
+
+READ_TIMEOUT = 10          # s: a request line, a header or a body read
+CONN_DEADLINE = 20         # s: a connection's whole life; then it is cut
+MAX_CONNECTIONS = 96       # handled at once (--max-connections); the rest closed
+MAX_CONNECTIONS_PER_IP = 8
+MAX_LOBBIES = 200          # listed at once, every address together
+MAX_LOBBIES_PER_IP = 3     # listed at once from one address
+MAX_LIST = 100             # lobbies in one list reply
+# Per address: (requests, seconds).
+RATE_GET = (120, 60)
+RATE_WRITE = (120, 60)     # POST, PUT and DELETE
+RATE_REGISTER = (6, 600)
+
+
+class Window:
+    """Fixed-window counters per key, pruned as they age. Thread-safe."""
+
+    def __init__(self, scale=1):
+        self.lock = threading.Lock()
+        self.data = {}   # (kind, key) -> [window start, count]
+        self.pruned = 0.0
+        self.scale = max(1, int(scale))
+
+    def over(self, kind, key, limit, now=None):
+        count, seconds = limit
+        now = time.monotonic() if now is None else now
+        with self.lock:
+            if now - self.pruned > 60:
+                self.pruned = now
+                self.data = {k: v for k, v in self.data.items() if now - v[0] < 3600}
+            w = self.data.get((kind, key))
+            if not w or now - w[0] >= seconds:
+                self.data[(kind, key)] = [now, 1]
+                return False
+            w[1] += 1
+            return w[1] > count * self.scale
+
 
 # THE TWO KINDS OF LOBBY. The GUI sidebar stacks two scrolling lists one above
 # the other, Bounty Hunter lobbies and co-op lobbies, and the co-op ones
@@ -362,6 +411,19 @@ class Store:
         return {"id": sid, "token": token, "code": code,
                 "expires_in": TTL_SECONDS}
 
+    def count(self, address=None, port=None):
+        """Lobbies listed now: all of them, or those from `address` other than
+        its lobby on `port` (which a re-register replaces, see register)."""
+        now = int(time.time())
+        if address is None:
+            row = self.db.execute("SELECT COUNT(*) FROM servers WHERE expires_at >= ?",
+                                  (now,)).fetchone()
+        else:
+            row = self.db.execute(
+                "SELECT COUNT(*) FROM servers WHERE expires_at >= ? AND address = ?"
+                " AND port != ?", (now, address, int(port or 0))).fetchone()
+        return int(row[0])
+
     def heartbeat(self, sid, token, players, config, roster=None):
         row = self.db.execute(
             "SELECT token_hash FROM servers WHERE id = ?", (sid,)).fetchone()
@@ -529,7 +591,15 @@ def _clamp_players(n) -> int:
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "lsw2-master/1"
+    server_version = "lsw2-master/1.1"
+    # The banner names no Python version (version_string below).
+    sys_version = ""
+    # A SOCKET TIMEOUT FOR EVERY READ, so a client that sends half a request
+    # cannot hold this thread (StreamRequestHandler applies it in setup()).
+    # Directory also cuts any connection after CONN_DEADLINE, so one that
+    # trickles a byte at a time cannot either.
+    timeout = READ_TIMEOUT
+    head = False
     # HTTP/1.1 because every response carries an accurate Content-Length, which
     # is the requirement for it. The default is 1.0, and a client that matched
     # the version string rather than parsing the status code read that as a
@@ -549,13 +619,41 @@ class Handler(BaseHTTPRequestHandler):
     def log_error(self, fmt, *args):
         self.log.debug("http", "%s %s" % (self.client_address[0], fmt % args))
 
-    def _send(self, code, payload):
+    def _send(self, code, payload, retry_after=None):
         body = json.dumps(payload).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        if retry_after:
+            self.send_header("Retry-After", str(int(retry_after)))
         self.end_headers()
+        if self.head:
+            return   # HEAD: the headers a GET would send, and no body
         self.wfile.write(body)
+
+    def send_error(self, code, message=None, explain=None):
+        """The stock error page as JSON with a correct length: an unknown
+        method, a malformed request line, a header too long. The stock one
+        advertised a body that HEAD then never sent."""
+        self.close_connection = True
+        try:
+            self._send(code, {"error": message or self.responses.get(code, ("error",))[0]})
+        except OSError:
+            pass
+
+    def version_string(self):
+        return self.server_version
+
+    def _limited(self, kind, limit):
+        """True (and a 429 sent) when this address is over `limit` for `kind`."""
+        if not self.server.window.over(kind, self.client_address[0], limit):
+            return False
+        self.server.note("limit", "%s over %d %s requests per %d s"
+                         % (self.client_address[0], limit[0], kind, limit[1]),
+                         (kind, self.client_address[0]))
+        self._drain_body()
+        self._send(429, {"error": "slow down"}, retry_after=limit[1])
+        return True
 
     def _body(self):
         try:
@@ -624,9 +722,19 @@ class Handler(BaseHTTPRequestHandler):
             self.log.info("lobby", "expired %s lobby '%s' (%s) - host stopped "
                                    "heartbeating" % (gone["kind"], gone["name"],
                                                      gone["address"]))
+        # Requests per address, reads and writes apart (the health probe aside).
+        if self.command in ("GET", "HEAD"):
+            if self.path not in ("/", "/v1/health") and self._limited("get", RATE_GET):
+                return
+        elif self._limited("write", RATE_WRITE):
+            return
         handler()
 
     def do_GET(self):
+        self._dispatch(self._get)
+
+    def do_HEAD(self):
+        self.head = True
         self._dispatch(self._get)
 
     def do_POST(self):
@@ -646,7 +754,9 @@ class Handler(BaseHTTPRequestHandler):
                                          requester=self.client_address[0])
             self.log.debug("list", "%s asked for %s lobbies, %d returned"
                            % (self.client_address[0], kind or "all", len(listing)))
-            return self._send(200, {"servers": listing})
+            # At most MAX_LIST in one reply, with how many there are in all.
+            return self._send(200, {"servers": listing[:MAX_LIST],
+                                    "total": len(listing)})
         if path.startswith("/v1/codes/"):
             wanted = path[len("/v1/codes/"):]
             got = self.store.resolve(wanted, requester=self.client_address[0])
@@ -674,6 +784,20 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(400, {"error": "port out of range"})
         kind = normalise_kind(body.get("kind"))
         address = self._client_address(body)
+        # Registrations per address, lobbies per address, and lobbies in all.
+        srv = self.server
+        if srv.window.over("register", address, RATE_REGISTER):
+            srv.note("limit", "%s over %d registrations per %d s"
+                     % (address, RATE_REGISTER[0], RATE_REGISTER[1]), ("register", address))
+            return self._send(429, {"error": "slow down"}, retry_after=RATE_REGISTER[1])
+        if self.store.count(address, port) >= MAX_LOBBIES_PER_IP * srv.window.scale:
+            srv.note("limit", "%s already lists %d lobbies" % (address, MAX_LOBBIES_PER_IP),
+                     ("lobbies", address))
+            return self._send(429, {"error": "too many lobbies from this address"},
+                              retry_after=TTL_SECONDS)
+        if self.store.count() >= MAX_LOBBIES:
+            srv.note("limit", "the list is full (%d lobbies)" % MAX_LOBBIES, ("full",))
+            return self._send(503, {"error": "the server is full"}, retry_after=60)
         try:
             got = self.store.register(body.get("name"), address,
                                       port, body.get("players", 1),
@@ -772,6 +896,81 @@ class Directory(ThreadingHTTPServer):
 
     daemon_threads = True
     allow_reuse_address = os.name != "nt"
+    request_queue_size = 64
+
+    def __init__(self, address, handler, max_connections=MAX_CONNECTIONS, limit_scale=1):
+        super().__init__(address, handler)
+        self.max_connections = max_connections
+        self.window = Window(limit_scale)
+        self.conn_lock = threading.Lock()
+        self.conns = {}      # socket -> [address, accepted (monotonic), cut]
+        self.per_ip = {}     # address -> connections being handled
+        self.noted = {}      # note() key -> [last logged, left out since]
+
+    def note(self, category, message, key):
+        """A log line a flood cannot multiply: once a minute per key, with a
+        count of the ones left out."""
+        now = time.monotonic()
+        with self.conn_lock:
+            n = self.noted.get(key)
+            if n and now - n[0] < 60:
+                n[1] += 1
+                return
+            if len(self.noted) > 4096:
+                self.noted = {k: v for k, v in self.noted.items() if now - v[0] < 60}
+            left_out = n[1] if n else 0
+            self.noted[key] = [now, 0]
+        Handler.log.warn(category, message + (" (and %d more like it)" % left_out
+                                              if left_out else ""))
+
+    # AT MOST max_connections HANDLED AT ONCE, and MAX_CONNECTIONS_PER_IP from
+    # one address: one more is closed at once instead of being given a thread.
+    def process_request(self, request, client_address):
+        ip = client_address[0]
+        with self.conn_lock:
+            refuse = (len(self.conns) >= self.max_connections or
+                      self.per_ip.get(ip, 0) >= MAX_CONNECTIONS_PER_IP)
+            if not refuse:
+                self.conns[request] = [ip, time.monotonic(), False]
+                self.per_ip[ip] = self.per_ip.get(ip, 0) + 1
+        if refuse:
+            self.note("busy", "%s refused: %d connections being handled, %d from it"
+                      % (ip, len(self.conns), self.per_ip.get(ip, 0)), ("busy", ip))
+            super().shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except RuntimeError:   # no thread could be started
+            self.shutdown_request(request)
+            self.note("busy", "%s refused: no thread could be started" % ip, ("thread",))
+
+    def shutdown_request(self, request):
+        with self.conn_lock:
+            c = self.conns.pop(request, None)
+            if c:
+                left = self.per_ip.get(c[0], 1) - 1
+                if left > 0:
+                    self.per_ip[c[0]] = left
+                else:
+                    self.per_ip.pop(c[0], None)
+        super().shutdown_request(request)
+
+    def service_actions(self):
+        """Between accepts (serve_forever calls this about twice a second): cut
+        any connection older than CONN_DEADLINE. Its thread's next read then
+        fails and the thread ends."""
+        now = time.monotonic()
+        with self.conn_lock:
+            late = [(s, c) for s, c in self.conns.items()
+                    if not c[2] and now - c[1] > CONN_DEADLINE]
+            for _, c in late:
+                c[2] = True
+        for sock, c in late:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+            self.note("busy", "%s cut after %d s" % (c[0], CONN_DEADLINE), ("cut", c[0]))
 
     def server_bind(self):
         if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
@@ -796,6 +995,9 @@ def build_parser():
     ap.add_argument("--logs", default="logs",
                     help="directory for daily log files, kept %d days"
                          % filelog.RETAIN_DAYS)
+    ap.add_argument("--max-connections", type=int, default=MAX_CONNECTIONS,
+                    help="connections handled at once; more are closed at once")
+    ap.add_argument("--limit-scale", type=int, default=1, help=argparse.SUPPRESS)
     ap.add_argument("--quiet", action="store_true",
                     help="log only INFO and above")
     return ap
@@ -884,7 +1086,9 @@ class Service:
         Handler.bans = self.bans
         Handler.log = self.log
         try:
-            self.httpd = Directory((self.args.host, self.args.port), Handler)
+            self.httpd = Directory((self.args.host, self.args.port), Handler,
+                                   max_connections=max(1, self.args.max_connections),
+                                   limit_scale=self.args.limit_scale)
         except OSError as exc:
             # SAY WHICH PORT AND WHY. "OSError: [WinError 10048]" in a window
             # that then closes is the least useful thing this could do, and the

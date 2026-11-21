@@ -6,6 +6,7 @@
 #include "vwh.h"
 
 #include "cheats.h"
+#include "levels.h"         /* kLsw2ArenaLobbyLevel */
 #include "gearhop.h"
 #include "netcount.h"        /* kLsw2NetCountObject, kLsw2NetLocalStation */
 #include "viewmask.h"
@@ -76,6 +77,14 @@ constexpr uint32_t kModeCamera = kLsw2LocalCamera;
 constexpr uint32_t kModeTable = kModeCamera + 0x208u;   /* one byte a station */
 constexpr uint8_t kModeTank = 9;       /* the arena's own                     */
 constexpr uint8_t kModeOrbit = 4;      /* offset + yaw, no level data         */
+/* THE CANTINA LOBBY'S OWN CAMERA: mode 1, the top-down view (measured: this
+ * console's station reads 1 in the lobby, level 9, the other three 3). Mode 4
+ * works there unchanged - written offline, the orbit framed behind the player
+ * and the yaw turned a quarter, Up then walked along the camera's new forward
+ * axis (dx 19.4, dz 2.8 against dz 11.2 before) - so the lobby gets the same
+ * free camera as a match when the player wants it (Lobby free camera, on by
+ * default, and only where Enhanced is in effect). */
+constexpr uint8_t kModeLobby = 1;
 
 /* The camera's fields, from the disassembly of 0x020A1B64 and 0x020A0C9C. */
 constexpr uint32_t kCamTarget = 0x1D0u;        /* the actor it follows        */
@@ -224,36 +233,64 @@ void orbit_walls(bool on) {
                  "wall pull\n", on ? "now runs" : "restored instead of");
 }
 
+/* WHERE THE ORBIT MAY RUN: 1 an arena match, 2 the Cantina lobby, 0 neither. */
+int orbit_place() {
+    if (lsw2_cheats_in_arena_match()) return 1;
+    if (lsw2_cheats_current_level() == kLsw2ArenaLobbyLevel) return 2;
+    return 0;
+}
+
+/* The game's own camera mode for this console's station in `place`. */
+uint8_t rest_mode(int place) { return place == 2 ? kModeLobby : kModeTank; }
+
+/* Whether the orbit is wanted in `place`: Enhanced in effect (a client's Off
+ * beats a host's Enhanced, and a host's Classic beats a client's On), and in
+ * the lobby the player's Lobby free camera as well. Off by either side, the
+ * lobby keeps its top-down camera. */
+bool orbit_wanted(int place) {
+    const bool enhanced = lsw2_enhanced_effective(
+        lsw2_fork_session().settings().controls == Lsw2HostControls::Enhanced,
+        lsw2_ui_enhanced_controls());
+    return enhanced && (place == 1 || (place == 2 && lsw2_ui_lobby_free_cam()));
+}
+
+int g_place = 0;
+
 void arena_mode_tick(bool session) {
     const int station = arena_station(session);
     if (station < 0) return;
-    if (!lsw2_cheats_in_arena_match()) {
+    const int place = orbit_place();
+    /* A NEW PLACE STARTS CLEAN: a lobby's orbit is not the match's, and the
+     * game sets its own mode on the way in (9 for a match, 1 for the lobby). */
+    if (place != g_place) {
+        g_place = place;
         g_mode_wait = 0;
         g_mode_ours = false;
         g_orbit_distance = 0;
         orbit_walls(false);
-        return;
     }
+    if (place == 0) return;
+    const uint8_t rest = rest_mode(place);
     const uint32_t target = bus_device_read32(0, kModeCamera + kCamTarget);
     const uint8_t mode = guest_byte(kModeTable + uint32_t(station));
-    const bool enhanced = lsw2_enhanced_effective(
-        lsw2_fork_session().settings().controls == Lsw2HostControls::Enhanced,
-        lsw2_ui_enhanced_controls());
+    const bool enhanced = orbit_wanted(place);
 
     /* UNTIL THE SWITCH LANDS, the orbit follows the chase camera - re-framed
      * behind the player every frame - so the first mode-4 frame is where mode
      * 9's last one was. In mode 4 it is re-framed only when the game has reset
      * the offset: 0x020AA048 restores its own (30, 30, 30) at a match start. */
     if (live_actor(target)) {
-        if (mode == kModeTank && enhanced) frame_orbit(target);
+        if (mode == rest && enhanced) frame_orbit(target);
         else if (mode == kModeOrbit && !orbit_framed()) frame_orbit(target);
     }
 
+    /* `rest` is the game's camera here: the chase camera in a match, the
+     * top-down one in the lobby. Only ever swapped for the orbit and back. */
     uint8_t want;
-    if (enhanced && mode == kModeTank && live_actor(target)) {
+    if (enhanced && mode == rest && live_actor(target)) {
         want = kModeOrbit;
     } else if (!enhanced && g_mode_ours && mode == kModeOrbit) {
-        want = kModeTank;
+        want = rest;
     } else {
         g_mode_wait = 0;
         return;
@@ -267,9 +304,11 @@ void arena_mode_tick(bool session) {
     g_mode_wait = kModeRetryFrames;
     g_mode_ours = (want == kModeOrbit);
     orbit_walls(g_mode_ours);
-    std::fprintf(stderr, "[fork] Enhanced: station %d's camera mode %u -> %u (%s)%s\n",
+    std::fprintf(stderr, "[fork] Enhanced: station %d's camera mode %u -> %u (%s, %s)%s\n",
                  station, unsigned(mode), unsigned(want),
-                 want == kModeTank ? "tank" : "free movement, orbit camera",
+                 want == kModeOrbit ? "free movement, orbit camera"
+                                    : place == 2 ? "the lobby's top-down camera" : "tank",
+                 place == 2 ? "Cantina lobby" : "arena match",
                  session ? ", sent as the game's own message 0x39 so every "
                            "console applies it at the same exchange"
                          : "");
@@ -312,7 +351,7 @@ void lsw2_enhanced_camera_step() {
     const int dy = lsw2_ui_take_camera_delta_y();
     if (dx == 0 && dy == 0) return;
     if (!ui_fork_build() || !lsw2_ui_enhanced_controls()) return;
-    if (!lsw2_cheats_in_arena_match()) return;
+    if (orbit_place() == 0) return;   /* a match, or the lobby's free camera */
     const int station = arena_station(lsw2_vwh_lockstep());
     if (station < 0) return;
     if (guest_byte(kModeTable + uint32_t(station)) != kModeOrbit || !orbit_framed())
@@ -339,7 +378,7 @@ void lsw2_enhanced_camera_step() {
 
 bool lsw2_enhanced_orbit_heading(uint32_t actor, uint16_t* heading) {
     if (!heading || !ui_fork_build() || !live_actor(actor)) return false;
-    if (!lsw2_cheats_in_arena_match()) return false;
+    if (orbit_place() == 0) return false;
     const int station = arena_station(lsw2_vwh_lockstep());
     if (station < 0) return false;
     if (guest_byte(kModeTable + uint32_t(station)) != kModeOrbit || !orbit_framed())

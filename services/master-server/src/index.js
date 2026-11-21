@@ -23,6 +23,8 @@
  */
 
 import {announce, describeConfig, kindLabel, lasted, names, plain} from "./discord.js";
+import {MAX_LIST, MAX_LOBBIES, MAX_LOBBIES_PER_IP, RATE_GET, RATE_REGISTER, RATE_WRITE,
+        ensureSchema, hostAddress, overLimit, pruneLimits, slowDown} from "./limits.js";
 export {RelayRoom} from "./relay.js";
 
 // Twenty seconds, as the self-host server: the game heartbeats about once a
@@ -138,13 +140,36 @@ function validRegistration(value) {
     Number.isInteger(value.players) && value.players >= 0 && value.players <= 4;
 }
 
+// The address this request came from, as Cloudflare saw it.
+function peerOf(request) {
+  return request.headers.get("cf-connecting-ip") || "";
+}
+
 async function register(request, env, ctx) {
   const value = await readBody(request);
   if (!validRegistration(value)) {
     return reply({error: "invalid server registration"}, 400);
   }
-  const address = String(value.address || request.headers.get("cf-connecting-ip") || "").slice(0, 64);
-  if (!address) return reply({error: "public address unavailable"}, 400);
+  const peer = peerOf(request);
+  if (!peer) return reply({error: "public address unavailable"}, 400);
+  /* A host's own claim is believed only where it can be checked (limits.js). */
+  const address = hostAddress(value.address, peer);
+
+  /* LOBBIES PER ADDRESS, AND IN ALL - and registrations per address, since
+   * each one is a Discord line. */
+  if (await overLimit(env, "register", peer, RATE_REGISTER)) return slowDown(RATE_REGISTER[1]);
+  const now0 = Math.floor(Date.now() / 1000);
+  const mine = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM servers WHERE expires_at>=? AND peer=?").bind(now0, peer).first();
+  if (mine && mine.n >= MAX_LOBBIES_PER_IP) {
+    return new Response(JSON.stringify({error: "too many lobbies from this address"}), {
+      status: 429,
+      headers: {"content-type": "application/json; charset=utf-8", "retry-after": "20"},
+    });
+  }
+  const all = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM servers WHERE expires_at>=?").bind(now0).first();
+  if (all && all.n >= MAX_LOBBIES) return reply({error: "the server is full"}, 503);
 
   const code = await freeCode(env);
   if (!code) return reply({error: "no free room code"}, 503);
@@ -159,21 +184,21 @@ async function register(request, env, ctx) {
   const state = normaliseState(value.state);
   const lan = sanitiseLan(value.lan);
   await env.DB.prepare(
-    "INSERT INTO servers (id,token_hash,name,address,port,code,kind,players,max_players,config_json,roster_json,state,lan,created_at,updated_at,expires_at)" +
-    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    "INSERT INTO servers (id,token_hash,name,address,port,code,kind,players,max_players,config_json,roster_json,state,lan,created_at,updated_at,expires_at,peer)" +
+    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   ).bind(
     id, await sha256(token), name,
     address, value.port, code, kind,
     value.players, 4,
     JSON.stringify(config),
     JSON.stringify(sanitiseRoster(value.roster)),
-    state, lan, now, now, now + TTL_SECONDS
+    state, lan, now, now, now + TTL_SECONDS, peer
   ).run();
 
   const rules = kind === "bounty" ? describeConfig(config, false) : "";
   announce(env, ctx, kind,
     `🟢 **${plain(name)}** is hosting a ${kindLabel(kind)} lobby - room code \`${code}\`` +
-    (rules ? `\n${rules}` : ""));
+    (rules ? `\n${rules}` : ""), peer);
 
   return reply({id, token, code, expires_in: TTL_SECONDS}, 201);
 }
@@ -197,7 +222,7 @@ async function heartbeat(request, env, ctx, id) {
     "UPDATE servers SET players=?,roster_json=?,state=?,config_json=?,updated_at=?,expires_at=? WHERE id=?"
   ).bind(players, JSON.stringify(roster), state, JSON.stringify(config), now,
          now + TTL_SECONDS, id).run();
-  if (before) reportChanges(env, ctx, before, roster, state, config);
+  if (before) reportChanges(env, ctx, before, roster, state, config, peerOf(request));
 
   /* THE HEARTBEAT REPLY IS THE ONLY CHANNEL FROM THE DIRECTORY TO A HOST - the
    * host is behind whatever NAT it punched one game port through, so nothing
@@ -215,7 +240,8 @@ async function remove(request, env, ctx, id) {
   if (row) {
     const now = Math.floor(Date.now() / 1000);
     announce(env, ctx, row.kind,
-      `🔴 **${plain(row.name)}** disbanded its ${kindLabel(row.kind)} lobby (open ${lasted(now - row.created_at)})`);
+      `🔴 **${plain(row.name)}** disbanded its ${kindLabel(row.kind)} lobby (open ${lasted(now - row.created_at)})`,
+      peerOf(request));
   }
   return reply({ok: true});
 }
@@ -223,7 +249,7 @@ async function remove(request, env, ctx, id) {
 /* WHAT CHANGED SINCE THE LAST BEAT, for the log: who arrived, who left, and a
  * game starting or ending. Names are compared as a multiset, so two players
  * with one name still count as two. */
-function reportChanges(env, ctx, before, roster, state, config) {
+function reportChanges(env, ctx, before, roster, state, config, source) {
   const was = names(JSON.parse(before.roster_json || "[]"));
   const now = names(roster);
   const left = [...was];
@@ -234,18 +260,18 @@ function reportChanges(env, ctx, before, roster, state, config) {
   }
   const lobby = plain(before.name);
   for (const n of joined) {
-    announce(env, ctx, before.kind, `➡️ **${plain(n)}** joined **${lobby}** (${now.length}/4)`);
+    announce(env, ctx, before.kind, `➡️ **${plain(n)}** joined **${lobby}** (${now.length}/4)`, source);
   }
   for (const n of left) {
-    announce(env, ctx, before.kind, `⬅️ **${plain(n)}** left **${lobby}** (${now.length}/4)`);
+    announce(env, ctx, before.kind, `⬅️ **${plain(n)}** left **${lobby}** (${now.length}/4)`, source);
   }
   if (before.state !== "match" && state === "match") {
     const rules = before.kind === "bounty" ? describeConfig(config, true) : "";
     announce(env, ctx, before.kind,
       `▶️ A game started in **${lobby}** with ${now.map(plain).join(", ") || "nobody listed"}` +
-      (rules ? `\n${rules}` : ""));
+      (rules ? `\n${rules}` : ""), source);
   } else if (before.state === "match" && state !== "match") {
-    announce(env, ctx, before.kind, `⏹️ The game in **${lobby}** is over - back to the lobby`);
+    announce(env, ctx, before.kind, `⏹️ The game in **${lobby}** is over - back to the lobby`, source);
   }
 }
 
@@ -255,13 +281,15 @@ function reportChanges(env, ctx, before, roster, state, config) {
 async function purgeExpired(env, ctx) {
   const now = Math.floor(Date.now() / 1000);
   const {results} = await env.DB.prepare(
-    "SELECT id,name,kind,created_at FROM servers WHERE expires_at < ?"
+    "SELECT id,name,kind,created_at,peer FROM servers WHERE expires_at < ?"
   ).bind(now).all();
   for (const row of results || []) {
     await env.DB.prepare("DELETE FROM servers WHERE id=?").bind(row.id).run();
     announce(env, ctx, row.kind,
-      `⚫ **${plain(row.name)}** closed - its host stopped answering (open ${lasted(now - row.created_at)})`);
+      `⚫ **${plain(row.name)}** closed - its host stopped answering (open ${lasted(now - row.created_at)})`,
+      row.peer);
   }
+  await pruneLimits(env);
 }
 
 function normaliseState(raw) {
@@ -292,7 +320,10 @@ async function list(request, env) {
             " FROM servers WHERE expires_at>=?";
   const args = [now];
   if (kind) { sql += " AND kind=?"; args.push(normaliseKind(kind)); }
-  sql += " ORDER BY updated_at DESC LIMIT 100";
+  const counted = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM servers WHERE expires_at>=?" + (kind ? " AND kind=?" : ""))
+    .bind(...args).first();
+  sql += ` ORDER BY updated_at DESC LIMIT ${MAX_LIST}`;
 
   const {results} = await env.DB.prepare(sql).bind(...args).all();
   const requester = request.headers.get("cf-connecting-ip") || "";
@@ -309,7 +340,8 @@ async function list(request, env) {
     roster: JSON.parse(row.roster_json || "[]"),
     created_at: row.created_at,
   }));
-  return reply({servers});
+  /* At most MAX_LIST lobbies, with how many there are in all. */
+  return reply({servers, total: counted ? counted.n : servers.length});
 }
 
 async function resolveCode(request, env, raw) {
@@ -392,9 +424,15 @@ async function turnCredentials(request, env) {
   return reply({iceServers, expires_at: expires});
 }
 
-export default {
+const worker = {
   async fetch(request, env, ctx) {
+    /* HEAD is a GET answered with its headers only. */
+    if (request.method === "HEAD") {
+      const r = await worker.fetch(new Request(request.url, {method: "GET", headers: request.headers}), env, ctx);
+      return new Response(null, {status: r.status, headers: r.headers});
+    }
     try {
+      await ensureSchema(env);
       const url = new URL(request.url);
       const parts = url.pathname.split("/").filter(Boolean);
       const method = request.method;
@@ -403,6 +441,15 @@ export default {
        * kept as an alias so anything pointing at the old path still answers. */
       if (method === "GET" && (url.pathname === "/v1/health" || url.pathname === "/health" || url.pathname === "/")) {
         return reply({ok: true, service: "lsw2-master", ttl: TTL_SECONDS});
+      }
+      /* REQUESTS PER ADDRESS: reads and writes, each far above what a game
+       * sends (limits.js). */
+      const peer = peerOf(request);
+      if (peer) {
+        const rate = method === "GET" ? RATE_GET : RATE_WRITE;
+        if (await overLimit(env, method === "GET" ? "get" : "write", peer, rate)) {
+          return slowDown(rate[1]);
+        }
       }
       if (method === "GET" && url.pathname === "/v1/servers") return list(request, env);
       if (method === "POST" && url.pathname === "/v1/servers") return register(request, env, ctx);
@@ -433,3 +480,5 @@ export default {
     ctx.waitUntil(purgeExpired(env, ctx));
   },
 };
+
+export default worker;

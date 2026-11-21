@@ -214,6 +214,11 @@ struct UiSettings {
     bool coop_show_room_code = false;
 
     bool enhanced_controls = true;
+    /* THE CANTINA LOBBY'S FREE CAMERA: with Enhanced controls in effect, the
+     * lobby uses the match's orbit camera and camera-relative movement instead
+     * of its top-down view (enhanced.cpp). On by default; Enhanced off on
+     * this console or by the host keeps the top-down camera regardless. */
+    bool lobby_free_cam = true;
     /* DEBUG: a SECOND copy of the
      * game - another instance already running when it started - plays no
      * music, or no sound at all, so testing several clients on one machine is
@@ -449,6 +454,8 @@ float lsw2_ui_arena_hud_scale();
  * UiSettings is. This is the CLIENT's wish - the host's allowance is a host
  * setting, and lsw2_enhanced_effective() is where the two meet. */
 bool lsw2_ui_enhanced_controls();
+/* The Lobby free camera setting (UiSettings::lobby_free_cam). */
+bool lsw2_ui_lobby_free_cam();
 
 
 /* The Debug tab's second-instance mutes, read by instancemute.cpp. */

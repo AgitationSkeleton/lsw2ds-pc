@@ -8,6 +8,37 @@ land.
 
 ## Unreleased
 
+## 0.3.5 - 2026-11-20
+
+Still an early pre-release, and **not thoroughly tested**. Online play between
+separate PCs is still largely untested. Everyone in a game should be on this
+version.
+
+- **Free camera in the Cantina lobby.** With Enhanced controls on, the lobby
+  now uses the same free camera as a Bounty Hunter match: the right stick (or
+  the camera keys) turns it, and you move relative to the camera. Before, the
+  lobby always had its top-down view. It's on by default; turn it off with
+  "Lobby free camera" under F1 > Enhancements > Arena Controls. The lobby
+  keeps its top-down camera when Enhanced controls are off, whether on your
+  side or because the host doesn't allow them.
+- **The lobby servers resist abuse.** A security report against the LEGO
+  Battles port's lobby server found problems that this port's servers shared
+  too.
+  - The online server, already updated:
+    - It limits how often one address can make requests.
+    - One address can have at most 3 lobbies listed, and the list holds at
+      most 200.
+    - A flood of lobbies can no longer flood the Discord channel.
+    - A host can no longer list its lobby at someone else's address.
+  - The self-hosted server, `master_server.py`:
+    - It drops connections that send half a request. A few hundred of those
+      used to lock out every real player.
+    - It has the same request and lobby limits as the online server.
+    - `HEAD` requests now get a proper answer.
+    - Its banner no longer shows the Python version.
+  - Normal play stays well under every limit. The services' READMEs list
+    them.
+
 ## 0.3.4 - 2026-11-06
 
 Still an early pre-release, and **not thoroughly tested**. The relay changes

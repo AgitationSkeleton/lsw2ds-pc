@@ -178,6 +178,30 @@ asks for `SO_EXCLUSIVEADDRUSE` on Windows instead, and a second start fails with
 a message naming the port. This is not hypothetical; it happened in testing,
 and it looks exactly like "the log is broken".
 
+## Limits
+
+Each limit is far above what the game sends: a host registers once per lobby
+and heartbeats every 5 s.
+
+| What | Limit | Past it |
+| --- | --- | --- |
+| A read (request line, header, body) | 10 s | connection closed |
+| A connection's whole life | 20 s | connection cut |
+| Connections handled at once | 96 (`--max-connections`) | closed at once |
+| Connections from one address | 8 | closed at once |
+| Reads (GET, HEAD) per address | 120 a minute | 429 with `Retry-After` |
+| Writes per address | 120 a minute | 429 |
+| Registrations per address | 6 every 10 minutes | 429 |
+| Lobbies listed from one address | 3 at once (a host re-registering its own lobby replaces it) | 429 |
+| Lobbies listed in all | 200 | 503 |
+| Lobbies in one list reply | 100, plus a `total` | - |
+
+The first two stop a client that sends half a request, or one byte at a time,
+from holding a thread. Without them a few hundred idle sockets refused every
+real player. Refusals are logged at most once a minute per address. `HEAD`
+answers like `GET` without a body, error pages are JSON, and the `Server`
+header no longer names the Python version.
+
 ## Upgrading an existing install
 
 Columns added after the first release (`kind`, `roster_json`, `created_at`) are

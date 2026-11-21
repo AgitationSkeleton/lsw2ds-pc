@@ -12,6 +12,8 @@
  * NO ADDRESSES ARE POSTED. A host's address is in the public list because
  * joining needs it; the log is for people, and it does not need it. */
 
+import {DISCORD_GLOBAL, DISCORD_PER_SOURCE, holdLine, take, takeHeld} from "./limits.js";
+
 // Names as they are, not as Discord's markdown would take them.
 export function plain(s) {
   return String(s == null ? "" : s).replace(/[\r\n]+/g, " ")
@@ -60,19 +62,34 @@ export function names(roster) {
 }
 
 /* One message to the kind's channel. ctx: whatever keeps the Worker running
- * until it is sent - its waitUntil. */
-export function announce(env, ctx, kind, text) {
+ * until it is sent - its waitUntil. source: the address the line is about (a
+ * lobby's host), for the flood limit.
+ *
+ * A FLOOD OF LOBBIES CANNOT FLOOD THE CHANNEL: every line takes a token from
+ * its source's bucket and then from the channel's (limits.js). A line over
+ * either is dropped and counted, and the next line that goes says how many
+ * were held back (at most every 10 minutes). */
+export function announce(env, ctx, kind, text, source) {
   const hook = kind === "coop" ? env.DISCORD_WEBHOOK_COOP : env.DISCORD_WEBHOOK_BOUNTY;
   if (!hook) return;
-  const send = fetch(hook, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    // (no one is pinged, whatever a name says)
-    body: JSON.stringify({
-      username: kind === "coop" ? "LSW2 DS co-op lobbies" : "LSW2 DS Bounty Hunter lobbies",
-      content: String(text).slice(0, 1900),
-      allowed_mentions: {parse: []},
-    }),
-  }).catch(() => {});
+  const send = (async () => {
+    if ((source && !await take(env, "d:" + source, DISCORD_PER_SOURCE)) ||
+        !await take(env, "d:all", DISCORD_GLOBAL)) {
+      await holdLine(env);
+      return;
+    }
+    const held = await takeHeld(env);
+    if (held) text += `\n⚠️ ${held} lobby line${held === 1 ? "" : "s"} held back (too many at once).`;
+    await fetch(hook, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      // (no one is pinged, whatever a name says)
+      body: JSON.stringify({
+        username: kind === "coop" ? "LSW2 DS co-op lobbies" : "LSW2 DS Bounty Hunter lobbies",
+        content: String(text).slice(0, 1900),
+        allowed_mentions: {parse: []},
+      }),
+    });
+  })().catch(() => {});
   if (ctx && ctx.waitUntil) ctx.waitUntil(send);
 }

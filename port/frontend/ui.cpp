@@ -745,8 +745,8 @@ void arena_controls_page(UiSettings& s) {
     uiw::section("Enhanced arena controls");
     uiw::checkbox("Enhanced controls", &s.enhanced_controls,
         "Free camera on the right stick and ordinary movement on the\n"
-        "left, in arena gameplay only - the lobby keeps its usual\n"
-        "controls.\n\n"
+        "left, in arena matches - and in the Cantina lobby with Lobby\n"
+        "free camera on.\n\n"
         "Turning this OFF always wins: you get tank controls even in a\n"
         "match whose host has Enhanced enabled. The reverse is not true -\n"
         "a host who disallows it still disallows it.");
@@ -758,10 +758,18 @@ void arena_controls_page(UiSettings& s) {
      * the next exchange (enhanced.cpp has the measurements). The checkbox now
      * switches the arena's per-player camera mode through the game's own
      * message, and the stick steers that camera. */
+    ImGui::BeginDisabled(!s.enhanced_controls);
+    uiw::checkbox("Lobby free camera", &s.lobby_free_cam,
+        "In the Cantina lobby, use the same free camera and\n"
+        "camera-relative movement as a match, instead of the lobby's\n"
+        "top-down view.\n\n"
+        "Needs Enhanced controls: with them off here, or a host who\n"
+        "does not allow them, the lobby keeps its top-down camera.");
+    ImGui::EndDisabled();
     uiw::note("In arena matches: the left stick or d-pad moves you relative to "
               "the camera, and the right stick (or the Camera bindings under "
               "Settings > Controls) turns it around you and raises or lowers "
-              "it. The lobby keeps the usual controls.");
+              "it. In the Cantina lobby, Lobby free camera does the same.");
 
     uiw::next_column();
     uiw::section("Camera");
@@ -1964,6 +1972,7 @@ static bool g_fork_wants_roster = true;
 static bool g_fork_hunters_only = true;
 static bool g_arena_hud_enabled = false;
 static bool g_enhanced_controls = true;   /* Enhanced controls, default on   */
+static bool g_lobby_free_cam = true;      /* the lobby's free camera         */
 static bool g_mute_music_second = false;  /* Debug, second-instance mute     */
 static bool g_mute_sound_second = false;  /* Debug, second-instance mute     */
 static bool g_enhanced_portrait = true;   /* Portrait follows, both builds   */
@@ -2000,6 +2009,7 @@ void ui_draw(UiSettings& s) {
     g_fork_hunters_only = s.bh_roster_only;
     g_arena_hud_enabled = s.arena_hud_overlay;
     g_enhanced_controls = s.enhanced_controls;
+    g_lobby_free_cam = s.lobby_free_cam;
     g_mute_music_second = s.mute_music_second_instance;
     g_mute_sound_second = s.mute_sound_second_instance;
     g_enhanced_portrait = s.enhanced_portrait;
@@ -2247,6 +2257,7 @@ bool lsw2_hle_fork_select_range(unsigned* low, unsigned* high) {
 
 bool lsw2_ui_arena_hud_enabled() { return g_arena_hud_enabled; }
 bool lsw2_ui_enhanced_controls() { return g_enhanced_controls; }
+bool lsw2_ui_lobby_free_cam() { return g_lobby_free_cam; }
 bool lsw2_ui_mute_music_second_instance() { return g_mute_music_second; }
 bool lsw2_ui_mute_sound_second_instance() { return g_mute_sound_second; }
 bool lsw2_ui_enhanced_portrait() { return g_enhanced_portrait; }
@@ -2521,6 +2532,7 @@ void ui_load_settings(UiSettings& s, const char* path) {
     g_arena_hud_enabled    = s.arena_hud_overlay;
     s.coop_show_room_code  = g_store.get_bool("coop_show_room_code", s.coop_show_room_code);
     s.enhanced_controls    = g_store.get_bool("enhanced_controls", s.enhanced_controls);
+    s.lobby_free_cam       = g_store.get_bool("lobby_free_cam", s.lobby_free_cam);
     s.update_check         = g_store.get_bool("update_check", s.update_check);
     s.auto_update          = g_store.get_bool("auto_update", s.auto_update);
     /* hud_radar_x/y/size and hud_ping_show/x/y/w/h are NOT read any more -
@@ -2542,6 +2554,7 @@ void ui_load_settings(UiSettings& s, const char* path) {
      * order of two blocks was the whole difference between a setting that is
      * loaded and one that is loaded eventually. */
     g_enhanced_controls    = s.enhanced_controls;
+    g_lobby_free_cam       = s.lobby_free_cam;
     g_mute_music_second    = s.mute_music_second_instance;
     g_mute_sound_second    = s.mute_sound_second_instance;
     g_enhanced_portrait    = s.enhanced_portrait;
@@ -2725,6 +2738,7 @@ void ui_save_settings(const UiSettings& s, const char* path) {
     g_store.set_bool("bh_roster_only", s.bh_roster_only);
     g_store.set_bool("coop_show_room_code", s.coop_show_room_code);
     g_store.set_bool("enhanced_controls", s.enhanced_controls);
+    g_store.set_bool("lobby_free_cam", s.lobby_free_cam);
     g_store.set_bool("update_check", s.update_check);
     g_store.set_bool("auto_update", s.auto_update);
     g_store.set_bool("debug_mute_music_second_instance", s.mute_music_second_instance);

@@ -53,6 +53,37 @@ If a kind has no secret set, that kind is simply not logged. Posts never
 include host addresses, and they never ping anyone (`allowed_mentions` is
 empty).
 
+## Limits
+
+Each limit is far above what the game sends. A host registers once per lobby
+and heartbeats every 5 s, and the list is fetched when a player asks.
+
+| What | Limit | Past it |
+| --- | --- | --- |
+| Reads (GET) per address | 120 a minute | 429 with `Retry-After` |
+| Writes (POST, PUT, DELETE) per address | 120 a minute | 429 |
+| Registrations per address | 6 every 10 minutes | 429 |
+| Lobbies listed from one address | 3 at once | 429 |
+| Lobbies listed in all | 200 | 503 |
+| Lobbies in one list reply | 100, plus a `total` | - |
+| Discord lines per address | 10 at once, then 1 every 30 s | dropped |
+| Discord lines in all | 30 at once, then 1 every 2 s | dropped |
+
+The next Discord line that goes after some were dropped says how many (at most
+once every 10 minutes).
+
+A host may send its own public address. It is used only when it matches the
+address the server sees, or when the host connected over IPv6. Otherwise the
+lobby is listed at the address the server sees. `HEAD` answers like `GET`
+without a body.
+
+The counters live in D1's `limits` table, which the Worker creates on first
+use, so a deploy needs no migration. The cron removes rows older than an hour.
+Tests, against `npx wrangler dev --local --port 8798`:
+
+    node test/limits.mjs http://127.0.0.1:8798
+    node test/discord_flood.mjs ...    (see the file's header)
+
 ## Deploying
 
     npm install

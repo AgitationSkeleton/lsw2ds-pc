@@ -69,7 +69,10 @@ def main() -> int:
 
     args = ms.build_parser().parse_args(
         ["--port", str(port), "--host", "127.0.0.1", "--db", ":memory:",
-         "--bans", bans_path, "--logs", os.path.join(workdir, "logs")])
+         "--bans", bans_path, "--logs", os.path.join(workdir, "logs"),
+         # Every check here comes from 127.0.0.1, and these predate the
+         # per-address limits; limits() below runs them at their real values.
+         "--limit-scale", "100"])
     service = ms.Service(args)
     service.attach_file_log()
     service.announce()
@@ -559,6 +562,7 @@ def main() -> int:
     check("a public 'LAN' address is refused", ms.sanitize_lan("8.8.8.8"), "")
 
     service.shutdown()
+    limits(workdir)
     shutil.rmtree(workdir, ignore_errors=True)
     print()
     if FAILURES:
@@ -566,6 +570,105 @@ def main() -> int:
         return 1
     print("all checks passed")
     return 0
+
+
+def raw_status(port, request: bytes, timeout=3.0):
+    """Send raw bytes and return the reply's status line, or "" when the server
+    closed without one."""
+    s = socket.create_connection(("127.0.0.1", port), timeout=timeout)
+    try:
+        s.sendall(request)
+        data = b""
+        while b"\r\n" not in data:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            data += chunk
+        return data.split(b"\r\n", 1)[0].decode("latin-1")
+    except OSError:
+        return ""
+    finally:
+        s.close()
+
+
+def limits(workdir):
+    """The request limits at their real values, on a server of their own.
+
+    A load test on the LEGO Battles port's lobby server found a half-sent
+    request held a thread for good, one address could list lobbies without
+    end, and HEAD came back malformed - this server shared all three."""
+    print("the request limits (a server at the real values)")
+    port = free_port()
+    args = ms.build_parser().parse_args(
+        ["--port", str(port), "--host", "127.0.0.1", "--db", ":memory:",
+         "--bans", os.path.join(workdir, "bans2.txt"), "--logs", ""])
+    service = ms.Service(args)
+    old_timeout = ms.Handler.timeout
+    ms.Handler.timeout = 1          # the read timeout, shortened for the test
+    httpd = service.build()
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    base = "http://127.0.0.1:%d" % port
+    time.sleep(0.2)
+    try:
+        # Half-sent requests: eight is this address's share, and one more
+        # connection from it is closed at once instead of given a thread.
+        held = []
+        for _ in range(ms.MAX_CONNECTIONS_PER_IP):
+            s = socket.create_connection(("127.0.0.1", port))
+            s.sendall(b"GET /v1/health HTTP/1.1\r\nHost: x\r\nX-Pad: AAAA")
+            held.append(s)
+        time.sleep(0.3)
+        check("a ninth connection from that address is closed",
+              raw_status(port, b"GET /v1/health HTTP/1.1\r\nHost: x\r\n\r\n"), "")
+        # The read timeout frees them: the stalled threads give up and close.
+        time.sleep(1.8)
+        check("after the read timeout the address is served again",
+              raw_status(port, b"GET /v1/health HTTP/1.1\r\nHost: x\r\n\r\n"),
+              "HTTP/1.1 200 OK")
+        for s in held:
+            s.close()
+
+        # HEAD: the GET's headers, no body; and a banner with no Python version.
+        req = urllib.request.Request(base + "/v1/health", method="HEAD")
+        with urllib.request.urlopen(req, timeout=5) as r:
+            check("HEAD /v1/health answers 200", r.status, 200)
+            check("HEAD has no body", r.read(), b"")
+            check("the banner names no Python version", r.headers.get("Server"),
+                  "lsw2-master/1.1")
+
+        # Lobbies per address: three listed at once; a fourth is refused, and a
+        # re-register of one of the three replaces it rather than counting.
+        made = []
+        for i in range(3):
+            st, body = call("POST", base + "/v1/servers",
+                            {"name": "Lim%d" % i, "port": 28700 + i, "players": 1})
+            check("lobby %d from one address" % (i + 1), st, 201)
+            made.append(body)
+        st, _ = call("POST", base + "/v1/servers", {"name": "Lim3", "port": 28703, "players": 1})
+        check("a fourth lobby from that address is refused", st, 429)
+        st, _ = call("POST", base + "/v1/servers", {"name": "Lim0", "port": 28700, "players": 1})
+        check("a host re-registering its own lobby is not counted twice", st, 201)
+        # Registrations per address: six in ten minutes (five so far).
+        st, _ = call("POST", base + "/v1/servers", {"name": "Lim1", "port": 28701, "players": 1})
+        check("the sixth registration is allowed", st, 201)
+        st, _ = call("POST", base + "/v1/servers", {"name": "Lim2", "port": 28702, "players": 1})
+        check("the seventh registration in ten minutes is refused", st, 429)
+
+        # The list says how many there are.
+        _, body = call("GET", base + "/v1/servers")
+        check("the list carries a total", body.get("total"), len(body.get("servers", [])))
+
+        # Reads per address: 120 a minute (the list above was one).
+        refused = 0
+        for i in range(2, 125):
+            st, _ = call("GET", base + "/v1/servers")
+            if st == 429:
+                refused = i
+                break
+        check("the 121st read in a minute is refused", refused, 121)
+    finally:
+        ms.Handler.timeout = old_timeout
+        service.shutdown()
 
 
 if __name__ == "__main__":
